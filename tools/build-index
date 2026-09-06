@@ -1,14 +1,41 @@
 #!/usr/bin/env python3
-"""Generate index.json, marketplace.json and each app's plugin.json.
+"""Generate marketplace.json and each app's plugin.json.
 
 app.yaml IS THE ONLY HAND-WRITTEN METADATA. Everything this writes is derived
-from it, and CI regenerates and commits the result — so the plugin door and the
-connector door describe the same app because they are projections of one file,
-not two files somebody keeps in step.
+from it, so the plugin door and the connector door describe the same app because
+they are projections of one file, not two files somebody keeps in step.
 
-Never edit the outputs. CI fails a commit that changes them by hand, for the
-same reason `built_on` is derived rather than typed: two descriptions of one
-thing agree until somebody edits one, and the disagreement is invisible.
+Never edit the outputs, for the same reason `built_on` is derived rather than
+typed: two descriptions of one thing agree until somebody edits one, and the
+disagreement is invisible.
+
+INDEX.JSON IS NOT WRITTEN HERE ANY MORE. It carries two fields this cannot
+derive: `requires`, which is nested past what this deliberately small reader
+parses, and `needs_answered` — every value that must have been said before an
+app runs, which is the union of what its prose asks for and what its gates
+require. The prose half is only knowable by composing. The obvious shortcut,
+matching braces across instructions and skill bodies, is a helper the gtmsrv
+tree already wrote once and its instructions guard already refused; it is also
+exactly how a vendored skill reached a model carrying 45 unfilled `{{CRM}}`-style
+tokens, because a hand-rolled scan matches what its author thought of and that
+author thought in lowercase. A second implementation here would be that same
+scan again, in a language none of those guards can see.
+
+So `gtmsrv/cmd/appindex` writes index.json from the loader, and this writes the
+two outputs that are pure manifest metadata. Both run against this directory:
+
+    go run ./cmd/appindex <apps-repo>/apps <apps-repo>/index.json
+    python3 tools/build-index
+
+`tools/check-generated` regenerates both into a copy of the repo and diffs, so a
+manifest edited without rerunning them fails rather than quietly leaving outputs
+that describe the previous state. This file previously claimed CI already did
+that while `.github/workflows` was empty, which is why the check exists and why
+it is named after what it does rather than what it protects.
+
+The workflow that runs it needs a checkout credential for gtmsrv that does not
+exist yet, so CI fails until somebody creates it. Run the check by hand until
+then; it takes no arguments in the normal case.
 """
 import json, os, sys, re
 
@@ -92,14 +119,14 @@ def main():
             pj["author"] = {"name": who["name"]}
         write(os.path.join(pdir, "plugin.json"), pj)
 
-    write(os.path.join(ROOT, "index.json"), {"apps": entries, "count": len(entries)})
     write(os.path.join(ROOT, ".claude-plugin", "marketplace.json"), {
         "$schema": "https://code.claude.com/schemas/marketplace.json",
         "name": "freegtmapps",
         "owner": {"name": "freegtm", "url": "https://github.com/freegtmapps"},
         "plugins": plugins,
     })
-    print(f"generated index.json, marketplace.json and {len(plugins)} plugin.json")
+    print(f"generated marketplace.json and {len(plugins)} plugin.json")
+    print("index.json is written by gtmsrv/cmd/appindex, which is where the loader is")
 
 
 def write(path, obj):

@@ -1,0 +1,12 @@
+# The hard filter, before the model is asked anything.
+#
+# Scoring a lead against an ICP the workspace has not written down produces a
+# confident number derived from nothing — the model infers a plausible ICP from
+# the product line and scores against that, and nobody reading the score can
+# tell. Refusing is the honest answer, and it is deterministic, which is why it
+# is a rule rather than a sentence in the prompt: a sentence is advice a model
+# may take, and this is a condition it cannot run without.
+kind: requires_context
+keys: [icp]
+reason: "Scoring needs an ICP to score against, or the number is the model's guess at who you sell to."
+emit: score.blocked

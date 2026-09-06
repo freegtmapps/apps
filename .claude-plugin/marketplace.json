@@ -52,6 +52,15 @@
       }
     },
     {
+      "name": "score-against-your-icp",
+      "source": "./apps/score-against-your-icp",
+      "description": "Fit, tier and buying signals with the reasons shown \u2014 rules first, judgement second.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "write-outreach",
       "source": "./apps/write-outreach",
       "description": "Drafts a short first email from one specific thing you actually observed.",

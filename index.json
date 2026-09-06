@@ -18,12 +18,20 @@
       "maintained_by": {
         "name": "freegtm",
         "url": "https://github.com/freegtmapps"
-      }
+      },
+      "requires": {
+        "tools": [
+          "web"
+        ]
+      },
+      "needs_answered": [
+        "product"
+      ]
     },
     {
       "slug": "define-your-icp",
       "name": "Define your ICP",
-      "description": "Who you sell to, built from won deals and real conversations \u2014 refined, not declared.",
+      "description": "Who you sell to, built from won deals and real conversations — refined, not declared.",
       "category": "qualify",
       "version": "1.0.0",
       "license": "MIT",
@@ -40,7 +48,17 @@
       "maintained_by": {
         "name": "freegtm",
         "url": "https://freegtm.ai/freegtm"
-      }
+      },
+      "requires": {
+        "optional": [
+          "crm"
+        ]
+      },
+      "needs_answered": [
+        "best_customers",
+        "company_name",
+        "deal_breakers"
+      ]
     },
     {
       "slug": "handle-the-reply",
@@ -61,12 +79,21 @@
       "maintained_by": {
         "name": "freegtm",
         "url": "https://github.com/freegtmapps"
-      }
+      },
+      "requires": {
+        "optional": [
+          "email.read",
+          "calendar"
+        ]
+      },
+      "needs_answered": [
+        "sender_voice"
+      ]
     },
     {
       "slug": "meeting-brief",
       "name": "Meeting brief",
-      "description": "One page before the call \u2014 who is in the room, what they care about, what to ask.",
+      "description": "One page before the call — who is in the room, what they care about, what to ask.",
       "category": "sell",
       "version": "1.0.0",
       "license": "MIT",
@@ -82,12 +109,22 @@
       "maintained_by": {
         "name": "freegtm",
         "url": "https://github.com/freegtmapps"
-      }
+      },
+      "requires": {
+        "optional": [
+          "crm",
+          "calendar",
+          "web"
+        ]
+      },
+      "needs_answered": [
+        "product"
+      ]
     },
     {
       "slug": "research-the-account",
       "name": "Research the account",
-      "description": "One brief \u2014 who they are, what they sell, what changed, and who runs it.",
+      "description": "One brief — who they are, what they sell, what changed, and who runs it.",
       "category": "find-and-research",
       "version": "1.0.0",
       "license": "MIT",
@@ -104,7 +141,51 @@
       "maintained_by": {
         "name": "freegtm",
         "url": "https://github.com/freegtmapps"
-      }
+      },
+      "requires": {
+        "tools": [
+          "web"
+        ],
+        "optional": [
+          "enrichment",
+          "linkedin",
+          "crm",
+          "github"
+        ]
+      },
+      "needs_answered": [
+        "icp",
+        "product"
+      ]
+    },
+    {
+      "slug": "score-against-your-icp",
+      "name": "Score against your ICP",
+      "description": "Fit, tier and buying signals with the reasons shown — rules first, judgement second.",
+      "category": "qualify",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "is Acme worth the hour?",
+        "score this lead against our ICP"
+      ],
+      "skills": [
+        "icp-score-and-route",
+        "deal-qualification-gates"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "crm"
+        ]
+      },
+      "needs_answered": [
+        "icp",
+        "product"
+      ]
     },
     {
       "slug": "write-outreach",
@@ -120,14 +201,23 @@
       "skills": [
         "reach-out",
         "personalization-6-buckets",
-        "find-the-hook",
-        "first-email"
+        "signal-anchored-message"
       ],
       "maintained_by": {
         "name": "freegtm",
         "url": "https://github.com/freegtmapps"
-      }
+      },
+      "requires": {
+        "optional": [
+          "crm"
+        ]
+      },
+      "needs_answered": [
+        "product",
+        "sender_name",
+        "sender_voice"
+      ]
     }
   ],
-  "count": 6
+  "count": 7
 }

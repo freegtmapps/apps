@@ -1,13 +1,14 @@
-# Why this app is four skills rather than one block of prose.
+# Why this app is separate skills rather than one block of prose.
 #
 # What a person calls "write outreach" is separable pieces of thinking: how to
-# find a hook worth opening with, and how to write a first email that does not
-# read like one. Kept as one file, improving either means editing the other's
-# text — and neither can be credited, versioned, or lifted into another app on
-# its own.
+# route across outreach shapes, what makes a line specific to one person, and
+# how to anchor a message on the thing that surfaced the lead. Kept as one file,
+# improving any of them means editing the others' text — and none could be
+# credited, versioned, or lifted into another app on its own.
 #
-# Two of these are borrowed. Splitting is what lets their authors keep their
-# names on them.
+# ALL OF THEM ARE BORROWED. Splitting is what lets their authors keep their
+# names on them, and it is the whole argument of the registry: an app is other
+# people's thinking, assembled and credited, not prose we wrote and signed.
 name: Write outreach
 description: Drafts a short first email from one specific thing you actually observed.
 category: reach-out
@@ -21,7 +22,7 @@ handler: llm
 # `built_on` is derived from skill frontmatter and can be trusted because the
 # files carry it. Nothing records who put a bundle together, so this is typed —
 # the same category as `adapted` before publish verifies it. freegtm composed
-# these four skills into this app; the thinking in two of them is not ours and
+# these skills into this app; none of the thinking in them is ours and
 # `built_on` says whose.
 maintained_by:
   name: freegtm
@@ -39,14 +40,61 @@ skills:
   # Order is composition order and it decides the credit line, because built_on
   # is first-appearance order. Broad borrowed thinking first, narrowing after:
   # reach-out routes across every outreach shape, personalization-6-buckets says
-  # what makes a line specific, and our two narrow both to drafting one email.
-  # That also makes the line read [Ido Goldberg, Alex Vacca, freegtm] — the two
-  # community authors first, which is the honest order for whose thinking this
-  # mostly is.
+  # what makes a line specific, and signal-anchored-message narrows both to the
+  # one case this app is for — a lead that surfaced from something observed.
+  #
+  # NONE OF THIS THINKING IS OURS, which is the point rather than an accident.
+  # `find-the-hook` and `first-email` were freegtm's and did the jobs two named
+  # authors already do; keeping them would have been us competing with the
+  # contributors we are asking for. built_on now reads three community names and
+  # maintained_by reads freegtm — assembled by us, thought by them.
+  #
+  # `b2b-cold-email-copywriting` (Tim Yakubson) belongs in this list and is not
+  # in it yet. Its body carries {{company}}, {{first_name}}, {{trigger}} and
+  # {{process}}, which are per-lead variables and not workspace values, so
+  # composition refuses outright. Worse, it carries {{industry}} — which IS one
+  # of ours and means the SELLER's industry, where upstream means the lead's. It
+  # substitutes silently and reads perfectly: "Reference their devtools pain."
+  # An upstream PR asking for those to be parameterised is the way in; adapting
+  # his text to fit our substitution would make the credit line say `adapted`
+  # about a rewrite that was ours.
   - reach-out
   - personalization-6-buckets
-  - find-the-hook
-  - first-email
+  - signal-anchored-message
+
+# What this app needs said before it can run.
+#
+# DECLARED BECAUSE IT ALREADY REQUIRES THEM, not to change how they are asked.
+# The prose substitutes {{product}}, {{sender_name}} and {{sender_voice}}, and a
+# workspace value named by a placeholder and left unset REFUSES — so these three
+# are the difference between an app that runs and one that cannot. Without this
+# block `set_context` answered "Write outreach declares: nothing — it asks for no
+# context" about an app that will not compose until three things are said. Two
+# descriptions of one app's needs, and the one a person reads was the wrong one.
+#
+# THIS DOES NOT CHANGE THE ASKING. The registry setup path already asks, keyed on
+# the placeholders rather than on this block: a fresh workspace gets "Write
+# outreach cannot run yet: this workspace has not said what you sell", the exact
+# set_context call, and "Still needed after this: the sender, the sender's
+# voice." That path is why the app was never stuck, and it is unchanged.
+#
+# `icp` is deliberately NOT here. The app reads it — every workspace value it
+# does not substitute arrives in the composed Context section — but it does not
+# require it, and declaring what an app merely benefits from would make this list
+# stop meaning "what must be said before this runs".
+context:
+  - key: product
+    scope: workspace
+    ask: "In one sentence, what do you sell?"
+    type: text
+  - key: sender_name
+    scope: workspace
+    ask: "Who are these emails from?"
+    type: text
+  - key: sender_voice
+    scope: workspace
+    ask: "How does that person write? A sentence describing their style."
+    type: text
 
 may:
   - read

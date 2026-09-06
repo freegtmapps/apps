@@ -1,0 +1,104 @@
+# The first app with a rules/ file, and the reason the mechanism exists.
+#
+# Everything before this either had no gate or declared one nothing could
+# resolve. `rules:` was defined twice — files the engine loads, and names
+# registered in Go — and only the unbuilt half was documented as real, so an app
+# declaring a gate did not skip it: it refused to run and said nothing useful.
+# This app declares one that travels in the bundle, which is what lets it gate
+# on somebody else's server.
+#
+# RULES FIRST, JUDGEMENT SECOND is the whole shape. The gate is deterministic
+# and the scoring is not, so the deterministic half runs where it can be
+# inspected and the model is only asked once the conditions it needs are true.
+name: Score against your ICP
+description: Fit, tier and buying signals with the reasons shown — rules first, judgement second.
+category: qualify
+type: scoring
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+# `say:` DEVIATES FROM THE CATALOGUE BY ONE LINE, deliberately and visibly.
+#
+# APP-CATALOG gives this app "score this lead" as well, and that sentence already
+# belongs to the launch set's `Score`. Two apps answering to one sentence is the
+# ambiguity this codebase refuses everywhere else — a reference name owned by two
+# skills is a load error for exactly this reason — and find_apps has to rank one
+# of them first with nothing to justify the choice.
+#
+# The collision is the signal that `Score` is what this app supersedes, which is
+# a retirement decision rather than mine to take in a manifest. Restore the line
+# when Score is retired.
+say:
+  - "is Acme worth the hour?"
+  - "score this lead against our ICP"
+
+# Order is composition order and it decides the credit line. icp-score-and-route
+# makes the fit decision and says where the lead goes next; deal-qualification-
+# gates applies the qualification discipline after it. built_on reads
+# [Udi Cohen, Rutger Katz] — none of the thinking is ours.
+#
+# `account-tier-scoring` (Amos Bar-Joseph) is in APP-CATALOG's line for this app
+# and is NOT here. Its body carries 45 uppercase template tokens — CRM,
+# SALES_OWNER, ALERTS_CHANNEL, ENTERPRISE_THRESHOLD and more, each wrapped in
+# double braces — which are an org's configuration rather than a workspace value
+# we hold. Substitution is case-sensitive, so they do not silently take our
+# `crm`; they reach the model verbatim, braces and all, which is a prompt telling
+# a model to read a variable nobody filled. An upstream PR asking for them to be
+# parameterised is the way in, the same route b2b-cold-email-copywriting waits on.
+#
+# The token names above are written WITHOUT their braces on purpose. A comment
+# quoting the exact syntax a checker hunts for is a landmine for the next person
+# grepping raw file text — it reads as the app carrying them.
+skills:
+  - icp-score-and-route
+  - deal-qualification-gates
+
+# The gate that gives this app its place in the launch order.
+rules:
+  - icp-gate.yaml
+
+may:
+  - read
+  - write_lead
+  - emit
+
+requires:
+  optional:
+    tools: [crm]
+
+# What must be said before this runs. `icp` and nothing else: the app reads the
+# product and the industry where they are set, but it can score without them and
+# it cannot score without an ICP. A list that mixed requirements with things the
+# app merely benefits from would stop meaning "what must be said before this
+# runs".
+context:
+  - key: icp
+    scope: workspace
+    ask: "Who do you sell to? A sentence is enough to start."
+    type: text
+
+emits:
+  # Raised by the model when it reaches a decision.
+  - score.passed
+  - score.failed
+  # Raised by icp-gate.yaml when it refuses. Declared here even though a rule is
+  # its own manifest and evalPreRules does not check it against this list —
+  # because `emits:` should mean everything this app can raise, and a signal no
+  # manifest names is somebody working out where it came from.
+  - score.blocked
+
+instructions: |-
+  Decide whether this lead is a good fit for {{product}}.
+
+  Work from what the signal and the lead actually say. Do not infer the ICP —
+  it is in your context and the gate ahead of you has already refused to run
+  without it.
+
+  Set the lead's score and stage with update_lead, giving the reason you would
+  defend out loud. Then emit score.passed if it is worth pursuing, or
+  score.failed if it is not. Emit exactly one of them.
