@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+"""Fail if any generated file disagrees with the manifests it is derived from.
+
+THE FILE THIS REPLACES SAID CI ALREADY DID THIS. `tools/build-index` carried
+"CI regenerates and commits the result" and "CI fails a commit that changes them
+by hand" from the day it was written, while `.github/workflows` was empty — a
+claim a document made about itself with nothing to check it, which is the same
+shape as a manifest declaring a rule no engine resolved.
+
+The gap is real: edit a manifest, skip the generators, and index.json,
+marketplace.json and every plugin.json go on describing the previous state.
+Nothing anywhere says so. A stale catalogue is not a cosmetic problem — it is
+what a person browsing reads to decide whether an app will work for them, and
+`needs_answered` is exactly the field they would be misled about.
+
+This regenerates into a COPY of the repo and diffs. It never writes into the
+working tree, so running it locally cannot destroy an edit in progress or hand a
+concurrent session a file it did not write.
+
+Usage:
+    tools/check-generated [--gtmsrv PATH]
+
+index.json comes from the loader (gtmsrv/cmd/appindex) because two of its fields
+cannot be derived from a manifest alone; the rest comes from tools/build-index.
+Both are run here, because a check that covers one generator is a check somebody
+will believe covers both.
+"""
+import argparse, filecmp, os, shutil, subprocess, sys, tempfile
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+GENERATED = ["index.json", os.path.join(".claude-plugin", "marketplace.json")]
+
+
+def plugin_jsons(root):
+    out = []
+    apps = os.path.join(root, "apps")
+    for name in sorted(os.listdir(apps)):
+        p = os.path.join("apps", name, ".claude-plugin", "plugin.json")
+        if os.path.isfile(os.path.join(root, p)):
+            out.append(p)
+    return out
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--gtmsrv", default=os.environ.get("GTMSRV", os.path.join(ROOT, "..", "gtmsrv")))
+    args = ap.parse_args()
+
+    gtmsrv = os.path.abspath(args.gtmsrv)
+    if not os.path.isfile(os.path.join(gtmsrv, "go.mod")):
+        # LOUD, never skipped. "The index generator was unavailable" and "the
+        # index is correct" must not produce the same exit code, or this check
+        # reports green on the one occasion it was needed.
+        print(f"cannot check index.json: no Go module at {gtmsrv}", file=sys.stderr)
+        print("pass --gtmsrv PATH or set GTMSRV. This is a failure, not a skip: "
+              "index.json carries fields only the loader can derive.", file=sys.stderr)
+        return 2
+
+    with tempfile.TemporaryDirectory() as tmp:
+        work = os.path.join(tmp, "repo")
+        shutil.copytree(ROOT, work, ignore=shutil.ignore_patterns(".git"))
+
+        r = subprocess.run([sys.executable, os.path.join(work, "tools", "build-index")],
+                           capture_output=True, text=True)
+        if r.returncode != 0:
+            print(r.stdout + r.stderr, file=sys.stderr)
+            return 1
+        r = subprocess.run(["go", "run", "./cmd/appindex",
+                            os.path.join(work, "apps"), os.path.join(work, "index.json")],
+                           cwd=gtmsrv, capture_output=True, text=True)
+        if r.returncode != 0:
+            print(r.stdout + r.stderr, file=sys.stderr)
+            return 1
+
+        stale = []
+        for rel in GENERATED + plugin_jsons(ROOT):
+            committed, fresh = os.path.join(ROOT, rel), os.path.join(work, rel)
+            if not os.path.isfile(fresh):
+                stale.append((rel, "was not regenerated at all"))
+            elif not filecmp.cmp(committed, fresh, shallow=False):
+                stale.append((rel, "differs from what the manifests produce"))
+
+        # A generated file that exists in the copy and NOT in the repo is the
+        # case a plain diff of tracked files misses: a new app whose plugin.json
+        # was never committed.
+        for rel in plugin_jsons(work):
+            if not os.path.isfile(os.path.join(ROOT, rel)):
+                stale.append((rel, "is missing from the repository"))
+
+    if stale:
+        print("generated files are out of date:", file=sys.stderr)
+        for rel, why in stale:
+            print(f"  {rel} {why}", file=sys.stderr)
+        print("\nRegenerate both, and commit the result:", file=sys.stderr)
+        print("  python3 tools/build-index", file=sys.stderr)
+        print(f"  (cd {os.path.relpath(gtmsrv, ROOT)} && go run ./cmd/appindex "
+              f"{os.path.relpath(ROOT, gtmsrv)}/apps {os.path.relpath(ROOT, gtmsrv)}/index.json)",
+              file=sys.stderr)
+        return 1
+
+    print(f"generated files are current ({len(GENERATED) + len(plugin_jsons(ROOT))} checked)")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

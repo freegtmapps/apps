@@ -1,0 +1,87 @@
+# Fail a pull request whose generated files do not match its manifests.
+#
+# WHAT THIS REPLACES IS A SENTENCE. `tools/build-index` claimed "CI regenerates
+# and commits the result" and "CI fails a commit that changes them by hand" from
+# the day it was written, with this directory empty. The outputs were correct
+# only because one person regenerated them by hand each time, which is a habit
+# rather than a check, and habits do not survive a contributor.
+#
+# It checks rather than commits, and that is a decision with a trigger attached
+# rather than a preference.
+#
+# A workflow that regenerates and pushes makes every PR's diff partly the bot's,
+# and a contributor cannot tell which half a reviewer approved. That cost is paid
+# on every pull request. The benefit — sparing somebody from running Go — is paid
+# today to nobody: there are no external contributors, and the people who do work
+# here already run `validate`, which needs the same toolchain.
+#
+# THE DAY SOMEBODY OUTSIDE OPENS A PR AND CANNOT RUN THESE TOOLS, add a
+# regenerate-and-commit job that pushes to main rather than into their branch.
+# That gets both properties, and the trigger for building it is a person who
+# actually turned up rather than a prediction about one. Until then this stays a
+# check, and the two commands in its failure message are the whole remedy.
+#
+# INDEX.JSON NEEDS THE LOADER, so this checks out gtmsrv as well. Two of its
+# fields cannot be derived from a manifest alone: `requires`, and
+# `needs_answered` — which is taken from composing an app against an empty
+# workspace and reading what the composer refuses on, rather than from matching
+# braces in the text. The scan version of that is how a vendored skill reached a
+# model carrying 45 unfilled `{{CRM}}`-style tokens that two purpose-built checks
+# had both called clean.
+#
+# NOT YET RUNNABLE, AND SAYING SO IS THE POINT. gtmsrv is a separate repository,
+# so this needs a checkout credential — `secrets.GTMSRV_READ_TOKEN` below — that
+# does not exist yet. Until it does this workflow fails, loudly, on every run.
+# That is the correct state: a check that skipped when its credential was absent
+# would report green on exactly the repository that had not been set up, and the
+# claim it replaces was already a green-looking absence.
+name: generated files
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: apps
+
+      - uses: actions/checkout@v4
+        with:
+          repository: freegtmapps/gtmsrv
+          token: ${{ secrets.GTMSRV_READ_TOKEN }}
+          path: gtmsrv
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: gtmsrv/go.mod
+
+      # python3 is preinstalled on ubuntu-latest, and tools/build-index takes no
+      # dependencies on purpose — a public repo's generator is a supply chain.
+      - name: generated files match the manifests
+        working-directory: apps
+        run: python3 tools/check-generated --gtmsrv ../gtmsrv
+
+      # Every app must also be loadable and publishable, which is the check that
+      # actually reads the schema. A manifest can be well-formed YAML, produce a
+      # perfectly current index entry, and still be refused at load.
+      - name: every app validates
+        working-directory: gtmsrv
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          found=0
+          for app in ../apps/apps/*/; do
+            found=$((found + 1))
+            echo "── $(basename "$app")"
+            go run ./cmd/validate "$app"
+          done
+          # "Validated every app" and "matched no directories" are the same
+          # output otherwise, and the loop would report success having read
+          # nothing.
+          test "$found" -gt 0 || { echo "no apps matched: the glob is wrong, not the catalogue empty"; exit 1; }
+          echo "validated $found app(s)"
