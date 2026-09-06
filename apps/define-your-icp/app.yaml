@@ -1,0 +1,108 @@
+# The demo app (DEMO-APP.md), and the first bundle whose credits are entirely
+# other people's: Rutger Katz, Erwann Lefevre and Tanyo Gochev, none of them us.
+#
+# Its job IS context — it asks, remembers, writes workspace values other apps
+# then read. So it exercises the memory layer rather than describing it.
+name: Define your ICP
+description: Who you sell to, built from won deals and real conversations — refined, not declared.
+category: qualify
+type: icp
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://freegtm.ai/freegtm
+
+say:
+  - "help me define our ICP"
+  - "who are we actually winning with?"
+  - "set up who we sell to"
+
+# Order is composition order: the method first, then how to find evidence for it,
+# then how to lay the result out.
+skills:
+  - icp-builder
+  - won-deal-icp-finder
+  - icp-matrix-builder
+
+# `rules:` IS DELIBERATELY ABSENT, and this is not an omission.
+#
+# DEMO-APP.md §1 asks for `rules: [icp-required-fields.yaml]`. No rule of that
+# name is registered — nothing calls RegisterRule anywhere in this tree — and
+# engine.evalPreRules FAILS CLOSED on an unregistered rule: it does not skip the
+# gate, it returns an error and the app does not run at all. Declaring it would
+# not make step 6 partially work; it would make every step fail.
+#
+# So the completion gate lives in `instructions` for now, where a model enforces
+# it rather than a rule engine, and §4 step 6 is recorded unmet.
+
+# `learning:` IS ALSO ABSENT for a harder reason: it is not a field on
+# domain.App, so a strict manifest decode refuses the whole file. Steps 9 and 15
+# are recorded unmet rather than approximated.
+
+requires:
+  optional:
+    tools: [crm]
+
+may:
+  - read
+  - write_lead
+  - emit
+
+emits:
+  - icp.updated
+  - icp.blocked
+
+context:
+  # Workspace-scoped: every later app reads these, so nobody is asked twice.
+  - key: product
+    scope: workspace
+    ask: "In one sentence, what do you sell?"
+    type: text
+  - key: industry
+    scope: workspace
+    ask: "What industry are you selling into?"
+    type: text
+  - key: regions
+    scope: workspace
+    ask: "Which regions matter?"
+    type: list
+  - key: icp
+    scope: workspace
+    ask: "Do you already have an ICP written down? Paste it, or say no."
+    type: text
+  # App-scoped: only this app cares.
+  - key: best_customers
+    scope: app
+    ask: "Name three customers you'd clone if you could."
+    type: list
+    # infer_from: [crm] is omitted — the field exists on ContextKey and NOTHING
+    # READS IT, so declaring it would promise a CRM-first fill that never
+    # happens. §4 step 4's inference half is recorded unmet; the ask still works.
+  - key: deal_breakers
+    scope: app
+    ask: "Who should we never sell to, even if they ask?"
+    type: list
+  - key: refresh_cadence
+    scope: app
+    ask: "How often should I re-check the ICP against new won deals?"
+    type: enum
+    options: [monthly, quarterly, never]
+
+instructions: |-
+  You are defining who {{company_name}} sells to. Work from evidence — won deals,
+  named customers, real conversations — never from a generic template.
+
+  Fill what you do not know by asking, one question at a time, in the order this
+  app declares. Skip anything already known. If you can reach a CRM, read
+  closed-won before asking for examples, and say which you used.
+
+  An ICP is not finished until it has a segment, a persona, a deal-breaker and at
+  least one won-deal example. Until all four exist, do not write it: stage a
+  question with stage_draft saying exactly which is missing.
+
+  When it is complete, write it with set_context(key: "icp") in 200 words or
+  fewer, then emit_signal(icp.updated). If you cannot complete it, emit
+  icp.blocked and say what stopped you.
