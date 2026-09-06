@@ -1,20 +1,13 @@
-# The second app converted to a bundle (APP-BUNDLE §8), and the first with more
-# than one skill.
+# Why this app is four skills rather than one block of prose.
 #
-# Converted, reverted, and converted again. The first attempt moved "one specific
-# hook … no flattery, no invented facts, under 120 words" out of the prompt while
-# nothing composed skill bodies, which would have shipped an app that drafts with
-# no length limit and no required structure — a live behaviour change arriving as
-# worse emails rather than as an error. It went back to a single file until §3
-# composed skills, and the check that let it convert was reading the composed
-# text and finding that sentence in it.
+# What a person calls "write outreach" is separable pieces of thinking: how to
+# find a hook worth opening with, and how to write a first email that does not
+# read like one. Kept as one file, improving either means editing the other's
+# text — and neither can be credited, versioned, or lifted into another app on
+# its own.
 #
-# Research proved a bundle loads. This one is the reason bundles exist: the
-# thing a person calls "write outreach" is two separable pieces of thinking —
-# how to find a hook worth opening with, and how to write a first email that
-# does not read like one. They were one block of prose here, which meant
-# improving either meant editing the other's text, and neither could be
-# credited, versioned or lifted into another app on its own.
+# Two of these are borrowed. Splitting is what lets their authors keep their
+# names on them.
 name: Write outreach
 description: Drafts a short first email from one specific thing you actually observed.
 category: reach-out
@@ -50,12 +43,6 @@ skills:
   # That also makes the line read [Ido Goldberg, Alex Vacca, freegtm] — the two
   # community authors first, which is the honest order for whose thinking this
   # mostly is.
-  #
-  # THIS COMPOSES AT 10246 STATIC, over the 10k figure in APP-BUNDLE §10 — a
-  # figure Andrew has ruled unexamined and asked to be derived from the library's
-  # own distribution. Nothing in code enforces it. Restored for backend-3's live
-  # run, which reports both numbers; the shipping decision waits on the derived
-  # one rather than on the undocumented one.
   - reach-out
   - personalization-6-buckets
   - find-the-hook
