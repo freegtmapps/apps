@@ -1,0 +1,8 @@
+# Everything is reviewed by the freegtm team by default.
+* @freegtmapps/maintainers
+
+# Per-app owners are added as apps gain them. An app's owner reviews changes to
+# its bundle; the team still reviews anything that changes the schema, the
+# tooling, or another app's credits.
+#
+# /apps/write-outreach/  @someone

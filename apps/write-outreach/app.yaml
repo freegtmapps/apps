@@ -1,0 +1,105 @@
+# The second app converted to a bundle (APP-BUNDLE §8), and the first with more
+# than one skill.
+#
+# Converted, reverted, and converted again. The first attempt moved "one specific
+# hook … no flattery, no invented facts, under 120 words" out of the prompt while
+# nothing composed skill bodies, which would have shipped an app that drafts with
+# no length limit and no required structure — a live behaviour change arriving as
+# worse emails rather than as an error. It went back to a single file until §3
+# composed skills, and the check that let it convert was reading the composed
+# text and finding that sentence in it.
+#
+# Research proved a bundle loads. This one is the reason bundles exist: the
+# thing a person calls "write outreach" is two separable pieces of thinking —
+# how to find a hook worth opening with, and how to write a first email that
+# does not read like one. They were one block of prose here, which meant
+# improving either meant editing the other's text, and neither could be
+# credited, versioned or lifted into another app on its own.
+name: Write outreach
+description: Drafts a short first email from one specific thing you actually observed.
+category: reach-out
+type: outreach
+version: 1.0.0
+license: MIT
+handler: llm
+
+# Who assembled this app, as a claim rather than a derivation.
+#
+# `built_on` is derived from skill frontmatter and can be trusted because the
+# files carry it. Nothing records who put a bundle together, so this is typed —
+# the same category as `adapted` before publish verifies it. freegtm composed
+# these four skills into this app; the thinking in two of them is not ours and
+# `built_on` says whose.
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "write outreach for this lead"
+  - "draft a first email"
+
+# ORDER IS COMPOSITION ORDER, and it is the reason this list is hand-written
+# rather than globbed. The hook is chosen before the email is written, and a
+# bundle that composed them the other way round would produce a model that has
+# been told how to write before it has been told what to say.
+skills:
+  # Order is composition order and it decides the credit line, because built_on
+  # is first-appearance order. Broad borrowed thinking first, narrowing after:
+  # reach-out routes across every outreach shape, personalization-6-buckets says
+  # what makes a line specific, and our two narrow both to drafting one email.
+  # That also makes the line read [Ido Goldberg, Alex Vacca, freegtm] — the two
+  # community authors first, which is the honest order for whose thinking this
+  # mostly is.
+  #
+  # THIS COMPOSES AT 10246 STATIC, over the 10k figure in APP-BUNDLE §10 — a
+  # figure Andrew has ruled unexamined and asked to be derived from the library's
+  # own distribution. Nothing in code enforces it. Restored for backend-3's live
+  # run, which reports both numbers; the shipping decision waits on the derived
+  # one rather than on the undocumented one.
+  - reach-out
+  - personalization-6-buckets
+  - find-the-hook
+  - first-email
+
+may:
+  - read
+  - stage
+  - emit
+
+requires:
+  optional:
+    tools: [crm]
+
+# The app's own framing stays here: what it emits is a fact about how this
+# workspace's plays are wired, not part of anybody's transferable thinking.
+#
+# Write outreach declared nothing, on the reasoning that staging is a platform
+# action and needs no emission. A live run showed the gap: it drafted something
+# it did not trust, wanted to say so, and reported "this step can't emit
+# signals, so the verification request lives in the lead notes rather than
+# routing onward." A draft that must not be sent yet is a different outcome from
+# one that is ready, and only a signal can carry that difference.
+emits:
+  # `outreach.drafted` was here and is deliberately gone.
+  #
+  # stage_draft already emits `draft.staged` FROM INSIDE THE TOOL, carrying the
+  # approval_id, and one call makes both — so it cannot announce a draft that
+  # does not exist. A play in seed.go triggers on it. `outreach.drafted` was
+  # model-emitted, had no consumer anywhere, and lied during a live run: an
+  # `outreach.drafted` with a failed stage_draft behind it. A signal a model
+  # raises alongside a tool that raises its own is a second, weaker account of
+  # the same event, and the weaker one is the one that can be wrong.
+  #
+  # `outreach.blocked` stays, and the difference is the whole rule: it announces
+  # a NON-EVENT. Nothing else knows the draft was withheld, because withholding
+  # leaves no row. That is when a declared emit earns its place — when it is the
+  # only way the thing can be known.
+  - outreach.blocked
+
+instructions: |-
+  Draft a short first email from {{sender_name}}.
+
+  What we sell: {{product}}
+  How {{sender_name}} writes: {{sender_voice}}
+
+  Stage it with stage_draft. A human reads every draft before anything is sent.
