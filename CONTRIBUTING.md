@@ -79,3 +79,23 @@ tools/validate apps/<slug>
 
 This is **the same code the registry runs** when it accepts a bundle, not a
 second implementation of the rules. Green here means the registry will take it.
+
+## A skill is keyed by `(author, name)`, never by name alone
+
+Two authors will use the same word. `research` already collided — the library
+has Ido Goldberg's and ours, and a tool that matched on name alone gave **our
+five-line skill his description**: `author: freegtm`, description his, both
+fields populated, the schema satisfied, no test able to see it. A nine-page
+routing method promised by a skill that does not do it.
+
+`first-email`, `find-the-hook`, `icp-builder` and `icp-matrix-builder` are all
+words a second contributor will plausibly pick.
+
+**So any tool that looks a skill up across more than one author's work must key
+on the pair.** That includes `vendor-skill` when it fetches, anything that
+matches a vendored file back to its source, and any index that joins on skill
+name. Within one bundle a name is unique and that is fine; the moment a lookup
+crosses authors, the name stops being a key.
+
+The failure is quiet by construction: both records are well formed and only a
+person reading them can tell that the wrong one was chosen.

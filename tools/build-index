@@ -46,6 +46,12 @@ def read_manifest(path):
 
 
 def apps():
+    # Keyed by directory, which is unique in this repo. NOTE for whoever writes
+    # vendor-skill or anything that joins on skill name across authors: a skill
+    # is keyed by (author, name), never name alone — `research` already exists
+    # twice in the library, and a name-only lookup gave our skill somebody
+    # else's description with every field well formed. See CONTRIBUTING.
+
     for name in sorted(os.listdir(APPS)):
         p = os.path.join(APPS, name, "app.yaml")
         if os.path.isfile(p):
