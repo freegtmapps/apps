@@ -1,6 +1,26 @@
 {
   "apps": [
     {
+      "slug": "battlecard",
+      "name": "Battlecard",
+      "description": "Positioning, weaknesses and objection handling against a named competitor.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "battlecard for Sourcegraph",
+        "how do we beat Clay?"
+      ],
+      "skills": [
+        "competitor-intel",
+        "competitor-positioning"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      }
+    },
+    {
       "slug": "define-your-icp",
       "name": "Define your ICP",
       "description": "Who you sell to, built from won deals and real conversations \u2014 refined, not declared.",
@@ -20,6 +40,48 @@
       "maintained_by": {
         "name": "freegtm",
         "url": "https://freegtm.ai/freegtm"
+      }
+    },
+    {
+      "slug": "handle-the-reply",
+      "name": "Handle the reply",
+      "description": "Classify what came back, draft the right answer, or stop the sequence.",
+      "category": "handle-replies",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "Sam replied, what do I say?",
+        "classify these replies"
+      ],
+      "skills": [
+        "reply-pull-gate",
+        "auto-reply-is-not-a-reply",
+        "stage-aware-follow-up"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      }
+    },
+    {
+      "slug": "meeting-brief",
+      "name": "Meeting brief",
+      "description": "One page before the call \u2014 who is in the room, what they care about, what to ask.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "prep me for the Acme call",
+        "brief for tomorrow's 10am"
+      ],
+      "skills": [
+        "meeting-prep",
+        "discovery-to-demo-bridge",
+        "account-research-brief"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
       }
     },
     {
@@ -67,5 +129,5 @@
       }
     }
   ],
-  "count": 3
+  "count": 6
 }

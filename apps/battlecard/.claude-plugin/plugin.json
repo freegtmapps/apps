@@ -1,0 +1,8 @@
+{
+  "name": "battlecard",
+  "description": "Positioning, weaknesses and objection handling against a named competitor.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

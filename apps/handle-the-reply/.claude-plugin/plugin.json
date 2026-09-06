@@ -1,0 +1,8 @@
+{
+  "name": "handle-the-reply",
+  "description": "Classify what came back, draft the right answer, or stop the sequence.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

@@ -7,9 +7,36 @@
   },
   "plugins": [
     {
+      "name": "battlecard",
+      "source": "./apps/battlecard",
+      "description": "Positioning, weaknesses and objection handling against a named competitor.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "define-your-icp",
       "source": "./apps/define-your-icp",
       "description": "Who you sell to, built from won deals and real conversations \u2014 refined, not declared.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "handle-the-reply",
+      "source": "./apps/handle-the-reply",
+      "description": "Classify what came back, draft the right answer, or stop the sequence.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "meeting-brief",
+      "source": "./apps/meeting-brief",
+      "description": "One page before the call \u2014 who is in the room, what they care about, what to ask.",
       "version": "1.0.0",
       "author": {
         "name": "freegtm"

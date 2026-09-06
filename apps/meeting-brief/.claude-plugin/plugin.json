@@ -1,0 +1,8 @@
+{
+  "name": "meeting-brief",
+  "description": "One page before the call \u2014 who is in the room, what they care about, what to ask.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}
