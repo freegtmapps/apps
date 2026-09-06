@@ -1,0 +1,28 @@
+{
+  "$schema": "https://code.claude.com/schemas/marketplace.json",
+  "name": "freegtmapps",
+  "owner": {
+    "name": "freegtm",
+    "url": "https://github.com/freegtmapps"
+  },
+  "plugins": [
+    {
+      "name": "define-your-icp",
+      "source": "./apps/define-your-icp",
+      "description": "Who you sell to, built from won deals and real conversations \u2014 refined, not declared.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "write-outreach",
+      "source": "./apps/write-outreach",
+      "description": "Drafts a short first email from one specific thing you actually observed.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    }
+  ]
+}

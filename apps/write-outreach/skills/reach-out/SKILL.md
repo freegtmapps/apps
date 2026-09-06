@@ -1,5 +1,6 @@
 ---
 name: reach-out
+description: "Use this skill whenever creating outreach — a cold email, a LinkedIn message, a follow-up, or a multi-step sequence — for a company, a contact, a list, or a signal. Use it even when the user doesn't say 'outreach': any request to write to, contact, message, or get in front of a prospect or…"
 author: Ido Goldberg
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/ido-goldberg/reach-out/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

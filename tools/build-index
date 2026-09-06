@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+"""Generate index.json, marketplace.json and each app's plugin.json.
+
+app.yaml IS THE ONLY HAND-WRITTEN METADATA. Everything this writes is derived
+from it, and CI regenerates and commits the result — so the plugin door and the
+connector door describe the same app because they are projections of one file,
+not two files somebody keeps in step.
+
+Never edit the outputs. CI fails a commit that changes them by hand, for the
+same reason `built_on` is derived rather than typed: two descriptions of one
+thing agree until somebody edits one, and the disagreement is invisible.
+"""
+import json, os, sys, re
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+APPS = os.path.join(ROOT, "apps")
+
+
+def read_manifest(path):
+    """A deliberately small YAML reader: the fields the index needs, nothing more.
+
+    Not a YAML library, because this runs in CI on a public repo and a
+    dependency is a supply chain. The loader in gtmsrv does the real parsing and
+    `validate` is what enforces the schema — this only projects what it finds,
+    and anything it cannot read it leaves out rather than guessing.
+    """
+    out, key = {}, None
+    for line in open(path, encoding="utf-8"):
+        if line.startswith("#") or not line.strip():
+            continue
+        m = re.match(r"^([a-z_]+):\s*(.*)$", line)
+        if m:
+            key, val = m.group(1), m.group(2).strip()
+            out[key] = val.strip('"') if val else []
+            continue
+        m = re.match(r"^\s+-\s+(.*)$", line)
+        if m and isinstance(out.get(key), list):
+            out[key].append(m.group(1).strip().strip('"'))
+            continue
+        m = re.match(r"^\s+([a-z_]+):\s*(.*)$", line)
+        if m and key in ("maintained_by",):
+            if not isinstance(out[key], dict):
+                out[key] = {}
+            out[key][m.group(1)] = m.group(2).strip().strip('"')
+    return out
+
+
+def apps():
+    for name in sorted(os.listdir(APPS)):
+        p = os.path.join(APPS, name, "app.yaml")
+        if os.path.isfile(p):
+            yield name, read_manifest(p)
+
+
+def main():
+    entries, plugins = [], []
+    for slug, m in apps():
+        who = m.get("maintained_by") or {}
+        entry = {
+            "slug": slug,
+            "name": m.get("name", slug),
+            "description": m.get("description", ""),
+            "category": m.get("category", ""),
+            "version": m.get("version", ""),
+            "license": m.get("license", ""),
+            "say": m.get("say", []),
+            "skills": m.get("skills", []),
+            "maintained_by": who,
+        }
+        entries.append(entry)
+        plugin = {
+            "name": slug,
+            "source": f"./apps/{slug}",
+            "description": entry["description"],
+            "version": entry["version"],
+        }
+        if who.get("name"):
+            plugin["author"] = {"name": who["name"]}
+        plugins.append(plugin)
+
+        # Each app is also a plugin in its own right.
+        pdir = os.path.join(APPS, slug, ".claude-plugin")
+        os.makedirs(pdir, exist_ok=True)
+        pj = {"name": slug, "description": entry["description"], "version": entry["version"]}
+        if who.get("name"):
+            pj["author"] = {"name": who["name"]}
+        write(os.path.join(pdir, "plugin.json"), pj)
+
+    write(os.path.join(ROOT, "index.json"), {"apps": entries, "count": len(entries)})
+    write(os.path.join(ROOT, ".claude-plugin", "marketplace.json"), {
+        "$schema": "https://code.claude.com/schemas/marketplace.json",
+        "name": "freegtmapps",
+        "owner": {"name": "freegtm", "url": "https://github.com/freegtmapps"},
+        "plugins": plugins,
+    })
+    print(f"generated index.json, marketplace.json and {len(plugins)} plugin.json")
+
+
+def write(path, obj):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(obj, f, indent=2)
+        f.write("\n")
+
+
+if __name__ == "__main__":
+    sys.exit(main())

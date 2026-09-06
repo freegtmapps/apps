@@ -1,5 +1,6 @@
 ---
 name: find-the-hook
+description: "Pick the one specific thing that makes this lead worth contacting now, from evidence rather than a template."
 author: freegtm
 license: MIT
 ---

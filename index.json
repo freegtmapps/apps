@@ -1,0 +1,49 @@
+{
+  "apps": [
+    {
+      "slug": "define-your-icp",
+      "name": "Define your ICP",
+      "description": "Who you sell to, built from won deals and real conversations \u2014 refined, not declared.",
+      "category": "qualify",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "help me define our ICP",
+        "who are we actually winning with?",
+        "set up who we sell to"
+      ],
+      "skills": [
+        "icp-builder",
+        "won-deal-icp-finder",
+        "icp-matrix-builder"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://freegtm.ai/freegtm"
+      }
+    },
+    {
+      "slug": "write-outreach",
+      "name": "Write outreach",
+      "description": "Drafts a short first email from one specific thing you actually observed.",
+      "category": "reach-out",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "write outreach for this lead",
+        "draft a first email"
+      ],
+      "skills": [
+        "reach-out",
+        "personalization-6-buckets",
+        "find-the-hook",
+        "first-email"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      }
+    }
+  ],
+  "count": 2
+}

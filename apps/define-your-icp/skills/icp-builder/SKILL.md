@@ -1,5 +1,6 @@
 ---
 name: icp-builder
+description: "Build, validate, or expand your ICP (Ideal Customer Profile) using the GAP method, SPICED framework, and customer interview pipeline. Triggers on 'build your ICP,' 'check your ICP,' 'ICP validation,' 'ICP quality,' 'you don't have an ICP,' 'ICP is too broad,' 'who should we sell to,' 'segment…"
 author: Rutger Katz
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/rutger-katz/icp-builder/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

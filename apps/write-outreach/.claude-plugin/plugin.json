@@ -1,0 +1,8 @@
+{
+  "name": "write-outreach",
+  "description": "Drafts a short first email from one specific thing you actually observed.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

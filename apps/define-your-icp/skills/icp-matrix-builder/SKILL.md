@@ -1,5 +1,6 @@
 ---
 name: icp-matrix-builder
+description: "Use this skill when targeting needs to become a decision rule instead of a description — before launching outbound for a new company or product line, when refining targeting after the first campaign data lands, when expanding into a new vertical, or when a list is producing replies from people…"
 author: Tanyo Gochev
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/tanyo-gochev/icp-matrix-builder/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

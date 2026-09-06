@@ -1,5 +1,6 @@
 ---
 name: first-email
+description: "Write a short first email in three moves — hook, relevance, one low-friction ask — under 120 words."
 author: freegtm
 license: MIT
 ---
