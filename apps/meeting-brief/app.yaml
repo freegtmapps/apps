@@ -1,0 +1,83 @@
+# One page before the call, from three people who prepare differently.
+#
+# Alon Goldenberg's meeting-prep is the shape of the page. Gal Aga's bridge is
+# the part most briefs miss — what you learned in discovery has to survive into
+# the demo, or the demo is a product tour. Amir Baldiga's brief is the
+# compression, and it is the same file Research the account carries: one skill
+# can belong to two apps, which is the point of skills being separable at all.
+#
+# built_on reads Alon Goldenberg, Gal Aga, Amir Baldiga.
+name: Meeting brief
+description: One page before the call — who is in the room, what they care about, what to ask.
+category: sell
+type: brief
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "prep me for the Acme call"
+  - "brief for tomorrow's 10am"
+
+skills:
+  - meeting-prep
+  - discovery-to-demo-bridge
+  - account-research-brief
+
+may:
+  - read
+  - write_lead
+
+requires:
+  optional:
+    tools: [crm, calendar, web]
+
+emits:
+  - brief.blocked
+
+context:
+  - key: product
+    scope: workspace
+    ask: "In one sentence, what do you sell?"
+    type: text
+  - key: methodology
+    scope: app
+    ask: "Do you run a named sales methodology — MEDDIC, Command of the Message, something of your own? Say no if not."
+    type: text
+
+instructions: |-
+  Write one page a person can read in the two minutes before a call.
+
+  What we sell: {{product}}
+
+  Work from what is on the lead and what you can reach. Name what you could not
+  find rather than filling it in — a brief that invents an attendee's priority
+  is worse than one that says the priority is unknown, because the first gets
+  repeated out loud in the meeting.
+
+  Write it to the lead with update_lead.
+
+# `methodology` IS APP-SCOPED AND NOT SUBSTITUTED, and both were refusals.
+#
+# The loader refused `{{methodology}}`: the placeholder vocabulary is closed to
+# what every workspace can fill, and a manifest inventing one would compose a
+# prompt with a literal `{{methodology}}` in it for anybody who had not set it.
+#
+# Declared workspace values reach the prompt through the Context section
+# instead, for every app, whether or not its prose names the key. That path was
+# added because substitution-only delivery quietly means "every later app that
+# NAMES the value" — which is not what "every later app reads it" claims.
+#
+# The workspace key vocabulary is CLOSED — company_name, crm, icp, industry,
+# product, regions, sender_name, sender_voice — and the loader refuses a
+# manifest inventing one, because a workspace-scoped key nothing reads from the
+# profile would be asked for and then dropped. Silently: the person answers, and
+# the answer goes nowhere.
+#
+# So `methodology` is app-scoped, which is the honest state rather than a
+# workaround. If a second app ever needs it, that is the moment to argue for a
+# ninth workspace key — not now, on one app's say-so.

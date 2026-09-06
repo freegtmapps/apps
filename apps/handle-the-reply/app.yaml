@@ -1,0 +1,82 @@
+# Three people who disagree about what a reply IS, which is the whole app.
+#
+# Nadav David's gate decides whether a reply is a pull worth acting on. Lucas
+# Godtfredsen's says the thing everybody's first version gets wrong: an
+# out-of-office and a bounce are not replies, and counting them is how a team
+# ends up reporting a reply rate it does not have. Tanyo Gochev's decides what
+# to send next given where the deal already is.
+#
+# Order is composition order, so `built_on` reads Nadav David, Lucas
+# Godtfredsen, Tanyo Gochev. Classify before answering: a follow-up written
+# before the reply has been understood is a follow-up to something else.
+name: Handle the reply
+description: Classify what came back, draft the right answer, or stop the sequence.
+category: handle-replies
+type: reply
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "Sam replied, what do I say?"
+  - "classify these replies"
+
+skills:
+  - reply-pull-gate
+  - auto-reply-is-not-a-reply
+  - stage-aware-follow-up
+
+may:
+  - read
+  - write_lead
+  - stage
+
+# NO `rules:` YET, AND THE ABSENCE IS DELIBERATE.
+#
+# APP-CATALOG gives this app `confidence-gate.yaml` — below 0.8, ask a human
+# rather than answer. It is the right gate and it is not declared here, because
+# measured on 2026-09-07: no code reads a rules/ directory and nothing calls
+# RegisterRule, so Engine.Rules is empty in every deployment. An app declaring a
+# rule does not skip the gate — the gate does not exist.
+#
+# Declaring it anyway would ship a manifest that says a human is consulted below
+# 0.8 while nothing consults anybody. That is a worse failure than the gate
+# being late, because it is the kind a person only discovers from the outcome.
+# The mechanism is being built; the declaration lands with it.
+#
+# Until then the gate is prose: the instructions below ask for the uncertainty
+# to be staged as a question, which a model can decline to do and a rule cannot.
+
+requires:
+  optional:
+    tools: [email.read, calendar]
+
+emits:
+  - reply.interested
+  - reply.not_now
+  - reply.wrong_person
+  - reply.unsubscribe
+
+context:
+  - key: sender_voice
+    scope: workspace
+    ask: "How does the person who sent this write? Paste a couple of their emails, or describe it."
+    type: text
+
+instructions: |-
+  Something came back. Decide what it is before deciding what to say.
+
+  An auto-reply, an out-of-office and a bounce are NOT replies. Say so and stop
+  — do not draft, and do not count them as interest.
+
+  If it is a real reply, say what kind, then draft the answer in
+  {{sender_voice}} and stage it with stage_draft. If you are not confident what
+  kind of reply it is, stage a question instead (kind `answer`) rather than
+  guessing: a wrong answer to a real prospect costs more than a delay.
+
+  If they asked not to be contacted, call suppress. Immediately, before
+  anything else.

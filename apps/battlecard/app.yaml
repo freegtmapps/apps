@@ -1,0 +1,83 @@
+# Two people who research a competitor for different reasons: Yoni Tserruya
+# gathers, Alon Goldenberg positions. built_on reads them in that order.
+#
+# APP-CATALOG SPECIFIES A THIRD AND IT IS DELIBERATELY NOT HERE.
+#
+# `competitive-intelligence-radar` (Sabahudin Murtic) is not a research method.
+# It is the documentation for a separate Claude Code plugin — `/radar-setup`,
+# `/radar`, `/radar-council` — needing a BrightData token, a Notion connection
+# and Claude Code's experimental agent-teams. Vendored here, a model would read
+# a description of a toolchain it cannot invoke and improvise in the voice of
+# it: citing a dossier it never gathered, from a run that never happened.
+#
+# The host-bound check flagged it — 8 backticked `radar-*` identifiers this
+# server provides none of — and that check has produced false positives on
+# every previous vendoring, so the notice says to read the skill before acting.
+# Read, and it is a true positive. Two skills that work beat three where one is
+# an advertisement for somebody else's plugin.
+#
+# Nothing wrong with his work. It is a real plugin and it is linked from the
+# README; it is simply not a thing this app can carry.
+name: Battlecard
+description: Positioning, weaknesses and objection handling against a named competitor.
+category: sell
+type: battlecard
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "battlecard for Sourcegraph"
+  - "how do we beat Clay?"
+
+skills:
+  - competitor-intel
+  - competitor-positioning
+
+# READ ONLY, AND THAT IS THE INTERESTING FIELD ON THIS MANIFEST.
+#
+# A battlecard is a claim about somebody else's product, and the one thing it
+# must never do is write that claim onto a lead's record as though it were a
+# fact about the lead. Nothing here stages, nothing writes.
+may:
+  - read
+
+# Required rather than optional: a battlecard assembled without reading anything
+# current is a battlecard about last year's competitor, which is the failure
+# mode this app exists to prevent.
+tools: [web]
+
+emits:
+  - battlecard.blocked
+
+context:
+  - key: product
+    scope: workspace
+    ask: "In one sentence, what do you sell?"
+    type: text
+  - key: competitors
+    scope: app
+    ask: "Who do you lose deals to? Name them."
+    type: list
+
+instructions: |-
+  Build a battlecard against one named competitor.
+
+  What we sell: {{product}}
+
+  Every claim about the competitor needs a source you actually read, with the
+  date. An unsourced weakness is a rumour, and it will be repeated to a customer
+  by somebody who trusts this page.
+
+  Say plainly where they are genuinely better. A battlecard that claims we win
+  everywhere teaches a rep nothing and loses the first deal where it is wrong.
+
+# `competitors` is not substituted, for the same reason `methodology` is not in
+# Meeting brief: the placeholder vocabulary is closed, and declared workspace
+# values arrive through the Context section for every app regardless of whether
+# its prose names them. Refused at load rather than composed as a literal
+# `{{competitors}}`, which is the better of the two failures.
