@@ -1,0 +1,14 @@
+# The gate DEMO-APP §4 step 6 asserts: an ICP is not finished until somebody has
+# said who they would never sell to and named a deal they actually won.
+#
+# A FILE RATHER THAN A REGISTERED NAME, which is what makes it travel. A gate
+# bound to code compiled into one binary guards the server it was built on and
+# nothing else — so an app installed from the registry would run unguarded while
+# its manifest said otherwise, which is the shape of promise this project keeps
+# finding and removing.
+kind: requires_context
+keys: [deal_breakers, best_customers]
+reason: "An ICP with no deal-breaker and no won deal is a guess wearing a template."
+# Declared in app.yaml's emits, so the halt is a routable event rather than only
+# a sentence. Inert on the registry, where nothing consumes signals.
+emit: icp.blocked

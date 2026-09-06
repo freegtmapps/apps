@@ -27,16 +27,14 @@ skills:
   - won-deal-icp-finder
   - icp-matrix-builder
 
-# `rules:` IS DELIBERATELY ABSENT, and this is not an omission.
+# The completion gate, as a file that travels with the app.
 #
-# DEMO-APP.md §1 asks for `rules: [icp-required-fields.yaml]`. No rule of that
-# name is registered — nothing calls RegisterRule anywhere in this tree — and
-# engine.evalPreRules FAILS CLOSED on an unregistered rule: it does not skip the
-# gate, it returns an error and the app does not run at all. Declaring it would
-# not make step 6 partially work; it would make every step fail.
-#
-# So the completion gate lives in `instructions` for now, where a model enforces
-# it rather than a rule engine, and §4 step 6 is recorded unmet.
+# This was absent, and the comment here said why: nothing read a rules/
+# directory and nothing called RegisterRule, so `evalPreRules` failed closed and
+# an app declaring a rule did not run at all. That is now built — rules are
+# FILES, resolved from the bundle — so the gate exists where the app is rather
+# than where the binary was compiled, and DEMO-APP §4 step 6 is met.
+rules: [icp-evidence.yaml]
 
 # `learning:` IS ALSO ABSENT for a harder reason: it is not a field on
 # domain.App, so a strict manifest decode refuses the whole file. Steps 9 and 15
