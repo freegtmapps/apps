@@ -1,0 +1,83 @@
+# Why this app is three skills and none of them ours.
+#
+# It replaces a five-line house skill called `research` that did the job by
+# asserting it. Three people have written down how they actually research an
+# account, and they disagree productively: one builds the intelligence brief,
+# one compresses it into something a person can read before a call, and one
+# sweeps what has been said lately. Kept as one file, none of them could be
+# credited, versioned, or lifted into another app.
+#
+# `built_on` derives to Yoni Tserruya, Nadav David, Amir Baldiga — in that
+# order, because first-appearance order is the credit line.
+name: Research the account
+description: One brief — who they are, what they sell, what changed, and who runs it.
+category: find-and-research
+type: research
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "research acme.com"
+  - "brief me on Acme before my 2pm"
+  - "what should I know about Notion?"
+
+# ORDER IS COMPOSITION ORDER. Gather, then sweep, then compress: the brief is
+# written last because it is the only one of the three that has to decide what
+# to leave out, and it cannot do that before the other two have run.
+skills:
+  - account-intelligence
+  - recent-discourse-sweep
+  - account-research-brief
+
+may:
+  - read
+  - write_lead
+
+# `web` is required rather than optional because every one of these three skills
+# is a research method, and a research app with nothing to read is not a
+# degraded app, it is a different one that should refuse.
+#
+# ENRICHMENT IS THE CAPABILITY, NOT THE VENDOR. account-intelligence's own body
+# says "Requires a Lusha connection" — that is its author writing for his own
+# stack, and a manifest may not name a brand (APP-BUNDLE §5: capabilities, never
+# brands). Declared as `enrichment`, optional, so an assistant that cannot reach
+# any enrichment source is told once by `set_reach` and stops being asked.
+# `web` is declared at the top level because Requires.Tools is DERIVED from it
+# rather than hand-written — hand entry plus a load-time check would be two
+# sources that agree until somebody edits one.
+tools: [web]
+
+requires:
+  optional:
+    tools: [enrichment, linkedin, crm, github]
+
+# Declarations that are INERT ON THE REGISTRY and live on the platform. Signals
+# are the commercial product (ruled 2026-09-06); nothing here raises these, and
+# they stay so one bundle describes one app on both products.
+emits:
+  - research.blocked
+
+context:
+  - key: product
+    scope: workspace
+    ask: "In one sentence, what do you sell?"
+    type: text
+  - key: icp
+    scope: workspace
+    ask: "Who do you sell to? Paste your ICP, or say no."
+    type: text
+
+instructions: |-
+  Research one account and produce a brief a person can read before a call.
+
+  What we sell: {{product}}
+  Who we sell to: {{icp}}
+
+  Research before writing. Say which sources you used and name what you could
+  not find — a gap stated is worth more than a gap filled in. Write the brief to
+  the lead with update_lead.
