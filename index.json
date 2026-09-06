@@ -23,6 +23,28 @@
       }
     },
     {
+      "slug": "research-the-account",
+      "name": "Research the account",
+      "description": "One brief \u2014 who they are, what they sell, what changed, and who runs it.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "research acme.com",
+        "brief me on Acme before my 2pm",
+        "what should I know about Notion?"
+      ],
+      "skills": [
+        "account-intelligence",
+        "recent-discourse-sweep",
+        "account-research-brief"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      }
+    },
+    {
       "slug": "write-outreach",
       "name": "Write outreach",
       "description": "Drafts a short first email from one specific thing you actually observed.",
@@ -45,5 +67,5 @@
       }
     }
   ],
-  "count": 2
+  "count": 3
 }
