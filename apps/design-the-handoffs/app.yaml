@@ -1,0 +1,36 @@
+# Design the handoffs — composed from 2 skill(s) somebody else wrote.
+#
+# ORDER IS COMPOSITION ORDER, and it decides the credit line: `built_on` is
+# derived from skill frontmatter in first-appearance order and can never be
+# typed. Nothing about the credit on this page is a claim we made.
+name: Design the handoffs
+description: "MQL\u2192SDR\u2192AE\u2192CS handoffs across the bow-tie, with the fields and SLAs."
+category: keep-in-sync
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "design our sales-to-CS handoff"
+  - "what should an SQL include?"
+
+skills:
+  - revops-handoffs
+  - onboarding-activation
+
+may:
+  - read
+
+# NO {{placeholders}}. A workspace value named by a placeholder and left unset
+# REFUSES composition, so a placeholder is a promise that the app cannot run
+# until somebody has spoken. These apps do not need that: every declared
+# workspace value reaches the prompt through the Context section for every app,
+# whether or not its prose names the key.
+instructions: |-
+  MQL→SDR→AE→CS handoffs across the bow-tie, with the fields and SLAs.
+
+  Work from what you can actually reach and what is on the lead. Name what you could not find rather than filling it in — a gap stated is worth more than a gap invented, because the invented one gets repeated out loud.

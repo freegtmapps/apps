@@ -1,0 +1,64 @@
+# Size the market — composed from 3 skill(s) somebody else wrote.
+#
+# ORDER IS COMPOSITION ORDER, and it decides the credit line: `built_on` is
+# derived from skill frontmatter in first-appearance order and can never be
+# typed. Nothing about the credit on this page is a claim we made.
+name: Size the market
+description: "A defensible TAM/SAM from verified data rather than a slide."
+category: find-and-research
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "how big is our market in DACH?"
+  - "TAM for mid-market fintech"
+
+skills:
+  - tam-from-verified-data
+  - tam-builder
+  - market-finder
+
+may:
+  - read
+
+# Declared at the TOP LEVEL because Requires.Tools is derived from it rather
+# than hand-written — hand entry plus a load-time check would be two sources
+# that agree until somebody edits one.
+tools: [web]
+
+# Hand-written because it is not derivable: it says what this app degrades
+# gracefully without, which is a maintainer's judgement. Say no once through
+# set_reach and it stops asking.
+requires:
+  optional:
+    tools: [enrichment]
+
+# WORKSPACE SCOPE IS A CLOSED SET — company_name, crm, icp, industry, product,
+# regions, sender_name, sender_voice. A manifest inventing a ninth is refused,
+# because a workspace-scoped key nothing reads from the profile would be asked
+# for and then silently dropped after the person answered. Everything else is
+# app-scoped, which is the honest state rather than a workaround.
+context:
+  - key: icp
+    scope: workspace
+    ask: "Who do you sell to? Paste your ICP, or say no."
+    type: text
+  - key: product
+    scope: workspace
+    ask: "In one sentence, what do you sell?"
+    type: text
+
+# NO {{placeholders}}. A workspace value named by a placeholder and left unset
+# REFUSES composition, so a placeholder is a promise that the app cannot run
+# until somebody has spoken. These apps do not need that: every declared
+# workspace value reaches the prompt through the Context section for every app,
+# whether or not its prose names the key.
+instructions: |-
+  A defensible TAM/SAM from verified data rather than a slide.
+
+  Work from what you can actually reach and what is on the lead. Name what you could not find rather than filling it in — a gap stated is worth more than a gap invented, because the invented one gets repeated out loud.

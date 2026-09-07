@@ -1,0 +1,81 @@
+# ABM engagement scoring — composed from 2 skill(s) somebody else wrote.
+#
+# ORDER IS COMPOSITION ORDER, and it decides the credit line: `built_on` is
+# derived from skill frontmatter in first-appearance order and can never be
+# typed. Nothing about the credit on this page is a claim we made.
+name: ABM engagement scoring
+description: "Account-level engagement, buying-group coverage, and when to hand over."
+category: watch-signals
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "which target accounts are heating up?"
+  - "is Acme ready for sales?"
+
+skills:
+  - abm-engagement-scoring
+
+# A SKILL THE CATALOGUE LISTS IS DELIBERATELY ABSENT, and the loader is why.
+#
+# `account-progression-staging` carries ..., ACTIVATION_CHANNEL, ADS_HALF_LIFE, ALERTS_CHANNEL, AWARE_ADS_14D, AWARE_VISITS_14D, C — uppercase tokens in the
+# `{{NAME}}` convention some community skills use for values you are meant to
+# replace before enabling. Nothing here can fill them, so they would reach the
+# model as literal braces in a prompt somebody paid for.
+#
+# NOT A REFUSAL WE INVENTED: the substituter's own vocabulary is lowercase and
+# closed, so these were invisible to it until a loader check went looking for
+# any {{...}} no workspace value can fill. Editing his text to fit our
+# substitution would make the credit line say `adapted` about a rewrite that was
+# ours, so the skill goes in when upstream parameterises it.
+
+may:
+  - read
+  - write_lead
+  - emit
+
+# Declared at the TOP LEVEL because Requires.Tools is derived from it rather
+# than hand-written — hand entry plus a load-time check would be two sources
+# that agree until somebody edits one.
+tools: [crm]
+
+# Hand-written because it is not derivable: it says what this app degrades
+# gracefully without, which is a maintainer's judgement. Say no once through
+# set_reach and it stops asking.
+requires:
+  optional:
+    tools: [product, website]
+
+# Declarations that are INERT ON THE REGISTRY and live on the platform.
+# Signals are the commercial product; nothing here raises these, and they stay
+# so one bundle describes one app on both.
+emits:
+  - account.sales_ready
+
+# WORKSPACE SCOPE IS A CLOSED SET — company_name, crm, icp, industry, product,
+# regions, sender_name, sender_voice. A manifest inventing a ninth is refused,
+# because a workspace-scoped key nothing reads from the profile would be asked
+# for and then silently dropped after the person answered. Everything else is
+# app-scoped, which is the honest state rather than a workaround.
+context:
+  - key: target_accounts
+    scope: app
+    ask: "What should this app know about target accounts?"
+    type: text
+
+# NO {{placeholders}}. A workspace value named by a placeholder and left unset
+# REFUSES composition, so a placeholder is a promise that the app cannot run
+# until somebody has spoken. These apps do not need that: every declared
+# workspace value reaches the prompt through the Context section for every app,
+# whether or not its prose names the key.
+instructions: |-
+  Account-level engagement, buying-group coverage, and when to hand over.
+
+  Work from what you can actually reach and what is on the lead. Name what you could not find rather than filling it in — a gap stated is worth more than a gap invented, because the invented one gets repeated out loud.
+
+  Write what you learn to the lead with update_lead.

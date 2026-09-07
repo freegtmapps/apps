@@ -1,0 +1,62 @@
+# Bulk enrich contacts — composed from 3 skill(s) somebody else wrote.
+#
+# ORDER IS COMPOSITION ORDER, and it decides the credit line: `built_on` is
+# derived from skill frontmatter in first-appearance order and can never be
+# typed. Nothing about the credit on this page is a claim we made.
+name: Bulk enrich contacts
+description: "Enrich a list against a waterfall of providers, cheapest first, with hit rates reported."
+category: keep-in-sync
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "enrich this list"
+  - "find emails for these 200 people"
+
+skills:
+  - bulk-contact-enrichment
+  - data-enrichment
+  - never-guess-an-email
+
+may:
+  - read
+  - write_lead
+
+# Declared at the TOP LEVEL because Requires.Tools is derived from it rather
+# than hand-written — hand entry plus a load-time check would be two sources
+# that agree until somebody edits one.
+tools: [enrichment]
+
+# Declarations that are INERT ON THE REGISTRY and live on the platform.
+# Signals are the commercial product; nothing here raises these, and they stay
+# so one bundle describes one app on both.
+emits:
+  - enrichment.done
+
+# WORKSPACE SCOPE IS A CLOSED SET — company_name, crm, icp, industry, product,
+# regions, sender_name, sender_voice. A manifest inventing a ninth is refused,
+# because a workspace-scoped key nothing reads from the profile would be asked
+# for and then silently dropped after the person answered. Everything else is
+# app-scoped, which is the honest state rather than a workaround.
+context:
+  - key: provider_order
+    scope: app
+    ask: "What should this app know about provider order?"
+    type: text
+
+# NO {{placeholders}}. A workspace value named by a placeholder and left unset
+# REFUSES composition, so a placeholder is a promise that the app cannot run
+# until somebody has spoken. These apps do not need that: every declared
+# workspace value reaches the prompt through the Context section for every app,
+# whether or not its prose names the key.
+instructions: |-
+  Enrich a list against a waterfall of providers, cheapest first, with hit rates reported.
+
+  Work from what you can actually reach and what is on the lead. Name what you could not find rather than filling it in — a gap stated is worth more than a gap invented, because the invented one gets repeated out loud.
+
+  Write what you learn to the lead with update_lead.

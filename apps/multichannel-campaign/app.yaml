@@ -1,0 +1,75 @@
+# Multichannel campaign — composed from 3 skill(s) somebody else wrote.
+#
+# ORDER IS COMPOSITION ORDER, and it decides the credit line: `built_on` is
+# derived from skill frontmatter in first-appearance order and can never be
+# typed. Nothing about the credit on this page is a claim we made.
+name: Multichannel campaign
+description: "One campaign across email, LinkedIn and calls, with the sequencing and the A/B plan."
+category: reach-out
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "plan a multichannel campaign for this list"
+  - "email + LinkedIn for the fintech list"
+
+skills:
+  - multichannel-campaign-builder
+  - personalized-outbound-ab-test
+
+# A SKILL THE CATALOGUE LISTS IS DELIBERATELY ABSENT.
+#
+# `campaign-challenger` ships references/quality-check.md collides with multichannel-campaign-builder's. References are keyed FLAT
+# inside a bundle — a body routes to `references/x.md` without naming its own
+# skill — so two skills owning one filename is a load refusal rather than
+# whichever-loaded-last. Renaming the file would break the routing inside a body
+# that is not ours to edit.
+
+may:
+  - read
+  - stage
+
+# Hand-written because it is not derivable: it says what this app degrades
+# gracefully without, which is a maintainer's judgement. Say no once through
+# set_reach and it stops asking.
+requires:
+  optional:
+    tools: [linkedin, crm]
+
+# Declarations that are INERT ON THE REGISTRY and live on the platform.
+# Signals are the commercial product; nothing here raises these, and they stay
+# so one bundle describes one app on both.
+emits:
+  - campaign.planned
+
+# WORKSPACE SCOPE IS A CLOSED SET — company_name, crm, icp, industry, product,
+# regions, sender_name, sender_voice. A manifest inventing a ninth is refused,
+# because a workspace-scoped key nothing reads from the profile would be asked
+# for and then silently dropped after the person answered. Everything else is
+# app-scoped, which is the honest state rather than a workaround.
+context:
+  - key: sender_voice
+    scope: workspace
+    ask: "How does the person these go out from write? A sentence describing their style."
+    type: text
+  - key: channels_available
+    scope: app
+    ask: "What should this app know about channels available?"
+    type: text
+
+# NO {{placeholders}}. A workspace value named by a placeholder and left unset
+# REFUSES composition, so a placeholder is a promise that the app cannot run
+# until somebody has spoken. These apps do not need that: every declared
+# workspace value reaches the prompt through the Context section for every app,
+# whether or not its prose names the key.
+instructions: |-
+  One campaign across email, LinkedIn and calls, with the sequencing and the A/B plan.
+
+  Work from what you can actually reach and what is on the lead. Name what you could not find rather than filling it in — a gap stated is worth more than a gap invented, because the invented one gets repeated out loud.
+
+  Stage anything for a person with stage_draft. Nothing is sent until they decide.

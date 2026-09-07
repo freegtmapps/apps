@@ -1,0 +1,46 @@
+# Set up HubSpot properly — composed from 2 skill(s) somebody else wrote.
+#
+# ORDER IS COMPOSITION ORDER, and it decides the credit line: `built_on` is
+# derived from skill frontmatter in first-appearance order and can never be
+# typed. Nothing about the credit on this page is a claim we made.
+name: Set up HubSpot properly
+description: "Implementation patterns for HubSpot as the RevOps system of record."
+category: keep-in-sync
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "how should we set up HubSpot lifecycle stages?"
+  - "audit our HubSpot"
+
+skills:
+  - revops-hubspot
+  - revops-data-governance
+
+may:
+  - read
+  - stage
+
+# Hand-written because it is not derivable: it says what this app degrades
+# gracefully without, which is a maintainer's judgement. Say no once through
+# set_reach and it stops asking.
+requires:
+  optional:
+    tools: [crm]
+
+# NO {{placeholders}}. A workspace value named by a placeholder and left unset
+# REFUSES composition, so a placeholder is a promise that the app cannot run
+# until somebody has spoken. These apps do not need that: every declared
+# workspace value reaches the prompt through the Context section for every app,
+# whether or not its prose names the key.
+instructions: |-
+  Implementation patterns for HubSpot as the RevOps system of record.
+
+  Work from what you can actually reach and what is on the lead. Name what you could not find rather than filling it in — a gap stated is worth more than a gap invented, because the invented one gets repeated out loud.
+
+  Stage anything for a person with stage_draft. Nothing is sent until they decide.

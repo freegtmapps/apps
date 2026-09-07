@@ -1,0 +1,42 @@
+# Resolve before create — composed from 2 skill(s) somebody else wrote.
+#
+# ORDER IS COMPOSITION ORDER, and it decides the credit line: `built_on` is
+# derived from skill frontmatter in first-appearance order and can never be
+# typed. Nothing about the credit on this page is a claim we made.
+name: Resolve before create
+description: "Match to an existing record before creating a new one."
+category: keep-in-sync
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "is Acme already in the CRM?"
+  - "dedupe these"
+
+skills:
+  - resolve-before-create
+  - company-domain-resolver
+
+may:
+  - read
+  - write_external
+
+# Declared at the TOP LEVEL because Requires.Tools is derived from it rather
+# than hand-written — hand entry plus a load-time check would be two sources
+# that agree until somebody edits one.
+tools: [crm]
+
+# NO {{placeholders}}. A workspace value named by a placeholder and left unset
+# REFUSES composition, so a placeholder is a promise that the app cannot run
+# until somebody has spoken. These apps do not need that: every declared
+# workspace value reaches the prompt through the Context section for every app,
+# whether or not its prose names the key.
+instructions: |-
+  Match to an existing record before creating a new one.
+
+  Work from what you can actually reach and what is on the lead. Name what you could not find rather than filling it in — a gap stated is worth more than a gap invented, because the invented one gets repeated out loud.

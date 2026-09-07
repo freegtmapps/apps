@@ -1,0 +1,74 @@
+# Build a target list — composed from 4 skill(s) somebody else wrote.
+#
+# ORDER IS COMPOSITION ORDER, and it decides the credit line: `built_on` is
+# derived from skill frontmatter in first-appearance order and can never be
+# typed. Nothing about the credit on this page is a claim we made.
+name: Build a target list
+description: "Companies and contacts that match your ICP, from a sentence \u2014 with the sources used and the gaps named."
+category: find-and-research
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "build me a list of fintechs in Berlin"
+  - "50 Series B dev-tool companies hiring SDRs"
+
+skills:
+  - list-architect
+  - build-and-fill-a-tam
+  - icp-contact-search-and-enrichment
+  - never-guess-an-email
+
+may:
+  - read
+  - write_lead
+
+# Declared at the TOP LEVEL because Requires.Tools is derived from it rather
+# than hand-written — hand entry plus a load-time check would be two sources
+# that agree until somebody edits one.
+tools: [enrichment]
+
+# Hand-written because it is not derivable: it says what this app degrades
+# gracefully without, which is a maintainer's judgement. Say no once through
+# set_reach and it stops asking.
+requires:
+  optional:
+    tools: [crm, github]
+
+# Declarations that are INERT ON THE REGISTRY and live on the platform.
+# Signals are the commercial product; nothing here raises these, and they stay
+# so one bundle describes one app on both.
+emits:
+  - list.built
+
+# WORKSPACE SCOPE IS A CLOSED SET — company_name, crm, icp, industry, product,
+# regions, sender_name, sender_voice. A manifest inventing a ninth is refused,
+# because a workspace-scoped key nothing reads from the profile would be asked
+# for and then silently dropped after the person answered. Everything else is
+# app-scoped, which is the honest state rather than a workaround.
+context:
+  - key: icp
+    scope: workspace
+    ask: "Who do you sell to? Paste your ICP, or say no."
+    type: text
+  - key: regions
+    scope: workspace
+    ask: "Which regions matter?"
+    type: text
+
+# NO {{placeholders}}. A workspace value named by a placeholder and left unset
+# REFUSES composition, so a placeholder is a promise that the app cannot run
+# until somebody has spoken. These apps do not need that: every declared
+# workspace value reaches the prompt through the Context section for every app,
+# whether or not its prose names the key.
+instructions: |-
+  Companies and contacts that match your ICP, from a sentence — with the sources used and the gaps named.
+
+  Work from what you can actually reach and what is on the lead. Name what you could not find rather than filling it in — a gap stated is worth more than a gap invented, because the invented one gets repeated out loud.
+
+  Write what you learn to the lead with update_lead.
