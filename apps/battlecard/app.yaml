@@ -45,12 +45,21 @@ skills:
 # fact about the lead. Nothing here stages, nothing writes.
 may:
   - read
+  - emit
 
 # Required rather than optional: a battlecard assembled without reading anything
 # current is a battlecard about last year's competitor, which is the failure
 # mode this app exists to prevent.
 tools: [web]
 
+# `may` gains `emit`, so this declaration becomes one the app can keep.
+# `may` is enforced by projection alone (APP-BUNDLE §3, conformance rule 14):
+# without `emit`, `emit_signal` is never projected and this named a signal the
+# app structurally could not raise.
+#
+# `battlecard.blocked` announces a NON-EVENT. A battlecard that could not be
+# written leaves nothing behind to look at, so the refusal is knowable from this
+# and from nowhere else.
 emits:
   - battlecard.blocked
 

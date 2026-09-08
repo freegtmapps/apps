@@ -33,11 +33,12 @@ may:
 # that agree until somebody edits one.
 tools: [crm]
 
-# Declarations that are INERT ON THE REGISTRY and live on the platform.
-# Signals are the commercial product; nothing here raises these, and they stay
-# so one bundle describes one app on both.
-emits:
-  - cleanup.proposed
+# `emits:` REMOVED rather than `emit` granted, which is as valid a fix and the
+# right one here. The test is write-outreach's: a declared emit earns its place
+# when it is the ONLY way the thing can be known.
+#
+# `cleanup.proposed` restates a staging stage_draft already reported from inside
+# the tool. Same reasoning as book-the-meeting.
 
 # NO {{placeholders}}. A workspace value named by a placeholder and left unset
 # REFUSES composition, so a placeholder is a promise that the app cannot run

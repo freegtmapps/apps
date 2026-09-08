@@ -47,11 +47,15 @@ may:
 # that agree until somebody edits one.
 tools: [calendar]
 
-# Declarations that are INERT ON THE REGISTRY and live on the platform.
-# Signals are the commercial product; nothing here raises these, and they stay
-# so one bundle describes one app on both.
-emits:
-  - meeting.proposed
+# `emits:` REMOVED rather than `emit` granted, which is as valid a fix and the
+# right one here. The test is write-outreach's: a declared emit earns its place
+# when it is the ONLY way the thing can be known.
+#
+# `meeting.proposed` restates a staging that stage_draft already reported.
+# stage_draft emits `draft.staged` FROM INSIDE THE TOOL carrying the approval_id,
+# and `engine.emitPlatform` appends it with no allowlist check — so the event is
+# already on the bus. A second, model-raised account of it is the weaker of the
+# two, and the weaker one is the one that can be wrong.
 
 # WORKSPACE SCOPE IS A CLOSED SET — company_name, crm, icp, industry, product,
 # regions, sender_name, sender_voice. A manifest inventing a ninth is refused,

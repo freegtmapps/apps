@@ -31,11 +31,19 @@ skills:
 may:
   - read
   - write_lead
+  - emit
 
 requires:
   optional:
     tools: [crm, calendar, web]
 
+# `may` gains `emit`, so this declaration becomes one the app can keep.
+# `may` is enforced by projection alone (APP-BUNDLE §3, conformance rule 14):
+# without `emit`, `emit_signal` is never projected and this named a signal the
+# app structurally could not raise.
+#
+# `brief.blocked` announces a NON-EVENT: a brief that could not be written leaves
+# nothing behind, so the refusal is knowable only from this.
 emits:
   - brief.blocked
 

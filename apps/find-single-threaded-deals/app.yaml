@@ -38,11 +38,13 @@ requires:
   optional:
     tools: [linkedin]
 
-# Declarations that are INERT ON THE REGISTRY and live on the platform.
-# Signals are the commercial product; nothing here raises these, and they stay
-# so one bundle describes one app on both.
-emits:
-  - contacts.suggested
+# `emits:` REMOVED rather than `emit` granted, which is as valid a fix and the
+# right one here. The test is write-outreach's: a declared emit earns its place
+# when it is the ONLY way the thing can be known.
+#
+# `contacts.suggested` restates writes that already left rows — the suggestions
+# land on the leads. Whether anything needs to trigger on the sweep as a whole is
+# unclear, and unclear means it is not the only way the thing can be known.
 
 # NO {{placeholders}}. A workspace value named by a placeholder and left unset
 # REFUSES composition, so a placeholder is a promise that the app cannot run

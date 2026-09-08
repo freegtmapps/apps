@@ -34,11 +34,16 @@ requires:
   optional:
     tools: [linkedin]
 
-# Declarations that are INERT ON THE REGISTRY and live on the platform.
-# Signals are the commercial product; nothing here raises these, and they stay
-# so one bundle describes one app on both.
-emits:
-  - draft.staged
+# `draft.staged` DELETED, and `emit` deliberately NOT granted.
+#
+# stage_draft emits this ITSELF from inside the tool, carrying the approval_id,
+# and `engine.emitPlatform` appends it with no allowlist check — so the
+# declaration was both unraisable and redundant. write-outreach found exactly
+# this in a live run, deleted it, and recorded why: "a signal a model raises
+# alongside a tool that raises its own is a second, weaker account of the same
+# event, and the weaker one is the one that can be wrong."
+#
+# Granting `emit` here would resurrect a mistake this repo has already paid for.
 
 # WORKSPACE SCOPE IS A CLOSED SET — company_name, crm, icp, industry, product,
 # regions, sender_name, sender_voice. A manifest inventing a ninth is refused,

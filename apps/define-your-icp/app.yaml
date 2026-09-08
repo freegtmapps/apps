@@ -102,5 +102,6 @@ instructions: |-
   question with stage_draft saying exactly which is missing.
 
   When it is complete, write it with set_context(key: "icp") in 200 words or
-  fewer, then emit_signal(icp.updated). If you cannot complete it, emit
-  icp.blocked and say what stopped you.
+  fewer. If you cannot complete it, say what stopped you and stage a question
+  rather than writing a partial ICP — a guess written to the workspace is read
+  by every app that comes after it.

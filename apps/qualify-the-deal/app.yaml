@@ -32,11 +32,12 @@ may:
 # that agree until somebody edits one.
 tools: [crm]
 
-# Declarations that are INERT ON THE REGISTRY and live on the platform.
-# Signals are the commercial product; nothing here raises these, and they stay
-# so one bundle describes one app on both.
-emits:
-  - deal.gaps_found
+# `emits:` REMOVED rather than `emit` granted, which is as valid a fix and the
+# right one here. The test is write-outreach's: a declared emit earns its place
+# when it is the ONLY way the thing can be known.
+#
+# `deal.gaps_found` restates a write that already left a row: the gaps land on
+# the lead.
 
 # WORKSPACE SCOPE IS A CLOSED SET — company_name, crm, icp, industry, product,
 # regions, sender_name, sender_voice. A manifest inventing a ninth is refused,

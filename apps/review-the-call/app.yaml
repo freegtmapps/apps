@@ -34,11 +34,11 @@ requires:
   optional:
     tools: [product]
 
-# Declarations that are INERT ON THE REGISTRY and live on the platform.
-# Signals are the commercial product; nothing here raises these, and they stay
-# so one bundle describes one app on both.
-emits:
-  - call.reviewed
+# `emits:` REMOVED rather than `emit` granted, which is as valid a fix and the
+# right one here. The test is write-outreach's: a declared emit earns its place
+# when it is the ONLY way the thing can be known.
+#
+# `call.reviewed` restates the write it describes.
 
 # WORKSPACE SCOPE IS A CLOSED SET — company_name, crm, icp, industry, product,
 # regions, sender_name, sender_voice. A manifest inventing a ninth is refused,

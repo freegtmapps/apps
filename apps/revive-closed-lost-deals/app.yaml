@@ -26,18 +26,29 @@ may:
   - read
   - write_lead
   - stage
+  - emit
 
 # Declared at the TOP LEVEL because Requires.Tools is derived from it rather
 # than hand-written — hand entry plus a load-time check would be two sources
 # that agree until somebody edits one.
 tools: [crm]
 
-# Declarations that are INERT ON THE REGISTRY and live on the platform.
-# Signals are the commercial product; nothing here raises these, and they stay
-# so one bundle describes one app on both.
+# `may` gains `emit`, so this declaration becomes one the app can keep.
+# `may` is enforced by projection alone (APP-BUNDLE §3, conformance rule 14):
+# without `emit`, `emit_signal` is never projected and this named a signal the
+# app structurally could not raise.
+#
+# BOTH FIXES IN ONE APP, which is why it is worth reading rather than copying.
+#
+# `revival.candidates` is kept and `emit` granted: identifying which closed-lost
+# deals are worth reopening is a batch completion, and that the sweep finished is
+# not derivable from the rows it wrote.
+#
+# `draft.staged` is DELETED, not granted. stage_draft emits it from inside the
+# tool via `engine.emitPlatform`, with no allowlist check — see give-first-email
+# for the precedent write-outreach set when it found this in a live run.
 emits:
   - revival.candidates
-  - draft.staged
 
 # WORKSPACE SCOPE IS A CLOSED SET — company_name, crm, icp, industry, product,
 # regions, sender_name, sender_voice. A manifest inventing a ninth is refused,

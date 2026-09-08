@@ -34,6 +34,7 @@ may:
   - read
   - write_lead
   - stage
+  - emit
 
 # NO `rules:` YET, AND THE ABSENCE IS DELIBERATE.
 #
@@ -55,6 +56,24 @@ requires:
   optional:
     tools: [email.read, calendar]
 
+# `may` gains `emit`, so this declaration becomes one the app can keep.
+# `may` is enforced by projection alone (APP-BUNDLE §3, conformance rule 14):
+# without `emit`, `emit_signal` is never projected and this named a signal the
+# app structurally could not raise.
+#
+# THIS IS THE ONE OF THE TWENTY-FOUR WITH A LIVE CONSEQUENCE RATHER THAN A
+# LATENT ONE, and it is why the sweep starts here.
+#
+# `reply.unsubscribe` could not fire. contracts/send-constraints.md §3 makes
+# suppression OUR store rather than the provider's, and the provider's
+# `LEAD_UNSUBSCRIBED` webhook only covers someone who CLICKS the link. A person
+# who types "take me off this list" in the body of a reply is exactly the case it
+# does not cover — and this app is the only thing that reads that reply. So the
+# app classified the opt-out correctly and then nothing happened.
+#
+# That becomes a compliance problem the day sending starts, which is about two
+# weeks after a sending domain is named. The other three kinds route work; this
+# one stops it.
 emits:
   - reply.interested
   - reply.not_now

@@ -23,15 +23,21 @@ skills:
 
 may:
   - read
+  - emit
 
 # Declared at the TOP LEVEL because Requires.Tools is derived from it rather
 # than hand-written — hand entry plus a load-time check would be two sources
 # that agree until somebody edits one.
 tools: [crm]
 
-# Declarations that are INERT ON THE REGISTRY and live on the platform.
-# Signals are the commercial product; nothing here raises these, and they stay
-# so one bundle describes one app on both.
+# `may` gains `emit`, so this declaration becomes one the app can keep.
+# `may` is enforced by projection alone (APP-BUNDLE §3, conformance rule 14):
+# without `emit`, `emit_signal` is never projected and this named a signal the
+# app structurally could not raise.
+#
+# `digest.ready` is a completion whose product is prose rather than a row.
+# `may: [read]` means this app writes nothing anywhere, so the digest exists only
+# as the run's output, and nothing else can announce that it is ready to go on.
 emits:
   - digest.ready
 
