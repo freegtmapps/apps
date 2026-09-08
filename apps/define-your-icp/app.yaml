@@ -76,9 +76,14 @@ context:
     scope: app
     ask: "Name three customers you'd clone if you could."
     type: list
-    # infer_from: [crm] is omitted — the field exists on ContextKey and NOTHING
-    # READS IT, so declaring it would promise a CRM-first fill that never
-    # happens. §4 step 4's inference half is recorded unmet; the ask still works.
+    # Declared now that something reads it. It was omitted while the field was
+    # inert — writing down that it was inert is what let somebody else confirm
+    # the gap rather than wonder whether they had misread the loader. The
+    # composer renders a "try the CRM first" line before this key's ask, and
+    # suppresses it entirely for a workspace whose set_reach says crm is
+    # declined, so nobody is told to try a CRM they have already said they
+    # do not have.
+    infer_from: [crm]
   - key: deal_breakers
     scope: app
     ask: "Who should we never sell to, even if they ask?"
@@ -92,10 +97,6 @@ context:
 instructions: |-
   You are defining who {{company_name}} sells to. Work from evidence — won deals,
   named customers, real conversations — never from a generic template.
-
-  Fill what you do not know by asking, one question at a time, in the order this
-  app declares. Skip anything already known. If you can reach a CRM, read
-  closed-won before asking for examples, and say which you used.
 
   An ICP is not finished until it has a segment, a persona, a deal-breaker and at
   least one won-deal example. Until all four exist, do not write it: stage a
