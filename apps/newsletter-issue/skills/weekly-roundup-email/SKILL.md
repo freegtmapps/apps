@@ -1,6 +1,6 @@
 ---
 name: weekly-roundup-email
-description: "Use this skill when you want to send a weekly digest, curated newsletter, link roundup, \'best of the week\' email, or Friday recap. Writes a curated weekly roundup email that packages the best links, resources, takeaways, or insights from your week into a…"
+description: 'Use this skill when you want to send a weekly digest, curated newsletter, link roundup, "best of the week" email, or Friday recap. Writes a curated weekly roundup email that packages the best links, resources, takeaways, or insights from your week into a scannable, high-value email your subscribers actually look forward to. Supports multiple roundup formats: link roundup, lesson roundup, tool roundup, content roundup, or hybrid. Generates the full email with subject line, intro, curated items with your commentary, and a CTA. Trigger on "weekly roundup", "roundup email", "weekly digest", "curated email", "best of the week email", "Friday email", "link roundup", "weekly recap email", or any request to write a curated digest-style newsletter.'
 author: Daniel Bustamante
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/daniel-bustamante/weekly-roundup-email/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

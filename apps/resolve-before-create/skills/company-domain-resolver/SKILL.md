@@ -1,6 +1,6 @@
 ---
 name: company-domain-resolver
-description: "Use this skill when you have a list of company names — a CSV, CRM export, event attendee list, or pasted prospecting list — and need website domains before enrichment, dedupe, or CRM import. Produces the original list with a resolved domain and a per-row…"
+description: Use this skill when you have a list of company names — a CSV, CRM export, event attendee list, or pasted prospecting list — and need website domains before enrichment, dedupe, or CRM import. Produces the original list with a resolved domain and a per-row match-confidence label, using the free, keyless Clearbit autocomplete endpoint. Trigger on "find the domains for these companies", "what's the website for X", "clean up this company list", "resolve these company names", "add domains to this CSV", "company name to domain", or Clearbit autocomplete/suggest. Also applies proactively when a company list is missing domains and the next step needs them.
 author: Boaz Descalo
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/boaz-descalo/company-domain-resolver/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

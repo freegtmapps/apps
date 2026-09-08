@@ -1,6 +1,6 @@
 ---
 name: category-of-one-positioning
-description: "Use this skill when a founder or expertise-led business looks interchangeable in their market — price-shopped against cheaper options, described in the same words as competitors, winning on rates instead of authority. It runs the \'Position\' step of the…"
+description: 'Use this skill when a founder or expertise-led business looks interchangeable in their market — price-shopped against cheaper options, described in the same words as competitors, winning on rates instead of authority. It runs the "Position" step of the Atticus Method and produces a category-of-one positioning package - a reframed problem, category-defining language the market ties to the founder, and expertise packaged as proprietary IP. It interviews the founder in their own words first — what''s broken in their industry, why, and their fix — and asks for the ICP if it isn''t already known, before reframing anything. Trigger phrases: "we sound like everyone else", "prospects compare us on price", "how do we differentiate", "positioning", "category of one".'
 author: Luke Shalom
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/luke-shalom/category-of-one-positioning/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

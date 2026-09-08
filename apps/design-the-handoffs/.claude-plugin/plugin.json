@@ -1,0 +1,8 @@
+{
+  "name": "design-the-handoffs",
+  "description": "MQL\\u2192SDR\\u2192AE\\u2192CS handoffs across the bow-tie, with the fields and SLAs.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

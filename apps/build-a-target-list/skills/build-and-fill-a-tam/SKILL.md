@@ -1,6 +1,6 @@
 ---
 name: build-and-fill-a-tam
-description: "Use this skill when a team needs a defensible total addressable market and a governed plan to cover it over time. Produces a sourced account estimate, revenue model, contact target, CRM coverage baseline, and measured population plan."
+description: Use this skill when a team needs a defensible total addressable market and a governed plan to cover it over time. Produces a sourced account estimate, revenue model, contact target, CRM coverage baseline, and measured population plan.
 author: Ryan Iyengar
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/ryan-iyengar/build-and-fill-a-tam/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

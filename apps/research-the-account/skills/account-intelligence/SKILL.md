@@ -1,6 +1,6 @@
 ---
 name: account-intelligence
-description: "Pull a decision-ready intelligence brief on any target account. Takes a company name, domain, or Lusha company ID plus a one-line research context — QBR, competitive deal, cold outbound, or inbound triage. Returns firmographics, buying signals, key…"
+description: Pull a decision-ready intelligence brief on any target account. Takes a company name, domain, or Lusha company ID plus a one-line research context — QBR, competitive deal, cold outbound, or inbound triage. Returns firmographics, buying signals, key contacts verified via Lusha, recent news and scoops, and ranked next actions — all framed by your stated purpose. Requires a Lusha connection.
 author: Yoni Tserruya
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/yoni-tserruya/account-intelligence/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

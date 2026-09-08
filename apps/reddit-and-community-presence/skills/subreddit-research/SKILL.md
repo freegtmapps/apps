@@ -1,6 +1,6 @@
 ---
 name: subreddit-research
-description: "Use this skill when the user needs to find or vet Reddit communities — \'which subreddits should we be in,\' \'is r/X worth targeting,\' \'research communities for this product.\' Searches live Reddit data, inspects community size, rules, content, and…"
+description: Use this skill when the user needs to find or vet Reddit communities — "which subreddits should we be in," "is r/X worth targeting," "research communities for this product." Searches live Reddit data, inspects community size, rules, content, and traffic, and produces a vetted shortlist worth adding to a campaign — plus the reasons to skip the rest.
 author: Yahav Fuchs
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/yahav-fuchs/subreddit-research/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

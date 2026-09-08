@@ -1,6 +1,6 @@
 ---
 name: buying-group
-description: "Map every decision-maker, influencer, and blocker at a target account. Takes a company name or domain plus a deal stage or research context. Returns verified contacts classified by buying role, coverage gaps by function, departure flags, and ranked next…"
+description: Map every decision-maker, influencer, and blocker at a target account. Takes a company name or domain plus a deal stage or research context. Returns verified contacts classified by buying role, coverage gaps by function, departure flags, and ranked next actions — all shaped by where you are in the deal. Requires a Lusha connection.
 author: Gal Tamir
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/gal-tamir/buying-group/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

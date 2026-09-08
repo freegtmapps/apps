@@ -1,6 +1,6 @@
 ---
 name: reply-pull-gate
-description: "Use this skill when scoring an outbound draft before it sends, and when writing a cold or re-engagement touch that has to earn a reply from someone who owes you nothing. Produces a verdict, SEND or SEND BACK, with the named rewrite when it fails. Clean is…"
+description: 'Use this skill when scoring an outbound draft before it sends, and when writing a cold or re-engagement touch that has to earn a reply from someone who owes you nothing. Produces a verdict, SEND or SEND BACK, with the named rewrite when it fails. Clean is table stakes; this scores pull. Trigger phrasings: "review this cold email", "score this draft", "is this good enough to send", "why is nobody replying", "this reads clean but forgettable", "our reply rate is flat", "write the subject line".'
 author: Nadav David
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/nadav-david/reply-pull-gate/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

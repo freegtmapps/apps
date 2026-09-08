@@ -1,0 +1,8 @@
+{
+  "name": "handle-a-demo-request",
+  "description": "Qualify an inbound hand-raiser, propose times, draft the confirmation.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

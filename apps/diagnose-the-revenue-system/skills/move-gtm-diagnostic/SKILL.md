@@ -1,6 +1,6 @@
 ---
 name: move-gtm-diagnostic
-description: "Use this skill when a company wants to audit its go-to-market foundation before scaling or automating - it runs Sangram Vajre's WSJ-bestselling MOVE framework, the 4-question GTM diagnostic (Market, Operations, Velocity, Expansion), to find where GTM is…"
+description: 'Use this skill when a company wants to audit its go-to-market foundation before scaling or automating - it runs Sangram Vajre''s WSJ-bestselling MOVE framework, the 4-question GTM diagnostic (Market, Operations, Velocity, Expansion), to find where GTM is misaligned, identify which of the three fit stages the company is actually in (Problem-Market / Product-Market / Platform-Market), and return a prioritised list of what to fix first. Trigger phrases: "GTM audit", "GTM diagnostic", "GTM health check", "MOVE assessment", "are we ready to scale", "why isn''t our GTM working" - and before standing up any new outbound, inbound, or deal-process engine. This is a diagnosis, not a build - run it first.'
 author: Sangram Vajre
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/sangram-vajre/move-gtm-diagnostic/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

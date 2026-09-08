@@ -1,6 +1,6 @@
 ---
 name: cold-email-4-sequence
-description: "Use this skill when building cold email campaigns, creating outreach sequences, or structuring a multi-touch cadence for B2B prospecting. Covers the standard 4-email sequence — trigger-based opener, pain/KPI email, delegation ask, break-up — plus timing,…"
+description: Use this skill when building cold email campaigns, creating outreach sequences, or structuring a multi-touch cadence for B2B prospecting. Covers the standard 4-email sequence — trigger-based opener, pain/KPI email, delegation ask, break-up — plus timing, structure checklist, and BTL/ATL length rules.
 author: Alex Vacca
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/alex-vacca/cold-email-4-sequence/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

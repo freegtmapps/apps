@@ -1,6 +1,6 @@
 ---
 name: reddit-attribution-tracking
-description: "Use this skill when the user asks what Reddit activity is actually producing — \'is Reddit driving signups,\' \'attribute this pipeline to Reddit,\' \'prove the Reddit motion works.\' Wires UTMs into posted links, isolates Reddit sessions in analytics,…"
+description: Use this skill when the user asks what Reddit activity is actually producing — "is Reddit driving signups," "attribute this pipeline to Reddit," "prove the Reddit motion works." Wires UTMs into posted links, isolates Reddit sessions in analytics, connects them to CRM pipeline, and uses mention-spike correlation as the proxy where click-level tracking can't reach.
 author: Yahav Fuchs
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/yahav-fuchs/reddit-attribution-tracking/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

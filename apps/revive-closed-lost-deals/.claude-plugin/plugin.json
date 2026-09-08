@@ -1,0 +1,8 @@
+{
+  "name": "revive-closed-lost-deals",
+  "description": "A quarterly sweep over closed-lost, gone-quiet proposals and champion job changes \\u2014 with the right re-open message\\u2026",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

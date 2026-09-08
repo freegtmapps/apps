@@ -1,0 +1,8 @@
+{
+  "name": "clean-the-crm-governed",
+  "description": "Cleanup with rules and a proposal, never a bulk delete.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

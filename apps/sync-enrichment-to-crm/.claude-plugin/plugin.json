@@ -1,0 +1,8 @@
+{
+  "name": "sync-enrichment-to-crm",
+  "description": "Enriched fields land in HubSpot or Salesforce with no duplicates.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

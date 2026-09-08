@@ -1,0 +1,8 @@
+{
+  "name": "hiring-radar",
+  "description": "Roles a company is hiring for, verified, as a buying signal.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

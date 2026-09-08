@@ -1,6 +1,6 @@
 ---
 name: pipeline-visibility
-description: "Pipeline visibility, reporting architecture, dashboard design, pipeline hygiene, and forecast reporting for B2B revenue teams. CRM-agnostic patterns for any platform. Use when the user mentions pipeline visibility, pipeline reporting, sales dashboards,…"
+description: 'Pipeline visibility, reporting architecture, dashboard design, pipeline hygiene, and forecast reporting for B2B revenue teams. CRM-agnostic patterns for any platform. Use when the user mentions pipeline visibility, pipeline reporting, sales dashboards, pipeline hygiene, stale deals, pipeline coverage, pipeline health, deal inspection, pipeline review, win rate reporting, conversion funnels, pipeline cleanup, pipeline scrub, forecast reporting, forecast accuracy tracking, big deal alerts, or pipeline quality score. Also trigger on ''we can''t see our pipeline,'' ''deals go stale,'' ''pipeline reports are wrong,'' ''we need better dashboards,'' or ''how do we track pipeline health.'' BOUNDARY: Covers pipeline VISIBILITY and REPORTING (CRM-agnostic). For CRM-specific implementation, see revops-hubspot or revops-salesforce. For forecast methodology, see revops-forecasting. For metrics, see revops-metrics.'
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/pipeline-visibility/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

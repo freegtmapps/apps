@@ -1,0 +1,8 @@
+{
+  "name": "build-a-target-list",
+  "description": "Companies and contacts that match your ICP, from a sentence \\u2014 with the sources used and the gaps named.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

@@ -1,6 +1,6 @@
 ---
 name: positioning-and-story
-description: "Use this skill when your messaging describes what the product does instead of the problem it kills, sounds interchangeable with three competitors, or creates no urgency to act now. Produces a positioning where the developer is the hero and a real trend is…"
+description: Use this skill when your messaging describes what the product does instead of the problem it kills, sounds interchangeable with three competitors, or creates no urgency to act now. Produces a positioning where the developer is the hero and a real trend is the villain, plus a differentiation level you can defend. Triggers on "positioning", "messaging", "our story", "we sound like everyone", "homepage headline", "value narrative", "category", "differentiation", "why now", "nobody feels urgency".
 author: Shane O'Connor
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/shane-oconnor/positioning-and-story/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

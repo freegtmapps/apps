@@ -1,0 +1,8 @@
+{
+  "name": "give-first-email",
+  "description": "An email that offers something concrete \\u2014 a teardown, a benchmark, an estimate \\u2014 instead of asking for time.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

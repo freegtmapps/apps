@@ -1,6 +1,6 @@
 ---
 name: linkedin-ghostwriting
-description: "Use this skill when ghostwriting LinkedIn posts for a founder or executive - the ask is 'what should our CEO post', 'draft the next posts for [exec]', 'write this in [exec]'s voice', 'an industry-news take', 'a repost', or 'exec thought leadership'.…"
+description: Use this skill when ghostwriting LinkedIn posts for a founder or executive - the ask is "what should our CEO post", "draft the next posts for [exec]", "write this in [exec]'s voice", "an industry-news take", "a repost", or "exec thought leadership". Produces three ranked, typed post options per executive in that person's own voice - a news share, a repost, and a thought-leadership piece with a graphic - each short, each with an attachment, each gated against everything they have already posted. Reach for it whenever you are writing exec social content that has to sound like them, stay fresh, and never repeat itself.
 author: Gali Firon
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/gali-firon/linkedin-ghostwriting/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

@@ -1,6 +1,6 @@
 ---
 name: governed-crm-cleanup
-description: "Use this skill when CRM data is unreliable, a cleanup is overdue, or a team is considering a bulk correction. Produces an evidence-backed audit, a reviewable change plan, approved corrections, and controls that prevent the same defects from returning."
+description: Use this skill when CRM data is unreliable, a cleanup is overdue, or a team is considering a bulk correction. Produces an evidence-backed audit, a reviewable change plan, approved corrections, and controls that prevent the same defects from returning.
 author: Ryan Iyengar
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/ryan-iyengar/governed-crm-cleanup/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

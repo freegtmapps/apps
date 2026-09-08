@@ -1,6 +1,6 @@
 ---
 name: auto-reply-is-not-a-reply
-description: "Use this skill when classifying inbound responses to outbound — out-of-office, vacation and parental-leave auto-responders, delivery notices, and other machine-generated mail that looks like engagement. Produces a triage decision that keeps the sequence…"
+description: Use this skill when classifying inbound responses to outbound — out-of-office, vacation and parental-leave auto-responders, delivery notices, and other machine-generated mail that looks like engagement. Produces a triage decision that keeps the sequence alive, keeps the metrics clean, and reschedules the next touch to when the human is actually back.
 author: Lucas Godtfredsen
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/lucas-godtfredsen/auto-reply-is-not-a-reply/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

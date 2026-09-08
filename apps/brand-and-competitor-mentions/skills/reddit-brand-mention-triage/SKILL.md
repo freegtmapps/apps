@@ -1,6 +1,6 @@
 ---
 name: reddit-brand-mention-triage
-description: "Use this skill when the user wants to monitor or work through brand mentions on Reddit — \'anyone talking about us on Reddit,\' \'triage the mention queue,\' \'what's the sentiment on our brand this week.\' Sets up domain monitoring, then runs the triage…"
+description: 'Use this skill when the user wants to monitor or work through brand mentions on Reddit — "anyone talking about us on Reddit," "triage the mention queue," "what''s the sentiment on our brand this week." Sets up domain monitoring, then runs the triage loop: read each mention in its full thread context, classify reply / ignore / escalate, and keep the queue at zero.'
 author: Yahav Fuchs
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/yahav-fuchs/reddit-brand-mention-triage/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

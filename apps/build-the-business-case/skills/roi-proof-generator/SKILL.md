@@ -1,6 +1,6 @@
 ---
 name: roi-proof-generator
-description: "Use this skill when a renewal, QBR, or expansion conversation is coming and the user needs to prove what their AI agent actually delivered — 'build the renewal deck,' 'show ROI for this account,' 'the buyer is asking what they got for the money.' Turns raw…"
+description: 'Use this skill when a renewal, QBR, or expansion conversation is coming and the user needs to prove what their AI agent actually delivered — "build the renewal deck," "show ROI for this account," "the buyer is asking what they got for the money." Turns raw agent activity into a renewal-ready value receipt: tasks completed, hours returned, cost avoided, and the ROI multiple, in the customer''s own numbers. Built on Manny Medina''s billing-first ROI approach: agents are cognitively invisible to the people paying for them, so their value has to be made explicit — continuously, not just at renewal.'
 author: Manny Medina
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/manny-medina/roi-proof-generator/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

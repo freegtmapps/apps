@@ -1,6 +1,6 @@
 ---
 name: icp-lookalike-expansion
-description: "Use this skill when you have a handful of accounts or people who converted and need more like them, or when a black-box 'similar profiles' feed gives you a list you cannot explain. Extracts an explicit similarity signature from the seed and searches on it,…"
+description: Use this skill when you have a handful of accounts or people who converted and need more like them, or when a black-box 'similar profiles' feed gives you a list you cannot explain. Extracts an explicit similarity signature from the seed and searches on it, so you control what 'similar' means and can widen or tighten deliberately.
 author: Amir Baldiga
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/amir-baldiga/icp-lookalike-expansion/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

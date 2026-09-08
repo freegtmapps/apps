@@ -1,6 +1,6 @@
 ---
 name: icp-matrix-builder
-description: "Use this skill when targeting needs to become a decision rule instead of a description — before launching outbound for a new company or product line, when refining targeting after the first campaign data lands, when expanding into a new vertical, or when a list is producing replies from people…"
+description: 'Use this skill when targeting needs to become a decision rule instead of a description — before launching outbound for a new company or product line, when refining targeting after the first campaign data lands, when expanding into a new vertical, or when a list is producing replies from people who will never buy. Produces a scored, tiered ICP matrix that a list build can be filtered against and that anyone on the team can apply the same way twice. Trigger phrasings: "define our ICP", "who should we target", "build the ICP", "tier these accounts", "score this list", "our leads are bad", "we''re getting replies but no deals", "which segment do we go after".'
 author: Tanyo Gochev
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/tanyo-gochev/icp-matrix-builder/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

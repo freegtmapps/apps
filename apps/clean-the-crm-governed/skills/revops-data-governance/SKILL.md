@@ -1,6 +1,6 @@
 ---
 name: revops-data-governance
-description: "Use this skill when CRM reports do not match, fields are a mess, hundreds of properties sit unused, or nobody trusts the data. Builds a data model mapped to the customer journey, designs field naming conventions and governance, sets up quality scorecards…"
+description: 'Use this skill when CRM reports do not match, fields are a mess, hundreds of properties sit unused, or nobody trusts the data. Builds a data model mapped to the customer journey, designs field naming conventions and governance, sets up quality scorecards (completeness, accuracy, consistency, timeliness), and audits integrations to stop data rot. Produces a data dictionary, a field governance process with create and deprecate workflows, and quarterly quality targets. Rule: if a field has no documented owner and no documented use case, delete it. Trigger phrases: our reports do not match, our CRM is a mess, data quality, system of record, deduplication, field governance.'
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/revops-data-governance/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

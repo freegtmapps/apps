@@ -1,6 +1,6 @@
 ---
 name: abm-engagement-scoring
-description: "Use this skill when an ABM program cannot prove engagement matters, accounts get handed to sales on gut feel, or nobody knows which activity moves buying groups forward. Builds an account engagement score (weighted signals plus decay), maps buying group…"
+description: 'Use this skill when an ABM program cannot prove engagement matters, accounts get handed to sales on gut feel, or nobody knows which activity moves buying groups forward. Builds an account engagement score (weighted signals plus decay), maps buying group coverage across the decision-making unit, and defines explicit handover gates so marketing and sales agree on readiness. Produces a scoring model, a buying group tracker template, and a handover decision rule. Rule: without buying group visibility a high engagement score is a false positive; handover requires both the score and the coverage threshold met. Trigger phrases: ABM measurement, which accounts are hot, buying committee coverage, when do we hand this to sales, account engagement score, ABM ROI.'
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/abm-engagement-scoring/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

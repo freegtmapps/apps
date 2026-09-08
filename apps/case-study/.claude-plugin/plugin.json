@@ -1,0 +1,8 @@
+{
+  "name": "case-study",
+  "description": "A customer story built around their numbers, not adjectives.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

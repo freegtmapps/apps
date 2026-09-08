@@ -1,6 +1,6 @@
 ---
 name: stage-aware-follow-up
-description: "Use this skill when a live deal needs its next touch and the right move isn't obvious — a prospect replied warm but never booked, a call happened and the thread went quiet, a proposal or agreement is out and unsigned, a booked meeting was a no-show, or the…"
+description: 'Use this skill when a live deal needs its next touch and the right move isn''t obvious — a prospect replied warm but never booked, a call happened and the thread went quiet, a proposal or agreement is out and unsigned, a booked meeting was a no-show, or the deal has gone cold. Produces the exact next message plus the date and hook of the touch after it, so no warm thread is left un-dated. Trigger phrasings: "follow up with", "they replied but never booked", "chase the booking", "they ghosted", "agreement sent, no response", "what do I send next", "the thread went quiet", "post-call email", "they no-showed", "re-engage this deal".'
 author: Tanyo Gochev
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/tanyo-gochev/stage-aware-follow-up/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

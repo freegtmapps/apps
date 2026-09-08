@@ -1,6 +1,6 @@
 ---
 name: linkedin-success-factors
-description: "Use this skill when reviewing a LinkedIn campaign before launch, auditing LinkedIn outreach performance, checking targeting, message length, lead magnets, scheduling, and human-like behavior, or benchmarking connection acceptance and reply rates."
+description: Use this skill when reviewing a LinkedIn campaign before launch, auditing LinkedIn outreach performance, checking targeting, message length, lead magnets, scheduling, and human-like behavior, or benchmarking connection acceptance and reply rates.
 author: Alex Vacca
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/alex-vacca/linkedin-success-factors/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

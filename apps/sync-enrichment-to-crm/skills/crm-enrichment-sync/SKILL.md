@@ -1,6 +1,6 @@
 ---
 name: crm-enrichment-sync
-description: "Use this skill when a user has an approved set of enriched contacts and wants to create or update CRM records without duplicates, silent overwrites, or ambiguous writes. Produces a schema-aware field map, duplicate decisions, an exact create-update-skip…"
+description: Use this skill when a user has an approved set of enriched contacts and wants to create or update CRM records without duplicates, silent overwrites, or ambiguous writes. Produces a schema-aware field map, duplicate decisions, an exact create-update-skip plan, an approval gate, and a reconciliation receipt for every attempted record.
 author: Nylan Richard
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/nylan-richard/crm-enrichment-sync/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

@@ -1,6 +1,6 @@
 ---
 name: enrich-company
-description: "Pull any company's full verified profile via Lusha. Takes a company name, domain, or Lusha company ID. Returns firmographics, funding stage, tech stack, employee count, revenue range, HQ, corporate structure, live buying signals, and verified contact count…"
+description: Pull any company's full verified profile via Lusha. Takes a company name, domain, or Lusha company ID. Returns firmographics, funding stage, tech stack, employee count, revenue range, HQ, corporate structure, live buying signals, and verified contact count by seniority. Single company lookup — complete, verified, ready to act on. Requires a Lusha connection.
 author: Udi Cohen
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/udi-cohen/enrich-company/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

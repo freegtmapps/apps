@@ -1,6 +1,6 @@
 ---
 name: website-to-signals
-description: "Use this skill when you have a company's website and need a shortlist of intent signals worth running for them — 'which buying signals fit this business,' 'turn this URL into a signal plan.' Given a website, it returns 3-5 detectable intent signals, each…"
+description: Use this skill when you have a company's website and need a shortlist of intent signals worth running for them — "which buying signals fit this business," "turn this URL into a signal plan." Given a website, it returns 3-5 detectable intent signals, each tied to a concrete why-now, with where to detect it and who to target.
 author: Peter Cools
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/peter-cools/website-to-signals/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

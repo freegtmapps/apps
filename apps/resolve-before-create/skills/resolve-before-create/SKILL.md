@@ -1,6 +1,6 @@
 ---
 name: resolve-before-create
-description: "Use this skill before importing, enriching, or manually creating contacts and accounts in a CRM. Produces a create, link, review, or reject decision that prevents duplicates while preserving uncertain matches for human resolution."
+description: Use this skill before importing, enriching, or manually creating contacts and accounts in a CRM. Produces a create, link, review, or reject decision that prevents duplicates while preserving uncertain matches for human resolution.
 author: Ryan Iyengar
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/ryan-iyengar/resolve-before-create/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

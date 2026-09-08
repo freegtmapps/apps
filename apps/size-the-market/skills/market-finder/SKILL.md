@@ -1,6 +1,6 @@
 ---
 name: market-finder
-description: "Use this skill when you need to enumerate every business of a given type in a geography — 'find all X in Y', 'build a list of', 'market sizing', 'account universe', 'how many X in Y', 'TAM for', 'discover all', 'prospect list' — or when you already have a…"
+description: 'Use this skill when you need to enumerate every business of a given type in a geography — "find all X in Y", "build a list of", "market sizing", "account universe", "how many X in Y", "TAM for", "discover all", "prospect list" — or when you already have a list and want it checked: "audit my list", "compare against", "what am I missing", "gap analysis", "verify my business list". Produces a deduplicated, source-linked market inventory with a confidence score per entity; in audit mode, a three-way comparison of your list against fresh discovery (matched / discovered-only / reference-only) with a coverage score. Not for monitoring known competitors over time or deep-diving a single company — this play is for mapping a whole market.'
 author: Uri Knorovich
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/uri-knorovich/market-finder/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

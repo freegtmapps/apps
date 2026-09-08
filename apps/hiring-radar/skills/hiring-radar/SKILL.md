@@ -1,6 +1,6 @@
 ---
 name: hiring-radar
-description: "Use this skill when job postings should be watched as buying signals — continuously, with no outreach. Runs daily over watched accounts plus job descriptions matching tracked queries, keeps only the hiring patterns that matter to your GTM (hiring spree,…"
+description: Use this skill when job postings should be watched as buying signals — continuously, with no outreach. Runs daily over watched accounts plus job descriptions matching tracked queries, keeps only the hiring patterns that matter to your GTM (hiring spree, buyer-persona hire, build-vs-buy, competitor tool in JD), and lands each signal on the account record with a per-signal alert and a reconciled digest. Built for inbound, PLG, and relationship-led motions. Detection and classification only — it never drafts or sends outreach.
 author: Dušan Vystrčil
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/dusan-vystrcil/hiring-radar/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

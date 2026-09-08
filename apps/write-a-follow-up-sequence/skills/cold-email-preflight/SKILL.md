@@ -1,6 +1,6 @@
 ---
 name: cold-email-preflight
-description: "Use this skill right before launching a cold email campaign: the final checklist covering authentication, list quality, copy risk, and kill-switch thresholds. Produces a launch/hold decision and the monitoring rules for the first week."
+description: 'Use this skill right before launching a cold email campaign: the final checklist covering authentication, list quality, copy risk, and kill-switch thresholds. Produces a launch/hold decision and the monitoring rules for the first week.'
 author: Imad Badreddine
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/imad-badreddine/cold-email-preflight/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

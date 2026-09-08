@@ -1,0 +1,8 @@
+{
+  "name": "abm-engagement-scoring",
+  "description": "Account-level engagement, buying-group coverage, and when to hand over.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

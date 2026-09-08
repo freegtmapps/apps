@@ -1,0 +1,8 @@
+{
+  "name": "track-job-changes",
+  "description": "Champions who moved, and the account they moved to.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

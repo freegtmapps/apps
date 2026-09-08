@@ -1,6 +1,6 @@
 ---
 name: sales-methodology
-description: "Implement and operationalize proven sales methodologies across revenue teams, with deep SPICED qualification depth. Use when the user mentions SPICED, MEDDIC, MEDDPICC, BANT, Challenger, SPIN, Gap Selling, sales qualification, deal scoring, sales process…"
+description: 'Implement and operationalize proven sales methodologies across revenue teams, with deep SPICED qualification depth. Use when the user mentions SPICED, MEDDIC, MEDDPICC, BANT, Challenger, SPIN, Gap Selling, sales qualification, deal scoring, sales process design, pipeline qualification, discovery frameworks, deal review, sales coaching, rep onboarding, discount negotiation, discount objection handling, or pricing objections. SPICED depth includes full qualification scoring, buying committee mapping by persona, discovery call structure, pipeline stage gating, and canonical language patterns by customer cluster. Also trigger for structuring discovery calls, scoring deals, running deal reviews, handling discount requests, or operationalizing any sales framework. Covers methodology selection, CRM implementation, and discount negotiation playbooks. BOUNDARY: For change management see revops-change-management. For ICP building see icp-builder. For discount governance policy see deal-desk-operations.'
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/sales-methodology/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

@@ -1,6 +1,6 @@
 ---
 name: tam-from-verified-data
-description: "Use this skill when you need a defensible market-size number - annual planning, board prep, or territory design. Takes an ICP definition and returns TAM, SAM, and SOM built from Lusha's verified database: company counts, contact coverage, and signal…"
+description: 'Use this skill when you need a defensible market-size number - annual planning, board prep, or territory design. Takes an ICP definition and returns TAM, SAM, and SOM built from Lusha''s verified database: company counts, contact coverage, and signal density per segment, with every number traceable to real data instead of analyst-report extrapolation. Requires a Lusha connection.'
 author: Yoni Tserruya
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/yoni-tserruya/tam-from-verified-data/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

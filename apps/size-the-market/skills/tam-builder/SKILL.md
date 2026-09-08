@@ -1,6 +1,6 @@
 ---
 name: tam-builder
-description: "Use this skill when the target market needs to become an actual enumerated list of companies — every organisation that could plausibly buy, with a verified size band, exact geography, and fit classification, deduplicated to one row per company. Companies…"
+description: 'Use this skill when the target market needs to become an actual enumerated list of companies — every organisation that could plausibly buy, with a verified size band, exact geography, and fit classification, deduplicated to one row per company. Companies only; contacts and email verification are a separate, later stage. Produces the company universe plus an honest coverage report. Trigger phrasings: "map the TAM", "build the TAM", "total addressable market", "pull every company", "target account universe", "who could buy this", "size the market", "list every company that", "refresh the TAM".'
 author: Tanyo Gochev
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/tanyo-gochev/tam-builder/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

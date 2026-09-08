@@ -1,0 +1,8 @@
+{
+  "name": "multichannel-campaign",
+  "description": "One campaign across email, LinkedIn and calls, with the sequencing and the A/B plan.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

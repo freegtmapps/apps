@@ -1,9 +1,9 @@
 ---
 name: deal-qualification-gates
-description: 'Install evidence-gated qualification on a live pipeline: score the QUALITY of evidence behind every deal (1-5 per qualification dimension), set minimum scores per stage, and enforce qualify-or-kill at each gate. Triggers on ''zombie…'
+description: 'Install evidence-gated qualification on a live pipeline: score the QUALITY of evidence behind every deal (1-5 per qualification dimension), set minimum scores per stage, and enforce qualify-or-kill at each gate. Triggers on ''zombie deals,'' ''pipeline is full of junk,'' ''is this deal real,'' ''qualify or kill,'' ''deals stall at proposal,'' ''forecast built on hope,'' ''reps say every deal is closing,'' ''stage criteria,'' ''exit criteria,'' ''MEDDIC scoring,'' ''SPICED scoring,'' ''qualification framework rollout,'' or any situation where deals advance on rep optimism instead of buyer evidence. Works with SPICED by default and maps to MEDDICC or BANT. BOUNDARY: icp-builder owns ACCOUNT-level fit (is this the right company) and carries a summary of these gates as its pipeline-enforcement step; this skill is the full deal-level operating system (is this deal real). deal-velocity-engineer treats slow deals as a speed problem; this skill treats false deals as a truth problem, and it runs first, because accelerating an unqualified deal just produces a faster loss. Weekly pipeline reviews (e.g. pipeline-review) consume the scores this skill produces; they read the dashboard, this skill builds the engine under it.'
 author: Rutger Katz
-source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/rutger-katz/deal-qualification-gates/SKILL.md
-source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba
+source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/deal-qualification-gates/SKILL.md
+source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80
 license: MIT
 adapted: false
 ---
@@ -68,16 +68,6 @@ Week 1: score the CURRENT pipeline as-is, no consequences. The distribution is t
 Week 2: install the gates forward-looking (new stage transitions only). Grandfather existing deals but flag them in the exception report.
 Week 4: first qualify-or-kill review over the flagged backlog. Expect to kill 15-30% of "active" pipeline; the forecast gets smaller and true simultaneously, and that trade is the entire point.
 
-## What good looks like
-
-- Evidence scores rise with stage. The week-one distribution is the diagnostic: late-stage deals carrying early-stage evidence is the finding, not an embarrassment to hide.
-- Every score of 3 or higher points at something: a logged quote, a transcript, an email. The 2-to-3 jump is auditable, never vibes.
-- No deal advances with any dimension under its floor, deals move backward when the evidence says so, and nobody treats a downgrade as a failure. A ratchet-only pipeline is the tell that the gates are theater.
-- Every Commit-stage deal has a concrete answer to "what breaks for them if they do nothing until next quarter?" written in the record.
-- The weekly below-gate exception report is short, and each deal on it carries a verdict with a name and a date: re-qualify, downgrade, or kill. "Leave it and hope" never appears.
-- The first month kills 15-30% of "active" pipeline and the forecast gets smaller and truer at the same time. Leadership treats that as the win it is.
-- Scoring happens when evidence lands, from calls and transcripts, not from Friday memory.
-
 ## Diagnostic Questions
 
 1. Pick your three biggest deals. For each: what breaks for the buyer if they do nothing this quarter? If the answer starts with "I think," score it honestly.
@@ -85,3 +75,5 @@ Week 4: first qualify-or-kill review over the flagged backlog. Expect to kill 15
 3. When did a deal in this pipeline last move BACKWARD a stage? If the answer is never, stages are being used as a ratchet, and the forecast inherits the fiction.
 4. How many deals older than 2x your median cycle time sit in the pipeline, and what evidence score do they carry?
 5. Who is allowed to kill a deal, and when did that last happen without a manager forcing it?
+
+> Built by [Neon Triforce](https://neontriforce.com)

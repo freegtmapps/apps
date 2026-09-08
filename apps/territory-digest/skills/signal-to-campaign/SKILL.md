@@ -1,6 +1,6 @@
 ---
 name: signal-to-campaign
-description: "Use this skill when a team has an offer, target market, or observed account event and needs to turn it into a launch-ready signal-led campaign. Produces a signal thesis, evidence-backed account cohort, buyer map, channel-ready drafts, and a QA gate.…"
+description: Use this skill when a team has an offer, target market, or observed account event and needs to turn it into a launch-ready signal-led campaign. Produces a signal thesis, evidence-backed account cohort, buyer map, channel-ready drafts, and a QA gate. Trigger on “build a campaign around this signal,” “find companies showing this problem,” “who should we contact now,” or “turn this market event into pipeline.”
 author: Bojan Berisavljevic
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/bojan-berisavljevic/signal-to-campaign/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

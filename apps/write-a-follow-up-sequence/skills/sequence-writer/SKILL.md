@@ -1,6 +1,6 @@
 ---
 name: sequence-writer
-description: "Turn any trigger event into a full cold outreach sequence. Takes a signal, a contact identifier, and product context. Verifies the contact via Lusha, confirms account signals, and writes a multi-step sequence grounded in the specific trigger — not a…"
+description: Turn any trigger event into a full cold outreach sequence. Takes a signal, a contact identifier, and product context. Verifies the contact via Lusha, confirms account signals, and writes a multi-step sequence grounded in the specific trigger — not a generic template. Up to 5 steps with subject lines, body copy, and send cadence. Requires a Lusha connection.
 author: Gal Tamir
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/gal-tamir/sequence-writer/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

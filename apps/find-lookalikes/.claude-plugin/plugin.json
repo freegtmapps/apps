@@ -1,0 +1,8 @@
+{
+  "name": "find-lookalikes",
+  "description": "Turn one great customer into a ranked list of similar accounts.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

@@ -1,6 +1,6 @@
 ---
 name: newsletter-format
-description: "Use this skill whenever someone wants to build a newsletter that attracts high-ticket clients, design their newsletter structure, create an analysis-style newsletter, or position themselves as an expert through weekly breakdowns. Also triggers on phrases…"
+description: Use this skill whenever someone wants to build a newsletter that attracts high-ticket clients, design their newsletter structure, create an analysis-style newsletter, or position themselves as an expert through weekly breakdowns. Also triggers on phrases like "design my newsletter format," "newsletter format for getting clients," "build my newsletter system," "analysis newsletter," "breakdown newsletter," or "how do I use my newsletter to attract clients." Designs a high-converting newsletter format from scratch using the $10,000 Newsletter Format framework — the system Daniel used to land multiple 4 & 5-figure clients from a list under 1,000 subscribers. Walks the user through all 8 steps — choosing their signature asset, building a breakdown framework, creating a value proposition, naming the newsletter, finding examples, creating an email template, writing their first issue, and setting up their publishing system.
 author: Daniel Bustamante
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/daniel-bustamante/newsletter-format/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

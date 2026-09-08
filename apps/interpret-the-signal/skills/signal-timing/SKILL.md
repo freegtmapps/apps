@@ -1,6 +1,6 @@
 ---
 name: signal-timing
-description: "Use this skill when a signal has fired and you need to decide when and how to reach out — 'when do I contact them,' 'is this signal still warm.' Given a signal type and the date it fired, it returns the outreach window, when it goes cold, the cadence,…"
+description: Use this skill when a signal has fired and you need to decide when and how to reach out — "when do I contact them," "is this signal still warm." Given a signal type and the date it fired, it returns the outreach window, when it goes cold, the cadence, channel order, and a one-line angle.
 author: Peter Cools
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/peter-cools/signal-timing/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

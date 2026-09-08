@@ -1,0 +1,8 @@
+{
+  "name": "score-and-route-leads",
+  "description": "Score, assign the right owner, and hit the speed-to-lead SLA.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

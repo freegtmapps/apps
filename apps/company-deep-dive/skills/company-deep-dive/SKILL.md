@@ -1,6 +1,6 @@
 ---
 name: company-deep-dive
-description: "Use this skill when the ask is about one specific company: 'tell me about [company]', 'research [company]', 'what does [company] do', 'who is [company]', 'look up [company]', 'company deep dive', 'due diligence on [company]', 'background on [company]',…"
+description: 'Use this skill when the ask is about one specific company: "tell me about [company]", "research [company]", "what does [company] do", "who is [company]", "look up [company]", "company deep dive", "due diligence on [company]", "background on [company]", "dig into [company]", "analyze [company]" — or when evaluating a company as a sales target, partner, or investment. Research the live web instead of answering from memory: funding, leadership changes, and product launches move faster than any knowledge base, so run it even for well-known companies. Produces a sourced 360-degree report covering funding, leadership, product and technology, market position, news, and strategic outlook — with a date and URL on every claim.'
 author: Uri Knorovich
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/uri-knorovich/company-deep-dive/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

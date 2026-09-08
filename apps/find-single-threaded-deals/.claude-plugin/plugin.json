@@ -1,0 +1,8 @@
+{
+  "name": "find-single-threaded-deals",
+  "description": "Deals with one contact and who to engage next.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

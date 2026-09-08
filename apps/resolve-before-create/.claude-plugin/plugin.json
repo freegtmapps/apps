@@ -1,0 +1,8 @@
+{
+  "name": "resolve-before-create",
+  "description": "Match to an existing record before creating a new one.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

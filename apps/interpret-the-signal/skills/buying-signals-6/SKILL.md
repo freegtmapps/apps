@@ -1,6 +1,6 @@
 ---
 name: buying-signals-6
-description: "Use this skill when prioritizing outreach, building signal-based campaigns, or setting up intent tracking — 6 buying signals ranked by purchase correlation: former customers and alumni users, new leadership, high-intent website visits, tech stack changes,…"
+description: 'Use this skill when prioritizing outreach, building signal-based campaigns, or setting up intent tracking — 6 buying signals ranked by purchase correlation: former customers and alumni users, new leadership, high-intent website visits, tech stack changes, expansion, and hiring or downsizing.'
 author: Alex Vacca
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/alex-vacca/buying-signals-6/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

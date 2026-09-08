@@ -1,6 +1,6 @@
 ---
 name: competitor-intel
-description: "Pull a fact-led competitive intel brief on any competitor. Takes a competitor name and a one-line deal context — displacement play, renewal defence, or general competitive prep. Returns leadership changes, hiring signals, customer intent, recent product…"
+description: Pull a fact-led competitive intel brief on any competitor. Takes a competitor name and a one-line deal context — displacement play, renewal defence, or general competitive prep. Returns leadership changes, hiring signals, customer intent, recent product moves, and named displacement angles — all shaped by the deal you're in. Requires a Lusha connection.
 author: Yoni Tserruya
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/yoni-tserruya/competitor-intel/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

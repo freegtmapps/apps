@@ -1,6 +1,6 @@
 ---
 name: bulk-contact-enrichment
-description: "Use this skill when a user uploads a CSV or spreadsheet of contacts and wants verified work emails, phone numbers, or professional fields appended at scale. Produces a cleaned input, confirmed field mapping, bounded enrichment run, non-destructive merge,…"
+description: Use this skill when a user uploads a CSV or spreadsheet of contacts and wants verified work emails, phone numbers, or professional fields appended at scale. Produces a cleaned input, confirmed field mapping, bounded enrichment run, non-destructive merge, quality report, and export that preserves every original row and value.
 author: Nylan Richard
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/nylan-richard/bulk-contact-enrichment/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

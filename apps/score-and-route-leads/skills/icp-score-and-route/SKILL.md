@@ -1,6 +1,6 @@
 ---
 name: icp-score-and-route
-description: "Score any lead or account against your ICP criteria, verify key contacts via Lusha, and return a routing recommendation — AE, SDR, or nurture — with a confidence level and the specific data points that drove the decision. Runs on a single lead or across a…"
+description: Score any lead or account against your ICP criteria, verify key contacts via Lusha, and return a routing recommendation — AE, SDR, or nurture — with a confidence level and the specific data points that drove the decision. Runs on a single lead or across a full list in one pass. Requires a Lusha connection.
 author: Udi Cohen
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/udi-cohen/icp-score-and-route/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

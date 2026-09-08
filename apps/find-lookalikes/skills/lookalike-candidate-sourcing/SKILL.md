@@ -1,6 +1,6 @@
 ---
 name: lookalike-candidate-sourcing
-description: "Use this skill when a role worked and you want more of that person, or when you are backfilling someone strong and a job-board post is not going to find them. Takes one exemplar profile and returns a ranked, scored shortlist with the reasoning behind each…"
+description: Use this skill when a role worked and you want more of that person, or when you are backfilling someone strong and a job-board post is not going to find them. Takes one exemplar profile and returns a ranked, scored shortlist with the reasoning behind each score visible.
 author: Amir Baldiga
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/amir-baldiga/lookalike-candidate-sourcing/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

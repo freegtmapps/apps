@@ -1,6 +1,6 @@
 ---
 name: reach-out
-description: "Use this skill whenever creating outreach — a cold email, a LinkedIn message, a follow-up, or a multi-step sequence — for a company, a contact, a list, or a signal. Use it even when the user doesn't say 'outreach': any request to write to, contact, message, or get in front of a prospect or…"
+description: 'Use this skill whenever creating outreach — a cold email, a LinkedIn message, a follow-up, or a multi-step sequence — for a company, a contact, a list, or a signal. Use it even when the user doesn''t say "outreach": any request to write to, contact, message, or get in front of a prospect or account goes through here. Covers picking the hook, matching the org''s voice, choosing the sequence shape, and staging everything for approval. Trigger phrasings: "reach out to", "draft outreach", "email this company", "message this prospect", "follow up with", "build a sequence", "contact these visitors". Also use it for strategic outreach questions ("how should our cold emails sound", "what cadence should we run") — the output is then a point of view grounded in the org''s saved voice, not a sequence.'
 author: Ido Goldberg
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/ido-goldberg/reach-out/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

@@ -1,0 +1,8 @@
+{
+  "name": "pipeline-review",
+  "description": "Stuck, skipped and regressing deals before the forecast call, with the next action for each.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

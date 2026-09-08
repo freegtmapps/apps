@@ -1,6 +1,6 @@
 ---
 name: revops-hubspot
-description: "Use this skill when CRM architecture breaks revenue clarity: lifecycle stages that do not match the funnel, unmaintainable properties, reporting that needs three spreadsheets. Covers object model design, lifecycle architecture, property governance,…"
+description: 'Use this skill when CRM architecture breaks revenue clarity: lifecycle stages that do not match the funnel, unmaintainable properties, reporting that needs three spreadsheets. Covers object model design, lifecycle architecture, property governance, pipeline configuration, automation patterns, and reporting structure for HubSpot. Produces a documented architecture with stage definitions, property naming standards, workflow specs, and a revenue-decision-focused dashboard roadmap. Rule: design for reporting first; if you cannot name the report a property feeds, do not create it. Trigger phrases: HubSpot setup, lifecycle stages, messy HubSpot instance, deal pipelines, HubSpot reporting, CRM architecture.'
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/revops-hubspot/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

@@ -1,6 +1,6 @@
 ---
 name: crm-health-scoring
-description: "Use this skill when leaders need a repeatable measure of CRM reliability, its trend, and the defects driving it. Produces a deterministic health score, object- and rule-level diagnostics, a confidence statement, and a prioritized remediation queue."
+description: Use this skill when leaders need a repeatable measure of CRM reliability, its trend, and the defects driving it. Produces a deterministic health score, object- and rule-level diagnostics, a confidence statement, and a prioritized remediation queue.
 author: Ryan Iyengar
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/ryan-iyengar/crm-health-scoring/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

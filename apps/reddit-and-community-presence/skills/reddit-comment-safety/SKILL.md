@@ -1,6 +1,6 @@
 ---
 name: reddit-comment-safety
-description: "Use this skill when reviewing or generating comments that touch a brand on Reddit — \'is this comment safe to post,\' \'why do our comments get removed,\' \'make this sound less like an ad.\' Runs a six-point compliance check on every comment before it…"
+description: Use this skill when reviewing or generating comments that touch a brand on Reddit — "is this comment safe to post," "why do our comments get removed," "make this sound less like an ad." Runs a six-point compliance check on every comment before it ships, switches to natural-mention mode where self-promotion is restricted, and enforces the posting patterns that keep accounts alive.
 author: Yahav Fuchs
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/yahav-fuchs/reddit-comment-safety/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

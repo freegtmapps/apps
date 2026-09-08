@@ -1,6 +1,6 @@
 ---
 name: multichannel-campaign-builder
-description: "Use this skill when someone needs a complete outbound sequence written — every touch across LinkedIn and email, not a single cold email. Produces three distinct angles to choose from, then the full sequence with each message ready to send, calibrated to…"
+description: 'Use this skill when someone needs a complete outbound sequence written — every touch across LinkedIn and email, not a single cold email. Produces three distinct angles to choose from, then the full sequence with each message ready to send, calibrated to the campaign type and channel mix and self-checked against a copywriting bar before it''s handed over. Trigger phrasings: "write me a campaign", "build a sequence", "multichannel campaign", "cold outbound sequence", "social selling sequence", "sequence the people who engaged with our post", "webinar follow-up campaign", "LinkedIn and email sequence", "rewrite this campaign".'
 author: Erwann Lefevre
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/erwann-lefevre/multichannel-campaign-builder/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

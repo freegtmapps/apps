@@ -1,6 +1,6 @@
 ---
 name: linkedin-limits-warmup
-description: "Use this skill when planning LinkedIn campaign volume, avoiding account restrictions or bans, warming up a new or dormant LinkedIn account, setting safe daily limits for connection requests, DMs, and InMails, or recovering an account from restriction."
+description: Use this skill when planning LinkedIn campaign volume, avoiding account restrictions or bans, warming up a new or dormant LinkedIn account, setting safe daily limits for connection requests, DMs, and InMails, or recovering an account from restriction.
 author: Alex Vacca
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/alex-vacca/linkedin-limits-warmup/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

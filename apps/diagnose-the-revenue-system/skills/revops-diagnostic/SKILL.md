@@ -1,6 +1,6 @@
 ---
 name: revops-diagnostic
-description: "Revenue operations diagnostic frameworks for identifying system constraints and root causes in B2B GTM organizations. Use when the user mentions diagnosing revenue problems, finding the constraint, IFA diagnostic, six stages of check, system thinking, root…"
+description: 'Revenue operations diagnostic frameworks for identifying system constraints and root causes in B2B GTM organizations. Use when the user mentions diagnosing revenue problems, finding the constraint, IFA diagnostic, six stages of check, system thinking, root cause analysis, A3 analysis, GTM health check, revenue system audit, or figuring out what''s wrong with their revenue engine. Also trigger when someone describes symptoms like weak pipeline, wrong forecast, underperforming reps, or leadership chaos. If someone says "we keep missing plan" or "everyone is busy but nothing moves," activate this skill. This is the diagnostic skill: find the real constraint before recommending what to fix.'
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/revops-diagnostic/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

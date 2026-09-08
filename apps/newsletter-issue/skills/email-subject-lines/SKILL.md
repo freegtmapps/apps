@@ -1,6 +1,6 @@
 ---
 name: email-subject-lines
-description: "Use this skill when you need a subject line for any email, want to improve open rates, or are A/B testing subject lines. Generates 5-10 high-converting email subject lines using 100 proven direct-response frameworks organized by psychological trigger…"
+description: Use this skill when you need a subject line for any email, want to improve open rates, or are A/B testing subject lines. Generates 5-10 high-converting email subject lines using 100 proven direct-response frameworks organized by psychological trigger (curiosity, urgency, pain point, authority, results, contrarian, value, action, empowerment, story, trend, quick win). Analyzes your email content to match the right frameworks, then outputs subject line variations with preview text recommendations. Trigger on "subject line", "email subject", "what should the subject be", "help with this email subject", "write subject lines", "improve my open rates", "subject line ideas", or any request involving email + subject line.
 author: Daniel Bustamante
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/daniel-bustamante/email-subject-lines/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

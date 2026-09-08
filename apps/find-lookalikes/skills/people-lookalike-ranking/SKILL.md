@@ -1,6 +1,6 @@
 ---
 name: people-lookalike-ranking
-description: "Use this skill when one prospect, customer, champion, or operator is a proven fit and the user wants more people with the same useful characteristics. Produces a deliberately defined similarity signature, a scored and explainable shortlist, a quality…"
+description: Use this skill when one prospect, customer, champion, or operator is a proven fit and the user wants more people with the same useful characteristics. Produces a deliberately defined similarity signature, a scored and explainable shortlist, a quality threshold, and a controlled widening plan when the market is too narrow.
 author: Nylan Richard
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/nylan-richard/people-lookalike-ranking/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

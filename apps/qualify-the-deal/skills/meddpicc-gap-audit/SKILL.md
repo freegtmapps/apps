@@ -1,6 +1,6 @@
 ---
 name: meddpicc-gap-audit
-description: "Use this skill when a deal is coming up for a forecast call, a stage change, when someone asks what's actually missing on a deal, or after a new call or email that might change qualification — deal review, deal inspection, deal qualification, MEDDPICC gap…"
+description: 'Use this skill when a deal is coming up for a forecast call, a stage change, when someone asks what''s actually missing on a deal, or after a new call or email that might change qualification — deal review, deal inspection, deal qualification, MEDDPICC gap check, qualification gap. Input: one or more meeting transcripts and/or email threads for the deal (required) plus, optionally, the deal''s current CRM/qualification field values (for reconciliation). It maps MEDDPICC/MEDDIC signal straight out of the transcripts and emails, citing the exact line behind every mapping, then reconciles that against the CRM values if supplied — separating confirmed risks from open unknowns and weighting gaps by deal stage. Can optionally write reconciled values back to a connected CRM, but only field by field and only with the user''s explicit permission — never from a live connection alone.'
 author: Amit Rotstein
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/amit-rotstein/meddpicc-gap-audit/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

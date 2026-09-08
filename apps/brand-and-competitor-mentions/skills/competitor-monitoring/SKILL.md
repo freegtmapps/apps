@@ -1,6 +1,6 @@
 ---
 name: competitor-monitoring
-description: "Use this skill when you need to know what rival companies are doing — 'what are my competitors doing', 'competitor update', 'competitor news', 'competitive landscape', 'market intel', 'what's new with [company]', 'track [company]', 'competitor briefing',…"
+description: Use this skill when you need to know what rival companies are doing — "what are my competitors doing", "competitor update", "competitor news", "competitive landscape", "market intel", "what's new with [company]", "track [company]", "competitor briefing", "who's making moves", "we keep losing deals to [company]" — or before a board meeting, battlecard refresh, or strategy session that needs competitive context. Produces a structured intelligence briefing — funding, M&A, leadership moves, product launches, hiring waves, partnerships — with every signal date-verified against its primary source and deduped against a running memory file per competitor, so each run surfaces only what is new.
 author: Alon Goldenberg
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/alon-goldenberg/competitor-monitoring/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

@@ -1,6 +1,34 @@
 {
   "apps": [
     {
+      "slug": "abm-engagement-scoring",
+      "name": "ABM engagement scoring",
+      "description": "Account-level engagement, buying-group coverage, and when to hand over.",
+      "category": "watch-signals",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "which target accounts are heating up?",
+        "is Acme ready for sales?"
+      ],
+      "skills": [
+        "abm-engagement-scoring"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "crm"
+        ],
+        "optional": [
+          "product",
+          "website"
+        ]
+      }
+    },
+    {
       "slug": "battlecard",
       "name": "Battlecard",
       "description": "Positioning, weaknesses and objection handling against a named competitor.",
@@ -27,6 +55,194 @@
       "needs_answered": [
         "product"
       ]
+    },
+    {
+      "slug": "brand-and-competitor-mentions",
+      "name": "Brand and competitor mentions",
+      "description": "Mentions of you, your competitors and your category's pain language, classified and routed.",
+      "category": "watch-signals",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "any mentions of us this week?",
+        "what are people saying about Sourcegraph?"
+      ],
+      "skills": [
+        "reddit-brand-mention-triage",
+        "competitor-monitoring"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "web"
+        ]
+      }
+    },
+    {
+      "slug": "build-a-target-list",
+      "name": "Build a target list",
+      "description": "Companies and contacts that match your ICP, from a sentence — with the sources used and the gaps named.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "build me a list of fintechs in Berlin",
+        "50 Series B dev-tool companies hiring SDRs"
+      ],
+      "skills": [
+        "list-architect",
+        "build-and-fill-a-tam",
+        "icp-contact-search-and-enrichment",
+        "never-guess-an-email"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "enrichment"
+        ],
+        "optional": [
+          "crm",
+          "github"
+        ]
+      }
+    },
+    {
+      "slug": "build-the-business-case",
+      "name": "Build the business case",
+      "description": "ROI case and mutual action plan in the buyer's numbers.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "build the ROI case for Acme",
+        "mutual action plan for the Ramp deal"
+      ],
+      "skills": [
+        "roi-business-case",
+        "mutual-action-plan-builder",
+        "roi-proof-generator"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "crm"
+        ]
+      }
+    },
+    {
+      "slug": "bulk-enrich-contacts",
+      "name": "Bulk enrich contacts",
+      "description": "Enrich a list against a waterfall of providers, cheapest first, with hit rates reported.",
+      "category": "keep-in-sync",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "enrich this list",
+        "find emails for these 200 people"
+      ],
+      "skills": [
+        "bulk-contact-enrichment",
+        "data-enrichment",
+        "never-guess-an-email"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "enrichment"
+        ]
+      }
+    },
+    {
+      "slug": "case-study",
+      "name": "Case study",
+      "description": "A customer story built around their numbers, not adjectives.",
+      "category": "content",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "write the Northwind case study",
+        "turn these call notes into a case study"
+      ],
+      "skills": [
+        "b2b-case-study-production",
+        "qbr-ebr-builder"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "crm"
+        ]
+      }
+    },
+    {
+      "slug": "clean-the-crm-governed",
+      "name": "Clean the CRM, governed",
+      "description": "Cleanup with rules and a proposal, never a bulk delete.",
+      "category": "keep-in-sync",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "clean up the CRM",
+        "what's wrong with our contact data?"
+      ],
+      "skills": [
+        "governed-crm-cleanup",
+        "crm-health-scoring",
+        "revops-data-governance"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "crm"
+        ]
+      }
+    },
+    {
+      "slug": "company-deep-dive",
+      "name": "Company deep dive",
+      "description": "A sourced 360 on a company — market, funding, stack, leadership — plus a standing watch on what it says and ships.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "do a full workup on Ramp",
+        "everything on Vercel"
+      ],
+      "skills": [
+        "company-deep-dive",
+        "enrich-company"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "web"
+        ],
+        "optional": [
+          "enrichment",
+          "github"
+        ]
+      }
     },
     {
       "slug": "define-your-icp",
@@ -61,6 +277,264 @@
       ]
     },
     {
+      "slug": "design-the-handoffs",
+      "name": "Design the handoffs",
+      "description": "MQL→SDR→AE→CS handoffs across the bow-tie, with the fields and SLAs.",
+      "category": "keep-in-sync",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "design our sales-to-CS handoff",
+        "what should an SQL include?"
+      ],
+      "skills": [
+        "revops-handoffs",
+        "onboarding-activation"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      }
+    },
+    {
+      "slug": "diagnose-the-revenue-system",
+      "name": "Diagnose the revenue system",
+      "description": "Find the real constraint before recommending a fix.",
+      "category": "keep-in-sync",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "why is pipeline down?",
+        "diagnose our funnel"
+      ],
+      "skills": [
+        "revops-diagnostic",
+        "revops-metrics",
+        "move-gtm-diagnostic"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "crm"
+        ]
+      }
+    },
+    {
+      "slug": "enrich-the-contact",
+      "name": "Enrich the contact",
+      "description": "Find a deliverable address for one person, with the sources shown and the gaps named.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "find an email for this lead",
+        "how do I reach this person?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "enrichment"
+        ],
+        "optional": [
+          "web",
+          "linkedin",
+          "crm",
+          "github"
+        ]
+      }
+    },
+    {
+      "slug": "find-lookalikes",
+      "name": "Find lookalikes",
+      "description": "Turn one great customer into a ranked list of similar accounts.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "find companies like Acme",
+        "who else looks like our top 5 customers?"
+      ],
+      "skills": [
+        "icp-lookalike-expansion",
+        "lookalike-candidate-sourcing",
+        "people-lookalike-ranking"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "enrichment"
+        ],
+        "optional": [
+          "crm"
+        ]
+      }
+    },
+    {
+      "slug": "find-single-threaded-deals",
+      "name": "Find single-threaded deals",
+      "description": "Deals with one contact and who to engage next.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "which deals are single-threaded?",
+        "who else should I know at Acme?"
+      ],
+      "skills": [
+        "multi-threading-coach",
+        "account-org-mapping"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "crm"
+        ],
+        "optional": [
+          "linkedin"
+        ]
+      }
+    },
+    {
+      "slug": "find-warm-intro-paths",
+      "name": "Find warm intro paths",
+      "description": "Who on your team, board, investors or customers can introduce you — and who to ask first.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "who can intro me to Acme?",
+        "any warm path into Ramp?"
+      ],
+      "skills": [
+        "bridge-before-cold"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "linkedin"
+        ],
+        "optional": [
+          "crm"
+        ]
+      }
+    },
+    {
+      "slug": "forecast-the-quarter",
+      "name": "Forecast the quarter",
+      "description": "Forecast methodology, accuracy, and the honest number.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "what's my real forecast?",
+        "how accurate were we last quarter?"
+      ],
+      "skills": [
+        "revops-forecasting",
+        "pipeline-visibility"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "crm"
+        ]
+      }
+    },
+    {
+      "slug": "give-first-email",
+      "name": "Give-first email",
+      "description": "An email that offers something concrete — a teardown, a benchmark, an estimate — instead of asking for time.",
+      "category": "reach-out",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "write a give-first email",
+        "what can I offer Acme instead of a meeting?"
+      ],
+      "skills": [
+        "give-first-cold-email",
+        "cold-offer-architect",
+        "i-made-this-for-you-email"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "web"
+        ]
+      }
+    },
+    {
+      "slug": "handle-a-demo-request",
+      "name": "Handle a demo request",
+      "description": "Qualify an inbound hand-raiser, propose times, draft the confirmation.",
+      "category": "handle-replies",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "handle this demo request",
+        "they filled the form, what's next?"
+      ],
+      "skills": [
+        "inbound-is-data"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "calendar",
+          "crm"
+        ]
+      }
+    },
+    {
+      "slug": "handle-the-blocker",
+      "name": "Handle the blocker",
+      "description": "When a deal stalls on procurement, security, legal or a silent champion — the maneuver for each.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "Acme is stuck in procurement",
+        "how do I get past security review?"
+      ],
+      "skills": [
+        "procurement-navigation"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "crm"
+        ]
+      }
+    },
+    {
       "slug": "handle-the-reply",
       "name": "Handle the reply",
       "description": "Classify what came back, draft the right answer, or stop the sequence.",
@@ -89,6 +563,127 @@
       "needs_answered": [
         "sender_voice"
       ]
+    },
+    {
+      "slug": "hiring-radar",
+      "name": "Hiring radar",
+      "description": "Roles a company is hiring for, verified, as a buying signal.",
+      "category": "watch-signals",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "is Acme hiring SDRs?",
+        "who's hiring for our buyer persona?"
+      ],
+      "skills": [
+        "hiring-radar"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "web"
+        ]
+      }
+    },
+    {
+      "slug": "interpret-the-signal",
+      "name": "Interpret the signal",
+      "description": "Is this event relevant, urgent, noise — and for whom, and what next.",
+      "category": "qualify",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "what does this signal mean?",
+        "is this worth acting on?"
+      ],
+      "skills": [
+        "signal-timing",
+        "buying-signals-6"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      }
+    },
+    {
+      "slug": "linkedin-outreach",
+      "name": "LinkedIn outreach",
+      "description": "Connection note, InMail or DM — with the limits and warm-up rules built in.",
+      "category": "reach-out",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "write a LinkedIn note to Devon",
+        "InMail for the VP Eng"
+      ],
+      "skills": [
+        "linkedin-inmail",
+        "linkedin-success-factors",
+        "linkedin-limits-warmup"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "linkedin"
+        ]
+      }
+    },
+    {
+      "slug": "linkedin-post",
+      "name": "LinkedIn post",
+      "description": "A post in the founder's voice, from a real trigger, with the slop removed.",
+      "category": "content",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "write a LinkedIn post about the launch",
+        "turn this into a post"
+      ],
+      "skills": [
+        "linkedin-ghostwriting",
+        "anti-ai-slop-writing",
+        "founder-post-triggers-24"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      }
+    },
+    {
+      "slug": "map-the-buying-committee",
+      "name": "Map the buying committee",
+      "description": "Who signs, who blocks, who's connected — from what's public and what's in the CRM.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "who decides at Acme?",
+        "map the buying group at Lumen"
+      ],
+      "skills": [
+        "account-org-mapping",
+        "buying-group",
+        "persona-mapping-framework"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "web"
+        ],
+        "optional": [
+          "linkedin",
+          "crm"
+        ]
+      }
     },
     {
       "slug": "meeting-brief",
@@ -120,6 +715,153 @@
       "needs_answered": [
         "product"
       ]
+    },
+    {
+      "slug": "multichannel-campaign",
+      "name": "Multichannel campaign",
+      "description": "One campaign across email, LinkedIn and calls, with the sequencing and the A/B plan.",
+      "category": "reach-out",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "plan a multichannel campaign for this list",
+        "email + LinkedIn for the fintech list"
+      ],
+      "skills": [
+        "multichannel-campaign-builder",
+        "personalized-outbound-ab-test"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "linkedin",
+          "crm"
+        ]
+      }
+    },
+    {
+      "slug": "newsletter-issue",
+      "name": "Newsletter issue",
+      "description": "This week's issue: format, subject lines, the one idea.",
+      "category": "content",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "draft this week's newsletter",
+        "subject lines for issue 12"
+      ],
+      "skills": [
+        "newsletter-format",
+        "email-subject-lines",
+        "weekly-roundup-email"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      }
+    },
+    {
+      "slug": "pipeline-review",
+      "name": "Pipeline review",
+      "description": "Stuck, skipped and regressing deals before the forecast call, with the next action for each.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "review my pipeline",
+        "what's stuck this week?"
+      ],
+      "skills": [
+        "pipeline-signal-review",
+        "pipeline-visibility",
+        "deal-qualification-gates"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "crm"
+        ]
+      }
+    },
+    {
+      "slug": "positioning-and-messaging",
+      "name": "Positioning and messaging",
+      "description": "Category, story, and the messaging hierarchy — the source of truth other apps read.",
+      "category": "content",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "help us position against Sourcegraph",
+        "rewrite our homepage message"
+      ],
+      "skills": [
+        "positioning-messaging-designer",
+        "category-of-one-positioning",
+        "positioning-and-story"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      }
+    },
+    {
+      "slug": "qualify-the-deal",
+      "name": "Qualify the deal",
+      "description": "MEDDPICC / gates audit on an open opportunity: what's missing and what to ask next.",
+      "category": "qualify",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "qualify the Acme deal",
+        "what's missing on this opp?"
+      ],
+      "skills": [
+        "meddpicc-gap-audit",
+        "deal-qualification-gates",
+        "sales-methodology"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "crm"
+        ]
+      }
+    },
+    {
+      "slug": "reddit-and-community-presence",
+      "name": "Reddit and community presence",
+      "description": "Where to show up, how to comment without getting banned, and what to track.",
+      "category": "content",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "which subreddits matter for us?",
+        "is this post safe to comment on?"
+      ],
+      "skills": [
+        "subreddit-research",
+        "reddit-authority-commenting",
+        "reddit-comment-safety",
+        "reddit-attribution-tracking"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "web"
+        ]
+      }
     },
     {
       "slug": "research-the-account",
@@ -159,6 +901,108 @@
       ]
     },
     {
+      "slug": "resolve-before-create",
+      "name": "Resolve before create",
+      "description": "Match to an existing record before creating a new one.",
+      "category": "keep-in-sync",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "is Acme already in the CRM?",
+        "dedupe these"
+      ],
+      "skills": [
+        "resolve-before-create",
+        "company-domain-resolver"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "crm"
+        ]
+      }
+    },
+    {
+      "slug": "resolve-the-jurisdiction",
+      "name": "Resolve the jurisdiction",
+      "description": "Where this recipient is, and on what evidence — the fact the send gate reads.",
+      "category": "qualify",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "where is this lead based?",
+        "can we email this person?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "web",
+          "linkedin",
+          "enrichment",
+          "crm",
+          "github"
+        ]
+      }
+    },
+    {
+      "slug": "review-the-call",
+      "name": "Review the call",
+      "description": "Score a call against a rubric and extract the objections that keep recurring.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "review this call",
+        "what objections came up this month?"
+      ],
+      "skills": [
+        "pull-call-review",
+        "call-scorecards",
+        "objection-mining"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "product"
+        ]
+      }
+    },
+    {
+      "slug": "revive-closed-lost-deals",
+      "name": "Revive closed-lost deals",
+      "description": "A quarterly sweep over closed-lost, gone-quiet proposals and champion job changes — with the right re-open message…",
+      "category": "reach-out",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "what closed-lost deals should I revive?",
+        "run the revival sweep"
+      ],
+      "skills": [
+        "closed-lost-revival",
+        "stage-aware-follow-up"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "crm"
+        ]
+      }
+    },
+    {
       "slug": "score-against-your-icp",
       "name": "Score against your ICP",
       "description": "Fit, tier and buying signals with the reasons shown — rules first, judgement second.",
@@ -166,8 +1010,8 @@
       "version": "1.0.0",
       "license": "MIT",
       "say": [
-        "is Acme worth the hour?",
-        "score this lead against our ICP"
+        "score this lead",
+        "is Acme worth the hour?"
       ],
       "skills": [
         "icp-score-and-route",
@@ -186,6 +1030,249 @@
         "icp",
         "product"
       ]
+    },
+    {
+      "slug": "score-and-route-leads",
+      "name": "Score and route leads",
+      "description": "Score, assign the right owner, and hit the speed-to-lead SLA.",
+      "category": "keep-in-sync",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "route this lead",
+        "who owns inbound from DACH?"
+      ],
+      "skills": [
+        "icp-score-and-route",
+        "lead-routing"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "crm"
+        ],
+        "optional": [
+          "slack"
+        ]
+      }
+    },
+    {
+      "slug": "set-up-hubspot-properly",
+      "name": "Set up HubSpot properly",
+      "description": "Implementation patterns for HubSpot as the RevOps system of record.",
+      "category": "keep-in-sync",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "how should we set up HubSpot lifecycle stages?",
+        "audit our HubSpot"
+      ],
+      "skills": [
+        "revops-hubspot",
+        "revops-data-governance"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "crm"
+        ]
+      }
+    },
+    {
+      "slug": "size-the-market",
+      "name": "Size the market",
+      "description": "A defensible TAM/SAM from verified data rather than a slide.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "how big is our market in DACH?",
+        "TAM for mid-market fintech"
+      ],
+      "skills": [
+        "tam-from-verified-data",
+        "tam-builder",
+        "market-finder"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "web"
+        ],
+        "optional": [
+          "enrichment"
+        ]
+      }
+    },
+    {
+      "slug": "sync-enrichment-to-crm",
+      "name": "Sync enrichment to CRM",
+      "description": "Enriched fields land in HubSpot or Salesforce with no duplicates.",
+      "category": "keep-in-sync",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "push the enrichment into HubSpot",
+        "sync these contacts"
+      ],
+      "skills": [
+        "crm-enrichment-sync",
+        "data-quality",
+        "resolve-before-create"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "crm",
+          "enrichment"
+        ]
+      }
+    },
+    {
+      "slug": "territory-digest",
+      "name": "Territory digest",
+      "description": "The week's signals across a territory, ranked, with the one action per account.",
+      "category": "watch-signals",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "what happened in my territory this week?"
+      ],
+      "skills": [
+        "territory-signal-digest",
+        "signal-to-campaign"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "crm"
+        ]
+      }
+    },
+    {
+      "slug": "track-job-changes",
+      "name": "Track job changes",
+      "description": "Champions who moved, and the account they moved to.",
+      "category": "watch-signals",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "who changed jobs this month?",
+        "did any champions move?"
+      ],
+      "skills": [
+        "track-contact-job-changes"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "crm"
+        ],
+        "optional": [
+          "linkedin",
+          "enrichment"
+        ]
+      }
+    },
+    {
+      "slug": "website-visitor-radar",
+      "name": "Website visitor radar",
+      "description": "Turn identified website activity into qualified follow-up.",
+      "category": "watch-signals",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "who's been on the pricing page?",
+        "what did this visitor look at?"
+      ],
+      "skills": [
+        "website-to-signals",
+        "trigger-based-outbound",
+        "signal-timing"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "website"
+        ],
+        "optional": [
+          "enrichment",
+          "crm"
+        ]
+      }
+    },
+    {
+      "slug": "win-loss-program",
+      "name": "Win/loss program",
+      "description": "Why you win and lose, from real interviews, turned into positioning and process fixes.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "run win/loss on last quarter",
+        "why did we lose Acme?"
+      ],
+      "skills": [
+        "win-loss-program",
+        "closed-lost-revival"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "crm"
+        ]
+      }
+    },
+    {
+      "slug": "write-a-follow-up-sequence",
+      "name": "Write a follow-up sequence",
+      "description": "Three to five touches, each shorter, each with a new angle, ending in a breakup.",
+      "category": "reach-out",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "write the follow-ups",
+        "build a 4-step sequence for this list"
+      ],
+      "skills": [
+        "sequence-writer",
+        "cold-email-4-sequence",
+        "stage-aware-follow-up",
+        "cold-email-preflight"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "email.read"
+        ]
+      }
     },
     {
       "slug": "write-outreach",
@@ -219,5 +1306,5 @@
       ]
     }
   ],
-  "count": 7
+  "count": 49
 }

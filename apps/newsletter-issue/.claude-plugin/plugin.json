@@ -1,0 +1,8 @@
+{
+  "name": "newsletter-issue",
+  "description": "This week's issue: format, subject lines, the one idea.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

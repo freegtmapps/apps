@@ -1,0 +1,8 @@
+{
+  "name": "set-up-hubspot-properly",
+  "description": "Implementation patterns for HubSpot as the RevOps system of record.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

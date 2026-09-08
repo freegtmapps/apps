@@ -1,6 +1,6 @@
 ---
 name: pipeline-signal-review
-description: "Run a full signal check across every open deal in a pipeline. Takes a deal list with account names and stages. Returns a risk-ranked brief — stale contacts, missing buying group coverage, signal gaps, and a recommended next action for every deal that needs…"
+description: Run a full signal check across every open deal in a pipeline. Takes a deal list with account names and stages. Returns a risk-ranked brief — stale contacts, missing buying group coverage, signal gaps, and a recommended next action for every deal that needs attention. Requires a Lusha connection.
 author: Udi Cohen
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/udi-cohen/pipeline-signal-review/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

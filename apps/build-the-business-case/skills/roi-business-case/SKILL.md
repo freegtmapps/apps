@@ -1,6 +1,6 @@
 ---
 name: roi-business-case
-description: "Use this skill when a live deal needs a business case the buyer will actually believe — heading into procurement, finance review, or exec sign-off, when a champion needs an internal case to justify the spend, when a single 'dream ROI' number is triggering…"
+description: Use this skill when a live deal needs a business case the buyer will actually believe — heading into procurement, finance review, or exec sign-off, when a champion needs an internal case to justify the spend, when a single "dream ROI" number is triggering skepticism, or when you want to pre-handle the "your-numbers-are-inflated" objection before it's raised. Instead of one optimistic figure, the agent builds a one-page business case modeling WORST / AVERAGE / BEST outcomes, each tied to the buyer's root-cause problem, with explicit conservative assumptions — which makes the AE look impartial and gives the champion a case they can defend to finance.
 author: Gal Aga
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/gal-aga/roi-business-case/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

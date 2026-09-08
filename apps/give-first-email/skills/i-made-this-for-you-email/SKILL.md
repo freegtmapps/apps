@@ -1,6 +1,6 @@
 ---
 name: i-made-this-for-you-email
-description: "Use this skill when announcing a new lead magnet, free resource, template, tool, guide, checklist, or any new asset to your email list. Writes an \'I made this for you\' announcement email — the email you send your list when you've created a new free…"
+description: 'Use this skill when announcing a new lead magnet, free resource, template, tool, guide, checklist, or any new asset to your email list. Writes an "I made this for you" announcement email — the email you send your list when you''ve created a new free resource, tool, template, or piece of content specifically for them. Uses a proven 5-part structure: personal story of why you built it, what it is, what''s inside, how to get it, and a PS that reinforces the value. This email style consistently outperforms generic promotional emails because it frames the resource as a gift, not a pitch. Trigger on "announce my new resource", "I made this for you email", "resource announcement email", "new lead magnet email", "tell my list about my new freebie", "gift to my subscribers email", "new resource email", or any request to write an email announcing a free resource or tool you created for your audience.'
 author: Daniel Bustamante
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/daniel-bustamante/i-made-this-for-you-email/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

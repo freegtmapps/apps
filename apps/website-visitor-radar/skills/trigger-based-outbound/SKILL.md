@@ -1,6 +1,6 @@
 ---
 name: trigger-based-outbound
-description: "Use this skill to qualify one already-detected account event for an outreach decision; use abm-signal-watchlist to operate persistent monitoring across a fixed account list. Produces a ranked send, nurture, or skip decision, a verified contact target, a…"
+description: Use this skill to qualify one already-detected account event for an outreach decision; use abm-signal-watchlist to operate persistent monitoring across a fixed account list. Produces a ranked send, nurture, or skip decision, a verified contact target, a trigger-grounded opener, and an outcome record that improves future signal selection.
 author: Ryan Iyengar
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/ryan-iyengar/trigger-based-outbound/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

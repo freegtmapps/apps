@@ -1,6 +1,6 @@
 ---
 name: personalized-outbound-ab-test
-description: "Use this skill when someone claims AI personalization lifts reply rates, or before you let an agent write outbound at scale. Runs a control/personalized/holdout split on your connection list, enforces a safety gate on every generated message, and returns a…"
+description: Use this skill when someone claims AI personalization lifts reply rates, or before you let an agent write outbound at scale. Runs a control/personalized/holdout split on your connection list, enforces a safety gate on every generated message, and returns a defensible read on whether personalization actually beat the generic baseline.
 author: Amir Baldiga
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/amir-baldiga/personalized-outbound-ab-test/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

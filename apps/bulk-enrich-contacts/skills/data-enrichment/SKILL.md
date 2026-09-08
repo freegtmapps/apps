@@ -1,6 +1,6 @@
 ---
 name: data-enrichment
-description: "Use this skill when inbound leads arrive incomplete (missing company size, industry, revenue), the TAM list lacks data for scoring, or the CRM cannot route and segment without enrichment. Maps coverage gaps, compares single-source and waterfall provider…"
+description: 'Use this skill when inbound leads arrive incomplete (missing company size, industry, revenue), the TAM list lacks data for scoring, or the CRM cannot route and segment without enrichment. Maps coverage gaps, compares single-source and waterfall provider strategies, and builds an integration roadmap with cost guardrails and quality gates. Produces a provider recommendation matrix, a waterfall architecture, and a go or no-go checklist. Rule: no single provider has full coverage; a waterfall across two or more providers in sequence beats any one source on match rate. Trigger phrases: data enrichment, leads come in with no company info, enrichment coverage, firmographic data, which enrichment tool, data freshness.'
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/data-enrichment/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

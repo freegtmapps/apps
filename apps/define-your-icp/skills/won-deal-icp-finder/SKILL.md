@@ -1,6 +1,6 @@
 ---
 name: won-deal-icp-finder
-description: "Use this skill when someone wants to know who actually pays them — auditing closed-won deals to derive a proven ideal customer profile instead of an aspirational one, then building a look-alike target list from it. Produces a revenue-ranked deal table, two to four named ICP archetypes with…"
+description: 'Use this skill when someone wants to know who actually pays them — auditing closed-won deals to derive a proven ideal customer profile instead of an aspirational one, then building a look-alike target list from it. Produces a revenue-ranked deal table, two to four named ICP archetypes with searchable criteria, and a ranking of the acquisition sources that produced the money. Trigger phrasings: "audit my biggest deals", "which customers made us the most money", "analyse my closed-won", "what''s my real ICP", "find more customers like my best ones", "look-alike accounts", "revenue by account", "which channel produced our best deals", "ICP refresh before planning".'
 author: Erwann Lefevre
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/erwann-lefevre/won-deal-icp-finder/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

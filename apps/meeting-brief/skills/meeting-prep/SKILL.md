@@ -1,6 +1,6 @@
 ---
 name: meeting-prep
-description: "Use this skill when a meeting is coming up and you need to know who is in the room before you walk in. Produces a meeting briefing: each attendee's role, background, and recent public activity with conversation hooks, a cross-attendee relationship map,…"
+description: 'Use this skill when a meeting is coming up and you need to know who is in the room before you walk in. Produces a meeting briefing: each attendee''s role, background, and recent public activity with conversation hooks, a cross-attendee relationship map, company context, specific talking points, watch-outs, and — for sales, partnership, and investor meetings — value positioning grounded in research. Triggers: "prepare me for my meeting", "who am I meeting with", "research this person", "meeting prep", "brief me on this person", "I have a meeting with this company", "get me ready for my call", "what should I know about them", "background on someone before our meeting", "attendee research".'
 author: Alon Goldenberg
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/alon-goldenberg/meeting-prep/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

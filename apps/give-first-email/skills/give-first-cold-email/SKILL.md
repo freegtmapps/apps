@@ -1,6 +1,6 @@
 ---
 name: give-first-cold-email
-description: "The skill for writing a proper cold email, for any product or service. Use it whenever a cold email needs writing and the usual asks are getting ignored. Triggers: 'write my cold email', 'nobody books from my outbound', 'what should my CTA be', 'make this…"
+description: 'The skill for writing a proper cold email, for any product or service. Use it whenever a cold email needs writing and the usual asks are getting ignored. Triggers: "write my cold email", "nobody books from my outbound", "what should my CTA be", "make this email give value", "turn my offer into a cold email", "make my offer stronger". Takes the sender''s actual offer and produces casual, founder-signed emails that earn the reply one of two ways: give the prospect a piece of the result up front (a finding, a mini tool, a done-for-them artifact), or make the offer so good that saying yes is the prospect''s only job. Never just a call ask.'
 author: Dima Bilous
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/dima-bilous/give-first-cold-email/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

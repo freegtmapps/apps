@@ -1,0 +1,8 @@
+{
+  "name": "brand-and-competitor-mentions",
+  "description": "Mentions of you, your competitors and your category's pain language, classified and routed.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

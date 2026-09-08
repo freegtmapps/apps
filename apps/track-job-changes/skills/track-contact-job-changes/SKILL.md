@@ -1,6 +1,6 @@
 ---
 name: track-contact-job-changes
-description: "Use this skill when you need to find which contacts in the CRM have changed jobs and act on it — a quarterly database refresh, a \'did anyone move?\' sweep, a churn-risk or new-champion check, or a job-change signal firing on a known contact. It reads each…"
+description: 'Use this skill when you need to find which contacts in the CRM have changed jobs and act on it — a quarterly database refresh, a "did anyone move?" sweep, a churn-risk or new-champion check, or a job-change signal firing on a known contact. It reads each contact''s current role from their work history, compares it to what the CRM believes, and routes the movers: still-there contacts get refreshed, confirmed leavers get their old and new roles separated, movers to non-fit companies get flagged and opted out, and movers to net-new fit companies get the company enriched, tiered, and optionally created as an account. Every CRM write is proposed for approval first — the database is never polluted and no contact is silently overwritten. Also known as: job change detection, contact data refresh, champion tracking, buyer-moved alerts.'
 author: Jorge Macias
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/jorge-macias/track-contact-job-changes/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

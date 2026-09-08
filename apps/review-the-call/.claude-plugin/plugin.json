@@ -1,0 +1,8 @@
+{
+  "name": "review-the-call",
+  "description": "Score a call against a rubric and extract the objections that keep recurring.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

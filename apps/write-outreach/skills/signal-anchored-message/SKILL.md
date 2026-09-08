@@ -1,6 +1,6 @@
 ---
 name: signal-anchored-message
-description: 'Use this skill when writing outbound to a lead who surfaced from a signal — "write the message for this trigger," "personalize this off the signal, not the profile." Given a contact, their company, and the signal that surfaced them, it…'
+description: Use this skill when writing outbound to a lead who surfaced from a signal — "write the message for this trigger," "personalize this off the signal, not the profile." Given a contact, their company, and the signal that surfaced them, it returns a short connection note and two follow-ups anchored to the trigger and stripped of AI tells.
 author: Peter Cools
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/peter-cools/signal-anchored-message/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

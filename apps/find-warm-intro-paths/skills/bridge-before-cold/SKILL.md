@@ -1,6 +1,6 @@
 ---
 name: bridge-before-cold
-description: "Use this skill before staging a prospect and before drafting any first touch, when a segment has gone silent, and when deciding whether an account is genuinely cold. Walks a ranked ladder of bridges you can actually source, then produces a one-line premise…"
+description: 'Use this skill before staging a prospect and before drafting any first touch, when a segment has gone silent, and when deciding whether an account is genuinely cold. Walks a ranked ladder of bridges you can actually source, then produces a one-line premise the writer and the reviewer both stand on. Turns "find a warm path" from advice into a step with a checkable output. Trigger phrasings: "is this account cold", "do we know anyone here", "find a warm path", "what do we open on", "this segment has gone quiet", "stage these for outreach".'
 author: Nadav David
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/nadav-david/bridge-before-cold/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

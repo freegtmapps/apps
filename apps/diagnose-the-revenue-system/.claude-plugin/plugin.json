@@ -1,0 +1,8 @@
+{
+  "name": "diagnose-the-revenue-system",
+  "description": "Find the real constraint before recommending a fix.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

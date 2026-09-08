@@ -1,6 +1,6 @@
 ---
 name: account-research-brief
-description: "Use this skill before a first meeting, an ABM push, or a territory review, when you need a defensible account brief instead of a copied About page. Produces firmographics, positioning pillars, an evidence-tagged SWOT, a named exec list, and live hiring…"
+description: Use this skill before a first meeting, an ABM push, or a territory review, when you need a defensible account brief instead of a copied About page. Produces firmographics, positioning pillars, an evidence-tagged SWOT, a named exec list, and live hiring signals, with every claim marked as sourced or inferred.
 author: Amir Baldiga
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/amir-baldiga/account-research-brief/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

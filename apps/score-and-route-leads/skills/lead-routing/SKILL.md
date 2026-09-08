@@ -1,6 +1,6 @@
 ---
 name: lead-routing
-description: "Lead routing strategy, assignment logic, round-robin patterns, territory design, speed-to-lead SLA frameworks, and routing automation for B2B revenue teams. Use when the user mentions lead routing, lead assignment, round-robin, territory assignment, lead…"
+description: 'Lead routing strategy, assignment logic, round-robin patterns, territory design, speed-to-lead SLA frameworks, and routing automation for B2B revenue teams. Use when the user mentions lead routing, lead assignment, round-robin, territory assignment, lead distribution, speed-to-lead, lead SLA, lead queue, routing rules, routing logic, account-based routing, geographic routing, skills-based routing, load balancing, lead handoff, inbound lead routing, outbound lead routing, routing tools (LeanData, Chili Piper, Default), or lead cherry-picking. Also trigger on ''leads aren''t getting to the right rep,'' ''our routing is broken,'' ''leads sit in a queue,'' ''reps cherry-pick,'' ''speed-to-lead is too slow,'' or ''we need to redesign territories.'' BOUNDARY: Covers routing STRATEGY and LOGIC (CRM-agnostic). For CRM-specific implementation, see revops-hubspot or revops-salesforce. For enrichment that feeds routing, see data-enrichment. For lead scoring, see marketing-operations.'
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/lead-routing/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

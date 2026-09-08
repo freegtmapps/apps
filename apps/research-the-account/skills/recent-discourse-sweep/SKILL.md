@@ -1,6 +1,6 @@
 ---
 name: recent-discourse-sweep
-description: "Use this skill when a decision depends on what the market actually said about a company, product, category or person inside a dated window: before a first touch, before a renewal call, before committing to a positioning or content bet. Produces a sourced…"
+description: 'Use this skill when a decision depends on what the market actually said about a company, product, category or person inside a dated window: before a first touch, before a renewal call, before committing to a positioning or content bet. Produces a sourced synthesis plus a coverage report naming which venues were read, which came back empty, and which were never reached. Trigger phrasings: "what are people saying about X right now", "any chatter on this account", "is this trend real or is it one loud thread", "check the last 30 days", "what changed since we last looked", "the research came back empty".'
 author: Nadav David
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/nadav-david/recent-discourse-sweep/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

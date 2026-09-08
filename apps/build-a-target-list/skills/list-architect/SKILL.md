@@ -1,6 +1,6 @@
 ---
 name: list-architect
-description: "Use this skill when building B2B lead lists — ICP definition and scoring, sourcing companies, qualifying accounts, finding contacts, persona mapping, deduplication, and data validation. Triggers on 'lead list', 'list building', 'Sales Navigator', 'boolean…"
+description: Use this skill when building B2B lead lists — ICP definition and scoring, sourcing companies, qualifying accounts, finding contacts, persona mapping, deduplication, and data validation. Triggers on 'lead list', 'list building', 'Sales Navigator', 'boolean search', 'ICP', 'ideal customer profile', 'find leads', 'prospect list', 'email verification', 'list hygiene', 'build a list', 'find prospects', 'deduplicate', 'qualify accounts', 'ABM'.
 author: Alex Vacca
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/alex-vacca/list-architect/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

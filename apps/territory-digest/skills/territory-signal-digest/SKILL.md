@@ -1,6 +1,6 @@
 ---
 name: territory-signal-digest
-description: "Run a weekly signal sweep across every account in your territory. Takes an account list and returns a ranked brief — promotions, job changes, funding rounds, hiring surges, and intent spikes, sorted by signal strength. Designed to run every Monday morning…"
+description: Run a weekly signal sweep across every account in your territory. Takes an account list and returns a ranked brief — promotions, job changes, funding rounds, hiring surges, and intent spikes, sorted by signal strength. Designed to run every Monday morning before a pipeline review. Requires a Lusha connection.
 author: Gal Tamir
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/gal-tamir/territory-signal-digest/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

@@ -1,6 +1,6 @@
 ---
 name: competitor-positioning
-description: "Use this skill when you need to know how competitors present themselves to the market — homepage messaging, value props, CTAs, pricing models, content themes — and how that evolves over time. Produces a marketing briefing: a messaging matrix,…"
+description: 'Use this skill when you need to know how competitors present themselves to the market — homepage messaging, value props, CTAs, pricing models, content themes — and how that evolves over time. Produces a marketing briefing: a messaging matrix, per-competitor positioning profiles, content gap analysis, a positioning white space map, and battlecard inputs, with before/after tracking of every shift. Reach for it when someone says "competitor positioning", "messaging comparison", "content gap", "what changed on their site", "landing page teardown", "marketing battlecard", "how do they describe their product", or "counter-messaging".'
 author: Alon Goldenberg
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/alon-goldenberg/competitor-positioning/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

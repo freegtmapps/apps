@@ -7,9 +7,81 @@
   },
   "plugins": [
     {
+      "name": "abm-engagement-scoring",
+      "source": "./apps/abm-engagement-scoring",
+      "description": "Account-level engagement, buying-group coverage, and when to hand over.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "battlecard",
       "source": "./apps/battlecard",
       "description": "Positioning, weaknesses and objection handling against a named competitor.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "brand-and-competitor-mentions",
+      "source": "./apps/brand-and-competitor-mentions",
+      "description": "Mentions of you, your competitors and your category's pain language, classified and routed.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "build-a-target-list",
+      "source": "./apps/build-a-target-list",
+      "description": "Companies and contacts that match your ICP, from a sentence \\u2014 with the sources used and the gaps named.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "build-the-business-case",
+      "source": "./apps/build-the-business-case",
+      "description": "ROI case and mutual action plan in the buyer's numbers.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "bulk-enrich-contacts",
+      "source": "./apps/bulk-enrich-contacts",
+      "description": "Enrich a list against a waterfall of providers, cheapest first, with hit rates reported.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "case-study",
+      "source": "./apps/case-study",
+      "description": "A customer story built around their numbers, not adjectives.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "clean-the-crm-governed",
+      "source": "./apps/clean-the-crm-governed",
+      "description": "Cleanup with rules and a proposal, never a bulk delete.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "company-deep-dive",
+      "source": "./apps/company-deep-dive",
+      "description": "A sourced 360 on a company \\u2014 market, funding, stack, leadership \\u2014 plus a standing watch on what it says and ships.",
       "version": "1.0.0",
       "author": {
         "name": "freegtm"
@@ -25,9 +97,144 @@
       }
     },
     {
+      "name": "design-the-handoffs",
+      "source": "./apps/design-the-handoffs",
+      "description": "MQL\\u2192SDR\\u2192AE\\u2192CS handoffs across the bow-tie, with the fields and SLAs.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "diagnose-the-revenue-system",
+      "source": "./apps/diagnose-the-revenue-system",
+      "description": "Find the real constraint before recommending a fix.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "enrich-the-contact",
+      "source": "./apps/enrich-the-contact",
+      "description": "Find a deliverable address for one person, with the sources shown and the gaps named.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "find-lookalikes",
+      "source": "./apps/find-lookalikes",
+      "description": "Turn one great customer into a ranked list of similar accounts.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "find-single-threaded-deals",
+      "source": "./apps/find-single-threaded-deals",
+      "description": "Deals with one contact and who to engage next.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "find-warm-intro-paths",
+      "source": "./apps/find-warm-intro-paths",
+      "description": "Who on your team, board, investors or customers can introduce you \\u2014 and who to ask first.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "forecast-the-quarter",
+      "source": "./apps/forecast-the-quarter",
+      "description": "Forecast methodology, accuracy, and the honest number.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "give-first-email",
+      "source": "./apps/give-first-email",
+      "description": "An email that offers something concrete \\u2014 a teardown, a benchmark, an estimate \\u2014 instead of asking for time.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "handle-a-demo-request",
+      "source": "./apps/handle-a-demo-request",
+      "description": "Qualify an inbound hand-raiser, propose times, draft the confirmation.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "handle-the-blocker",
+      "source": "./apps/handle-the-blocker",
+      "description": "When a deal stalls on procurement, security, legal or a silent champion \\u2014 the maneuver for each.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "handle-the-reply",
       "source": "./apps/handle-the-reply",
       "description": "Classify what came back, draft the right answer, or stop the sequence.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "hiring-radar",
+      "source": "./apps/hiring-radar",
+      "description": "Roles a company is hiring for, verified, as a buying signal.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "interpret-the-signal",
+      "source": "./apps/interpret-the-signal",
+      "description": "Is this event relevant, urgent, noise \\u2014 and for whom, and what next.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "linkedin-outreach",
+      "source": "./apps/linkedin-outreach",
+      "description": "Connection note, InMail or DM \\u2014 with the limits and warm-up rules built in.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "linkedin-post",
+      "source": "./apps/linkedin-post",
+      "description": "A post in the founder's voice, from a real trigger, with the slop removed.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "map-the-buying-committee",
+      "source": "./apps/map-the-buying-committee",
+      "description": "Who signs, who blocks, who's connected \\u2014 from what's public and what's in the CRM.",
       "version": "1.0.0",
       "author": {
         "name": "freegtm"
@@ -43,6 +250,60 @@
       }
     },
     {
+      "name": "multichannel-campaign",
+      "source": "./apps/multichannel-campaign",
+      "description": "One campaign across email, LinkedIn and calls, with the sequencing and the A/B plan.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "newsletter-issue",
+      "source": "./apps/newsletter-issue",
+      "description": "This week's issue: format, subject lines, the one idea.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "pipeline-review",
+      "source": "./apps/pipeline-review",
+      "description": "Stuck, skipped and regressing deals before the forecast call, with the next action for each.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "positioning-and-messaging",
+      "source": "./apps/positioning-and-messaging",
+      "description": "Category, story, and the messaging hierarchy \\u2014 the source of truth other apps read.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "qualify-the-deal",
+      "source": "./apps/qualify-the-deal",
+      "description": "MEDDPICC / gates audit on an open opportunity: what's missing and what to ask next.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "reddit-and-community-presence",
+      "source": "./apps/reddit-and-community-presence",
+      "description": "Where to show up, how to comment without getting banned, and what to track.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "research-the-account",
       "source": "./apps/research-the-account",
       "description": "One brief \u2014 who they are, what they sell, what changed, and who runs it.",
@@ -52,9 +313,126 @@
       }
     },
     {
+      "name": "resolve-before-create",
+      "source": "./apps/resolve-before-create",
+      "description": "Match to an existing record before creating a new one.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "resolve-the-jurisdiction",
+      "source": "./apps/resolve-the-jurisdiction",
+      "description": "Where this recipient is, and on what evidence \u2014 the fact the send gate reads.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "review-the-call",
+      "source": "./apps/review-the-call",
+      "description": "Score a call against a rubric and extract the objections that keep recurring.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "revive-closed-lost-deals",
+      "source": "./apps/revive-closed-lost-deals",
+      "description": "A quarterly sweep over closed-lost, gone-quiet proposals and champion job changes \\u2014 with the right re-open message\\u2026",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "score-against-your-icp",
       "source": "./apps/score-against-your-icp",
       "description": "Fit, tier and buying signals with the reasons shown \u2014 rules first, judgement second.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "score-and-route-leads",
+      "source": "./apps/score-and-route-leads",
+      "description": "Score, assign the right owner, and hit the speed-to-lead SLA.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "set-up-hubspot-properly",
+      "source": "./apps/set-up-hubspot-properly",
+      "description": "Implementation patterns for HubSpot as the RevOps system of record.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "size-the-market",
+      "source": "./apps/size-the-market",
+      "description": "A defensible TAM/SAM from verified data rather than a slide.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "sync-enrichment-to-crm",
+      "source": "./apps/sync-enrichment-to-crm",
+      "description": "Enriched fields land in HubSpot or Salesforce with no duplicates.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "territory-digest",
+      "source": "./apps/territory-digest",
+      "description": "The week's signals across a territory, ranked, with the one action per account.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "track-job-changes",
+      "source": "./apps/track-job-changes",
+      "description": "Champions who moved, and the account they moved to.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "website-visitor-radar",
+      "source": "./apps/website-visitor-radar",
+      "description": "Turn identified website activity into qualified follow-up.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "win-loss-program",
+      "source": "./apps/win-loss-program",
+      "description": "Why you win and lose, from real interviews, turned into positioning and process fixes.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "write-a-follow-up-sequence",
+      "source": "./apps/write-a-follow-up-sequence",
+      "description": "Three to five touches, each shorter, each with a new angle, ending in a breakup.",
       "version": "1.0.0",
       "author": {
         "name": "freegtm"

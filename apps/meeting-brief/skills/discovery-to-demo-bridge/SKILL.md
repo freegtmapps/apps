@@ -1,6 +1,6 @@
 ---
 name: discovery-to-demo-bridge
-description: "Use this skill in the gap between a discovery call and the demo that follows — when you have discovery notes and need to turn them into a demo that proves value instead of dumping features. Run it when a rep is about to 'walk through the product,' when…"
+description: Use this skill in the gap between a discovery call and the demo that follows — when you have discovery notes and need to turn them into a demo that proves value instead of dumping features. Run it when a rep is about to "walk through the product," when discovery surfaced several pains and you need to decide what to actually show, when a previous demo fell flat or caused "indigestion" (too much shown, nothing landed), or when you need to justify to the buyer why this demo is worth their time. The agent quantifies each discovered pain in dollars/ARR/time, ties it to a root cause, and maps the exact demo moment that proves the fix — producing a "Why This Demo" plan and an explicit cut-list of features to skip.
 author: Gal Aga
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/gal-aga/discovery-to-demo-bridge/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

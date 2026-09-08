@@ -1,6 +1,6 @@
 ---
 name: persona-mapping-framework
-description: "Use this skill when mapping the buying committee inside ABM target accounts — identifying personas from closed-won data, their jobs-to-be-done and pain points, and how ad messaging and BDR outreach should differ by persona."
+description: Use this skill when mapping the buying committee inside ABM target accounts — identifying personas from closed-won data, their jobs-to-be-done and pain points, and how ad messaging and BDR outreach should differ by persona.
 author: Ivan Falco
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/ivan-falco/persona-mapping-framework/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

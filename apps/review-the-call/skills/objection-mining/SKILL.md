@@ -1,6 +1,6 @@
 ---
 name: objection-mining
-description: "Use this skill when the same pushback keeps arriving and nobody has written it down — mining call recordings and reply threads for recurring objections, classifying them, and building the answer into the outreach so it stops coming up. Produces a ranked…"
+description: 'Use this skill when the same pushback keeps arriving and nobody has written it down — mining call recordings and reply threads for recurring objections, classifying them, and building the answer into the outreach so it stops coming up. Produces a ranked objection catalogue with what each one actually means and where to pre-handle it. Trigger phrasings: "why do we keep losing", "common objections", "they said it''s too expensive", "handle this objection", "build a battlecard", "what do we say when they ask", "mine the call transcripts", "our reps keep getting stuck on".'
 author: Tanyo Gochev
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/tanyo-gochev/objection-mining/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

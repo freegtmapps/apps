@@ -1,6 +1,6 @@
 ---
 name: anti-ai-slop-writing
-description: "Use this skill when any GTM copy needs to stop reading like AI before it ships - a LinkedIn post, a cold email, a newsletter, a landing page, a case study, an exec's thought-leadership draft. Produces the same copy with the machine tells stripped out, back…"
+description: Use this skill when any GTM copy needs to stop reading like AI before it ships - a LinkedIn post, a cold email, a newsletter, a landing page, a case study, an exec's thought-leadership draft. Produces the same copy with the machine tells stripped out, back to a clean baseline. Reach for it when someone says "this sounds like AI", "make it less robotic", "remove the AI tells", "de-slop this", or when a draft is technically fine but reads like a competent bot wrote it.
 author: Gali Firon
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/gali-firon/anti-ai-slop-writing/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

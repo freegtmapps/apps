@@ -1,6 +1,6 @@
 ---
 name: pull-call-review
-description: "Use this skill when the user shares a sales call, discovery call, demo, or pitch transcript and asks for analysis, diagnosis, a post-mortem, or feedback — even if they don't say 'PULL.' Also fires on 'why didn't this close,' 'what went wrong on this call,'…"
+description: Use this skill when the user shares a sales call, discovery call, demo, or pitch transcript and asks for analysis, diagnosis, a post-mortem, or feedback — even if they don't say "PULL." Also fires on "why didn't this close," "what went wrong on this call," "did they have demand," or "what should I do with this deal." Analyzes the transcript with Rob Snyder's PULL framework (Project, Unavoidable, List of options + Limitations) to diagnose whether a real demand-side force was present, whether the seller surfaced, tested, and fit it, and exactly what to change — every claim backed by a quote or a flagged absence, with hard word caps so the verdict stays sharp. Not generic sales advice; a strict mechanistic analysis that replaces it.
 author: Rob Snyder
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/rob-snyder/pull-call-review/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

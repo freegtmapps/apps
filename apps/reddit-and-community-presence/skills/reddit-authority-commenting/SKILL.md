@@ -1,6 +1,6 @@
 ---
 name: reddit-authority-commenting
-description: "Use this skill when Reddit is being worked as a durable authority channel rather than a posting surface: 'help me answer these Reddit threads', 'we want leads from Reddit', 'our Reddit posts keep getting removed', 'which subreddits should we be in', 'write…"
+description: 'Use this skill when Reddit is being worked as a durable authority channel rather than a posting surface: "help me answer these Reddit threads", "we want leads from Reddit", "our Reddit posts keep getting removed", "which subreddits should we be in", "write a reply for r/[sub]". Treats the comment, not the post, as the unit of authority, and works threads for the compounding payoff — Reddit answers feed AI answer engines and search for years after they post. Covers thread selection and first-hour timing, the disclosure norm, comment voice, and the account gates that have to clear before any of it runs.'
 author: Vesselin Malev
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/vesselin-malev/reddit-authority-commenting/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

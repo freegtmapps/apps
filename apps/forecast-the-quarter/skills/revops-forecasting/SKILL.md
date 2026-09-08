@@ -1,6 +1,6 @@
 ---
 name: revops-forecasting
-description: "Use this skill when the forecast is consistently wrong: over-forecasting, missed quarter-ends, deals slipping unexpectedly. Installs category-based forecasting (Commit, Best Case, Upside), multi-method triangulation combining stage-weighted and historical…"
+description: 'Use this skill when the forecast is consistently wrong: over-forecasting, missed quarter-ends, deals slipping unexpectedly. Installs category-based forecasting (Commit, Best Case, Upside), multi-method triangulation combining stage-weighted and historical views, and forecast accuracy diagnostics with benchmarks. Produces a repeatable forecast cadence, the red flags to inspect in forecast calls, and a variance-reduction roadmap. Rule: if a rep cannot explain their Commit deal in 2 minutes, it is not a Commit. Trigger phrases: forecast accuracy, we cannot predict our number, forecast categories, pipeline coverage, forecast call, deals go stale.'
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/revops-forecasting/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

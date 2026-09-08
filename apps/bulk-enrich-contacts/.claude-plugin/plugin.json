@@ -1,0 +1,8 @@
+{
+  "name": "bulk-enrich-contacts",
+  "description": "Enrich a list against a waterfall of providers, cheapest first, with hit rates reported.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "enrich-the-contact",
+  "description": "Find a deliverable address for one person, with the sources shown and the gaps named.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

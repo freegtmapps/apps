@@ -1,6 +1,6 @@
 ---
 name: icp-contact-search-and-enrichment
-description: "Use this skill when a user asks for people matching a B2B persona by role, seniority, company context, and geography, then needs a bounded set of verified contact details. Produces a confirmed search contract, volume-calibrated preview, explicit relaxation…"
+description: Use this skill when a user asks for people matching a B2B persona by role, seniority, company context, and geography, then needs a bounded set of verified contact details. Produces a confirmed search contract, volume-calibrated preview, explicit relaxation choices, an approved enrichment slice, and a quality report that explains every shortfall.
 author: Nylan Richard
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/nylan-richard/icp-contact-search-and-enrichment/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

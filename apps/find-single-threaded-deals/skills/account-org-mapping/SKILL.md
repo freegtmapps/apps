@@ -1,6 +1,6 @@
 ---
 name: account-org-mapping
-description: "Use this skill when a seller, partner manager, recruiter, or researcher needs to understand who works at a named company, how the team is probably structured, and who matters for a specific objective. Produces an evidence-backed account map, an explicitly…"
+description: Use this skill when a seller, partner manager, recruiter, or researcher needs to understand who works at a named company, how the team is probably structured, and who matters for a specific objective. Produces an evidence-backed account map, an explicitly inferred hierarchy, structural observations, coverage gaps, and ranked people to approach.
 author: Nylan Richard
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/nylan-richard/account-org-mapping/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

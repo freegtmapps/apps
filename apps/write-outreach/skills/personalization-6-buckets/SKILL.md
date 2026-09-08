@@ -1,6 +1,6 @@
 ---
 name: personalization-6-buckets
-description: "Use this skill when researching a prospect for personalized outreach, choosing a personalization angle — self-authored content, engaged content, self-identified traits, background, or company-level triggers — or falling back to core-static relevance when no personal data exists."
+description: Use this skill when researching a prospect for personalized outreach, choosing a personalization angle — self-authored content, engaged content, self-identified traits, background, or company-level triggers — or falling back to core-static relevance when no personal data exists.
 author: Alex Vacca
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/alex-vacca/personalization-6-buckets/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

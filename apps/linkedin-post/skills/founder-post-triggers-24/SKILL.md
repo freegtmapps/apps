@@ -1,6 +1,6 @@
 ---
 name: founder-post-triggers-24
-description: "Use this skill when a founder has no results to point at and needs something to publish — 'I have nothing to post about', 'what do I write when we haven't launched', 'who would even listen to me', 'should I build a personal brand', 'our CAC is climbing and…"
+description: Use this skill when a founder has no results to point at and needs something to publish — "I have nothing to post about", "what do I write when we haven't launched", "who would even listen to me", "should I build a personal brand", "our CAC is climbing and we have no budget". Twenty-four things that already happened this week and are publishable, in five categories, plus the play selector, copy-paste opening lines, and the pre-publish check.
 author: Danni Chen
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/danni-chen/founder-post-triggers-24/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

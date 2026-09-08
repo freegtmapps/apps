@@ -1,6 +1,6 @@
 ---
 name: data-quality
-description: "Verify, enrich, and clean any contact or account list against Lusha's verified B2B database. Checks emails, refreshes titles, fills missing direct dials, enriches firmographics, and flags duplicates and unverifiable records. Returns a clean list with a…"
+description: Verify, enrich, and clean any contact or account list against Lusha's verified B2B database. Checks emails, refreshes titles, fills missing direct dials, enriches firmographics, and flags duplicates and unverifiable records. Returns a clean list with a data quality summary showing exactly what was fixed and why. Requires a Lusha connection.
 author: Udi Cohen
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/udi-cohen/data-quality/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

@@ -1,6 +1,6 @@
 ---
 name: b2b-case-study-production
-description: "Use this skill when proof assets need to be produced from real client work: 'write a case study', 'we need case studies for the new site', 'our clients won't let us name them', 'the sales team has nothing to send', 'turn these client results into stories',…"
+description: 'Use this skill when proof assets need to be produced from real client work: "write a case study", "we need case studies for the new site", "our clients won''t let us name them", "the sales team has nothing to send", "turn these client results into stories", "anonymize this client win", "build a case study section". Produces a case study series with an intake process, an anonymization framework that keeps stories credible without naming anyone, and a deployment map that puts each story in front of buyers in motion.'
 author: Vesselin Malev
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/vesselin-malev/b2b-case-study-production/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

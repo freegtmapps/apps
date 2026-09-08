@@ -1,6 +1,6 @@
 ---
 name: call-scorecards
-description: "Use this skill when sales call quality is inconsistent, coaching feedback is vague, reps and managers disagree on what a good call is, or the user asks to \'build a call scorecard\', \'score this call\', \'review my rep's calls\', or \'make coaching more…"
+description: Use this skill when sales call quality is inconsistent, coaching feedback is vague, reps and managers disagree on what a good call is, or the user asks to "build a call scorecard", "score this call", "review my rep's calls", or "make coaching more consistent". It builds behavior-based scorecards for each key conversation type (prospecting, discovery, demo, pricing, close) and uses them to score real calls, localize where reps get stuck, and run chunked practice. Also fires when the user pastes a call transcript and wants it graded.
 author: Kevin "KD" Dorsey
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/kevin-kd-dorsey/call-scorecards/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

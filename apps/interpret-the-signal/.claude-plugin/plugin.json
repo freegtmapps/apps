@@ -1,0 +1,8 @@
+{
+  "name": "interpret-the-signal",
+  "description": "Is this event relevant, urgent, noise \\u2014 and for whom, and what next.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

@@ -1,6 +1,6 @@
 ---
 name: revops-handoffs
-description: "Use this skill when revenue leaks between teams: leads go dark after handover to sales, promised commitments disappear after signature, expansion signals stay invisible, CS never learns what sales committed. Designs handoff protocols across the full…"
+description: 'Use this skill when revenue leaks between teams: leads go dark after handover to sales, promised commitments disappear after signature, expansion signals stay invisible, CS never learns what sales committed. Designs handoff protocols across the full revenue bow-tie (marketing to sales, sales to customer, customer to expansion) with speed-to-lead SLAs, context-packet architecture, ownership models, and leading indicators of failure. Produces handoff playbooks per transition, context templates, SLAs with measurement dashboards, and detection rules for leaking revenue. Rule: handoffs are where revenue leaks. Trigger phrases: leads fall through the cracks, closed-won handoff, CS-to-sales handback, speed-to-lead, SLA between teams, nobody owns expansion.'
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/revops-handoffs/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

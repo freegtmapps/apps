@@ -1,6 +1,6 @@
 ---
 name: linkedin-inmail
-description: "Use this skill when writing the first cold message a prospect will ever see on LinkedIn — an InMail, a connection-request note, or the opening DM after a connection is accepted. Covers choosing the right vehicle, grounding the message in a real signal, and…"
+description: 'Use this skill when writing the first cold message a prospect will ever see on LinkedIn — an InMail, a connection-request note, or the opening DM after a connection is accepted. Covers choosing the right vehicle, grounding the message in a real signal, and the character budgets each format allows. Produces one message with the signal it''s built on, or a batch where every row is unique. Trigger phrasings: "write an InMail", "cold LinkedIn message", "connection request note", "LinkedIn DM", "reach out on LinkedIn", "LinkedIn outreach sequence".'
 author: Tanyo Gochev
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/tanyo-gochev/linkedin-inmail/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba
