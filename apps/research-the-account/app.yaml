@@ -79,7 +79,36 @@ requires:
 # above: the app could not raise this on the PLATFORM either, because `may` had
 # no `emit`. Inert in one place by design and inert in the other by accident read
 # identically from here, which is why the note now says which is which.
+
+# `account.researched` IS NEW, AND IT PASSES A TEST THAT DID NOT EXIST THIS MORNING.
+#
+# The rule this repo applies is write-outreach's: a declared emit earns its place
+# when it is the ONLY way the thing can be known. A successful brief fails that
+# on its face — the brief is on the record, so "research happened" is visible
+# without announcing it, and this app was correct to declare only `research
+# .blocked`.
+#
+# contracts-v0.9 changed the question by capping an agent at one app. Agents are
+# started by signals, so with one app each, A SIGNAL IS THE ONLY MECHANISM THAT
+# SEQUENCES ONE STEP AFTER ANOTHER. "The next step may now start" is a fact about
+# the run, not about the record, and nothing else carries it. Without this the
+# drafting agent has to trigger on something earlier in the chain and composes its
+# prompt while this app is still running — an email written without the brief that
+# makes it specific, with every check green.
+#
+# So the emit is not a second account of the record write. It is the edge in the
+# graph, and the graph has no other way to have edges.
+#
+# NOT `research.done`, WHICH WAS THE FIRST SPELLING AND WAS WRONG. That kind
+# already has producers — `company-deep-dive` here, and the launch set's
+# `Research` — so a drafting agent triggering on it would start on a lead whose
+# company-deep-dive happened to finish, which is different research for a
+# different purpose. That is the identical defect just fixed by splitting
+# `contact.enriched` out of `enrichment.done`, reintroduced one file later under
+# a different name, and it was caught by checking the trigger graph rather than
+# by reading. A kind naming what THIS app finished cannot collide.
 emits:
+  - account.researched
   - research.blocked
 
 context:
@@ -155,3 +184,7 @@ instructions: |-
   Research before writing. Say which sources you used and name what you could
   not find — a gap stated is worth more than a gap filled in. Write the brief to
   the lead with update_lead.
+
+  Then emit account.researched. Whatever drafts the outreach starts from that
+  signal and reads the brief you just wrote, so emitting it before the brief is
+  written hands the next step an empty page.
