@@ -48,6 +48,49 @@ may:
   - read
   - write_lead
   - emit
+  # Required before `scripts:` is accepted. It is a permission to hand a
+  # caller code to run in THEIR environment, never a permission for this
+  # server to run anything — the registry holds no runtime and runs nothing.
+  - run
+
+# The script upstream ships beside this skill, vendored rather than described.
+#
+# `won-deal-icp-finder`'s prose says "run scripts/analyze.py". For weeks it said
+# that into a bundle with no such file: vendoring copied the SKILL.md and left
+# the code behind, so the app instructed a model to run something that did not
+# exist. The fix could not be to edit the prose — that would make
+# `adapted: false` a lie and show as `adapted` on Erwann Lefevre's work — so the
+# only honest repair was to carry the file.
+#
+# TWO PATHS THAT DIFFER AND ARE BOTH RIGHT. `file:` is relative to the app, so
+# it names skills/…/scripts/analyze.py; the skill's own prose says
+# scripts/analyze.py, which is upstream's skill-relative words. The match is on
+# basename, which is exactly what lets them differ without either being wrong.
+#
+# `sha256` is deliberately absent: the loader fills it from the bytes on disk,
+# so a manifest cannot claim a checksum it did not earn. Same rule as
+# `requires.tools` being derived rather than typed.
+scripts:
+  - name: analyze_deals
+    file: skills/won-deal-icp-finder/scripts/analyze.py
+    skill: won-deal-icp-finder
+    runtime: python3
+    description: >-
+      Deterministic deal analysis — ranks deals by value, aggregates revenue per
+      company, measures concentration, and breaks it down by firmographics. It
+      refuses to emit a best-effort result on bad input rather than returning a
+      wrong revenue number.
+    args:
+      - name: input
+        type: path
+        description: the deal export to analyse
+    needs: [crm]
+    # NO FALLBACK, AND THE ABSENCE IS THE POINT. The script exists because this
+    # is the arithmetic a model must not improvise; prose telling one to do it
+    # by hand would be the exact failure the file prevents. With no fallback the
+    # step is reported UNMET on a harness that cannot execute, which is the
+    # honest outcome — an ICP built on invented revenue figures is worse than an
+    # ICP that says it could not be computed.
 
 emits:
   - icp.updated
