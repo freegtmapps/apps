@@ -79,22 +79,39 @@ may:
 # `outreach.drafted` was deleted for being a weaker second account of an event
 # stage_draft already reported from inside the tool.
 #
-# `enrichment.done` is kept for TRIGGERING rather than for carrying. Enrichment
-# is legitimately its own play over an imported list, and "everything that
-# arrived today is now enriched" is a state a later play starts from. The kind
-# already exists in the vocabulary — `enrich-from-github` declares it — and two
-# apps raising one signal kind is fine, unlike two apps owning one say-line.
+# `contact.enriched` IS A KIND OF ITS OWN, AND THAT IS A CORRECTION.
 #
-# `enrichment.skipped` was here and is deliberately gone. It fails the test: a
-# lead that already had a verified address still HAS that address in the record,
-# so "there was nothing to do" is visible without a signal announcing it.
+# This declared `enrichment.done`, on the reasoning that two apps raising one
+# signal kind is fine. That is true for RECORDING what happened and false for
+# DECIDING what runs next, and `enrichment.done` has three producers already:
+# the launch set's `Enrich from GitHub` at the top of the funnel,
+# `bulk-enrich-contacts` over a list, and this app on one person. Three different
+# events under one name.
 #
-# `contact.unreachable` replaces it, and passes. A person nobody can reach is a
-# dead end that leaves no row saying the outreach stopped here, and it is the
-# one outcome of this app that needs routing to a human to source an address by
-# hand. Nothing downstream will happen and, without this, nothing would say why.
+# The first fix attempted was a `when:` filter on the consuming agent —
+# `payload.provider != 'github'`. That is a NEGATIVE filter, and it is the wrong
+# shape rather than merely an inelegant one: it enumerates what to exclude, so
+# the next producer of `enrichment.done` starts triggering the drafting step
+# silently, BY BEING NEW. It fails open on additions, which is the same defect as
+# an unknown jurisdiction reading as permission — refused everywhere else in this
+# tree, and not excusable here on the grounds that it is only a trigger.
+#
+# A positive trigger on a kind that means one thing beats a negative filter on a
+# kind that means three. `enrichment.done` keeps its batch-completion meaning for
+# the two apps that finish a batch; this one says the thing only it can say.
+#
+# `enrichment.skipped` was also here and is deliberately gone. It failed the
+# test write-outreach sets — a declared emit earns its place when it is the ONLY
+# way the thing can be known — because a lead that already had a verified address
+# still HAS that address in the record, so "there was nothing to do" is visible
+# without a signal announcing it.
+#
+# `contact.unreachable` passes that test cleanly. A person nobody can reach is a
+# dead end that leaves no row saying the outreach stopped here, and it is the one
+# outcome of this app that needs routing to a human to source an address by hand.
+# Nothing downstream will happen and, without this, nothing would say why.
 emits:
-  - enrichment.done
+  - contact.enriched
   - contact.unreachable
 
 # No `context:` block, and that is a claim rather than an omission. This app
@@ -178,6 +195,6 @@ instructions: |-
   rendered into the next app's prompt, so this is what actually carries your
   findings forward to whatever drafts the email.
 
-  Then emit enrichment.done. If there is no way to reach this person at all,
+  Then emit contact.enriched. If there is no way to reach this person at all,
   emit contact.unreachable instead and say what you tried, because nothing
   downstream will happen and this is the only record of why.
