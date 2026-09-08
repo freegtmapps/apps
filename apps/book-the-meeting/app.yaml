@@ -18,8 +18,13 @@ say:
   - "book a call with Maya"
   - "propose times for Thursday"
 
-skills:
-
+# THIS APP HAS NO SKILLS, and the key is absent rather than empty.
+#
+# It carried a bare `skills:` with nothing under it, which YAML reads as null. Go decodes null
+# and absent identically into a nil slice, so nothing in the tree could tell them apart and the
+# manifest loaded — but a schema can, and "declared, with no value" is not a thing this app
+# means. It means there is no skill it should carry, for the reason below.
+#
 # A SKILL THE CATALOGUE LISTS IS DELIBERATELY ABSENT, and the loader is why.
 #
 # `handle-demo-request` carries ..., ALERT_CHANNEL, BOOKING_LINK, CRM, DECISION_MAKER_TITLES, FUNDED_OVERRIDE, MQL_CHANNEL — uppercase tokens in the

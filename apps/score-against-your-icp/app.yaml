@@ -34,8 +34,14 @@ maintained_by:
 # a retirement decision rather than mine to take in a manifest. Restore the line
 # when Score is retired.
 say:
+  # The catalogue's own phrasing, and the deviation mattered. This read "score
+  # this lead against our ICP", which is what somebody would write in a spec and
+  # not what they type — and against 48 apps it lost "score this lead" to `Score
+  # and route leads`, whose "route this lead" is nearly the same length. A
+  # say-line is the app's guess at what a person says, so a longer, more precise
+  # one is a worse guess.
+  - "score this lead"
   - "is Acme worth the hour?"
-  - "score this lead against our ICP"
 
 # Order is composition order and it decides the credit line. icp-score-and-route
 # makes the fit decision and says where the lead goes next; deal-qualification-
@@ -91,6 +97,54 @@ emits:
   # because `emits:` should mean everything this app can raise, and a signal no
   # manifest names is somebody working out where it came from.
   - score.blocked
+
+# WHERE THE JUDGEMENT LANDS, AND IN WHAT SHAPE.
+#
+# `type: scoring` now requires `output` (contracts/app.schema.yaml, delta 2): an app whose type
+# says it produces a result has to declare the shape of it, or the context write that consumes
+# it is whatever the model happened to emit and `confidence` has nothing to attach to.
+#
+# `target` is a DESTINATION, NOT A PERMISSION (delta 3). It says the score belongs on the
+# record this run is about; it grants nothing. The agent running this app must carry
+# `records.<lead>.score` in scope.context.writes and `scope.records: write`, or the pairing is
+# refused at load with E_WRITES_EXCEED_SCOPE.
+#
+# `signals` is REQUIRED and may be empty. "I found no buying signals" is a finding and a
+# reader can act on it; a missing key is the model having not looked, and the two would be
+# indistinguishable if the field were optional.
+output:
+  name: icp_score
+  target: records.<lead>.score
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [fit, tier, reasons, signals]
+    properties:
+      fit:
+        description: The decision the emitted signal must agree with — strong or possible is score.passed, poor is score.failed.
+        type: string
+        enum: [strong, possible, poor]
+      tier:
+        description: 1 is a named account worth an hour, 3 is worth a sequence.
+        type: integer
+        minimum: 1
+        maximum: 3
+      reasons:
+        description: The reasons you would defend out loud. At least one, and it must cite what the lead or the signal actually says.
+        type: array
+        minItems: 1
+        items: {type: string}
+      signals:
+        description: Buying signals found. Empty is a valid and useful answer.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [signal]
+          properties:
+            signal: {type: string}
+            evidence: {type: string}
 
 instructions: |-
   Decide whether this lead is a good fit for {{product}}.

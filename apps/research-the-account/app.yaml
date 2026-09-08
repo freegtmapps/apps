@@ -72,6 +72,60 @@ context:
     ask: "Who do you sell to? Paste your ICP, or say no."
     type: text
 
+# WHERE THE BRIEF LANDS, AND IN WHAT SHAPE.
+#
+# `type: research` now requires `output` (contracts/app.schema.yaml, delta 2), and `target` is a
+# destination rather than a permission (delta 3): the brief belongs on the record this run is
+# about. The agent running this app needs `records.<lead>.brief` in scope.context.writes and
+# `scope.records: write`, or the pairing is refused at load.
+#
+# `sources` and `gaps` are BOTH REQUIRED, which is the instructions' own rule made checkable:
+# "say which sources you used and name what you could not find — a gap stated is worth more
+# than a gap filled in". A brief with no sources is a brief that was invented, and until now
+# nothing could tell the difference.
+output:
+  name: account_brief
+  target: records.<lead>.brief
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [company, what_they_sell, what_changed, people, sources, gaps]
+    properties:
+      company: {type: string}
+      what_they_sell: {type: string}
+      what_changed:
+        description: What moved recently and when. Empty when nothing did — which is itself worth reading before a call.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [what]
+          properties:
+            what: {type: string}
+            when: {type: string}
+            source: {type: string}
+      people:
+        description: Who runs it, and why each one matters to this conversation.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, role]
+          properties:
+            name: {type: string}
+            role: {type: string}
+            why_they_matter: {type: string}
+      sources:
+        description: What you actually read. At least one — a brief with no sources was invented.
+        type: array
+        minItems: 1
+        items: {type: string}
+      gaps:
+        description: What you could not find. Empty only when nothing was missing.
+        type: array
+        items: {type: string}
+
 instructions: |-
   Research one account and produce a brief a person can read before a call.
 
