@@ -104,14 +104,27 @@ output:
           top-level domain — and is the value that should make a reader uncomfortable.
         type: string
         enum: [stated, company_location, inferred, none]
+      # 0..1 AS A REAL, WHICH IS THE PLATFORM'S ONE SPELLING OF CONFIDENCE.
+      #
+      # This said `integer, 0..100` and was the outlier. `contracts/context-table.md`
+      # declares the column `confidence real NOT NULL, -- 0..1`, and
+      # `gtm-pipeline-map.md` Part 1 says "confidence (0–1)" for every field, with a
+      # live threshold to match: "filled at confidence ≥ 0.6".
+      #
+      # It cost nothing here, because the send gate deliberately reads `country` and
+      # `basis` and never this. It would have cost something the first time anything
+      # did: a threshold written `> 0.8` against integers passes for every value from
+      # 1 upward, silently, and a lead placed on the flimsiest evidence would read as
+      # near-certain. Two spellings of one number is the defect this tree refuses
+      # everywhere else.
       confidence:
         description: >-
-          How sure you are, 0-100. Not a gate input by itself: the send path decides on
+          How sure you are, 0 to 1. Not a gate input by itself: the send path decides on
           country and basis, and this is here so a person reviewing a refusal can see
           whether it was close.
-        type: integer
+        type: number
         minimum: 0
-        maximum: 100
+        maximum: 1
       evidence:
         description: The exact wording you read it from, quoted rather than summarised.
         type: array
