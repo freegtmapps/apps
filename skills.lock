@@ -226,7 +226,7 @@
       "source": "https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/qbr-ebr-builder/SKILL.md",
       "source_version": "7a108f1da6b20b1e0e4eff377cfc766412ab3c80",
       "license": "MIT",
-      "sha256": "b57c43cd7cc709f23362bce62777ebc8451b845bd5fbbd8d6fa203f07710bdb7",
+      "sha256": "eea8b2bd71dcdf31d7f0d7cdcc4d5fc09250b4ddb83491811b2df59e4dc5c7cf",
       "files": [
         "SKILL.md",
         "references/business-review-practices.md",
@@ -1290,7 +1290,7 @@
       "source": "https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/jorge-macias/track-contact-job-changes/SKILL.md",
       "source_version": "772390315dc4f5593a730ccca7e1bb6ea7a5aaba",
       "license": "MIT",
-      "sha256": "8a7a2be4470ad506bd75975af9183dafd8290d975acf72446881d357be81fbed",
+      "sha256": "0a42d8d5f820b4109a15291b83e812912f5d13d90087b39a5ae3009fd8aaca50",
       "files": [
         "SKILL.md",
         "references/company-matching-rules.md",
@@ -1420,7 +1420,7 @@
       "source": "https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/ido-goldberg/reach-out/SKILL.md",
       "source_version": "772390315dc4f5593a730ccca7e1bb6ea7a5aaba",
       "license": "MIT",
-      "sha256": "132f09990f2c1b34d5ffaed854795d164fdb26d5db8d10649ef50aec9c75b299",
+      "sha256": "7683526dd3a2269b248ec23064e712ea08e615421f07b5924a2a913086f93a5a",
       "files": [
         "SKILL.md",
         "references/cold-list.md",
