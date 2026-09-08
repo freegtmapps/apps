@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+"""Ship a reference page under the name its skill's body actually routes to.
+
+FOUR UPSTREAM DEFECTS, THREE AUTHORS: a skill body names a `references/` page
+its own repository does not ship under that name. We do not rename upstream's
+file and we do not edit upstream's prose — either would make `adapted: false` a
+lie, and renaming is worse than redundancy because it makes the bundle work
+while HIDING the author's bug, so nobody reports it and the next person to
+vendor that skill rediscovers it.
+
+TWO PROPERTIES THIS HAS AND A STATIC LIST DOES NOT.
+
+Self-healing. Every entry is re-checked against upstream on each run. The day an
+author merges the fix, the routed name exists upstream, the alias is not written,
+and the entry reports itself stale. A static list goes stale in the direction
+that looks fine: the page keeps shipping twice long after it needs to, and
+nothing says so.
+
+Self-describing. An installed bundle has no `docs/`, so a person diffing it
+against upstream sees an unexplained extra file and the answer is a repository
+away. The alias carries its own first line. The CANONICAL page still ships
+byte-identical under upstream's own name, so the artifact anybody would diff is
+untouched.
+"""
+import base64, json, os, subprocess, sys
+
+GTM  = ('swan-gtm/gtm-skills', '772390315dc4f5593a730ccca7e1bb6ea7a5aaba')
+NEON = ('NEON-Rutger/B2B-revops-skills', '7a108f1da6b20b1e0e4eff377cfc766412ab3c80')
+
+# routed name -> where the page actually lives upstream. Explicit, because
+# guessing which page a broken route meant is how a wrong page gets shipped
+# under a name a model will trust.
+# Each entry also names the SKILL's OWN references directory upstream, because
+# that is where "has upstream fixed it?" has to be asked.
+#
+# The first version asked it against the SOURCE's directory — which for a
+# cross-skill route is the directory the source file is in, so the check found
+# the file it had just been pointed at and reported the defect healed. It then
+# deleted an alias that was still needed. A healing check that resolves to
+# "the thing I am copying exists" is a check on the wrong noun, and it fails in
+# the direction that quietly removes protection.
+ALIASES = [
+    ('case-study', 'qbr-ebr-builder', 'retention-benchmarks.md',
+     NEON, 'renewal-save-motion/references/retention-benchmarks.md',
+     'qbr-ebr-builder/references'),
+    ('track-job-changes', 'track-contact-job-changes', 'matching.md',
+     GTM, 'skills/jorge-macias/track-contact-job-changes/references/company-matching-rules.md',
+     'skills/jorge-macias/track-contact-job-changes/references'),
+    ('track-job-changes', 'track-contact-job-changes', 'tiering.md',
+     GTM, 'skills/jorge-macias/track-contact-job-changes/references/tiering-a-net-new-company.md',
+     'skills/jorge-macias/track-contact-job-changes/references'),
+    ('write-outreach', 'reach-out', 'event-followup.md',
+     GTM, 'skills/ido-goldberg/reach-out/references/event-follow-up.md',
+     'skills/ido-goldberg/reach-out/references'),
+]
+
+def exists(repo, sha, path):
+    r = subprocess.run(['gh', 'api', f'repos/{repo}/contents/{path}?ref={sha}', '--jq', '.sha'],
+                       capture_output=True, text=True)
+    return r.returncode == 0
+
+def fetch(repo, sha, path):
+    out = subprocess.run(['gh', 'api', f'repos/{repo}/contents/{path}?ref={sha}', '--jq', '.content'],
+                         capture_output=True, text=True, check=True).stdout
+    return base64.b64decode(out).decode('utf-8')
+
+def main(root='freegtm-apps/apps'):
+    healed, written, missing = [], [], []
+    for app, skill, routed, (repo, sha), src, own_dir in ALIASES:
+        rd = f'{root}/{app}/skills/{skill}/references'
+        if not os.path.isdir(rd):
+            missing.append((app, skill)); continue
+        # HAS UPSTREAM FIXED IT? Asked against the SKILL'S OWN directory: the
+        # route is broken because the skill does not ship that name, so that is
+        # the only place its being fixed can show up.
+        if exists(repo, sha, f'{own_dir}/{routed}'):
+            healed.append((app, skill, routed))
+            if os.path.exists(f'{rd}/{routed}'):
+                os.remove(f'{rd}/{routed}')
+            continue
+        body = fetch(repo, sha, src)
+        note = (f"<!-- This page is a copy of `{os.path.basename(src)}`, shipped under the name\n"
+                f"     `{routed}` because {skill}'s body routes to that name and\n"
+                f"     {repo} does not ship it. We do not rename upstream's file or edit\n"
+                f"     upstream's prose; the canonical page ships beside this one, unmodified.\n"
+                f"     Delete this alias when upstream fixes the route. -->\n\n")
+        open(f'{rd}/{routed}', 'w').write(note + body)
+        written.append((app, skill, routed))
+    for a, s, r in written: print(f'  alias   {a}/{s}/references/{r}')
+    for a, s, r in healed:  print(f'  HEALED  {a}/{s}: upstream now ships {r} — alias removed, drop the ALIASES entry')
+    for a, s in missing:    print(f'  MISSING {a}/{s}: no references directory')
+    print(f'{len(written)} alias(es), {len(healed)} healed, {len(missing)} missing')
+    return 1 if missing else 0
+
+if __name__ == '__main__':
+    sys.exit(main(*sys.argv[1:]))

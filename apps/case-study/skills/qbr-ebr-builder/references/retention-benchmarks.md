@@ -1,3 +1,9 @@
+<!-- This page is a copy of `retention-benchmarks.md`, shipped under the name
+     `retention-benchmarks.md` because qbr-ebr-builder's body routes to that name and
+     NEON-Rutger/B2B-revops-skills does not ship it. We do not rename upstream's file or edit
+     upstream's prose; the canonical page ships beside this one, unmodified.
+     Delete this alias when upstream fixes the route. -->
+
 # Retention Benchmarks: Provenance and How the Skill Uses Them
 
 Every number in the skill carries a source and a vintage; retention benchmarks drift with the funding climate, so vintage matters. Recalibrate against current-year surveys where you have access.

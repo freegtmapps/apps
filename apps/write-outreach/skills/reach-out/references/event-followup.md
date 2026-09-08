@@ -1,3 +1,9 @@
+<!-- This page is a copy of `event-follow-up.md`, shipped under the name
+     `event-followup.md` because reach-out's body routes to that name and
+     swan-gtm/gtm-skills does not ship it. We do not rename upstream's file or edit
+     upstream's prose; the canonical page ships beside this one, unmodified.
+     Delete this alias when upstream fixes the route. -->
+
 ---
 title: "Event follow-up"
 description: "Outreach around a webinar, conference, or hosted event — registrants, attendees, no-shows, booth conversations. Distinct from company signals: the event is shared context both sides know about, so it's mentionable."

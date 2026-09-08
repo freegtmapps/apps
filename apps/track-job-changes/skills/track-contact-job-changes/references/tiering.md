@@ -1,3 +1,9 @@
+<!-- This page is a copy of `tiering-a-net-new-company.md`, shipped under the name
+     `tiering.md` because track-contact-job-changes's body routes to that name and
+     swan-gtm/gtm-skills does not ship it. We do not rename upstream's file or edit
+     upstream's prose; the canonical page ships beside this one, unmodified.
+     Delete this alias when upstream fixes the route. -->
+
 ---
 title: "Tiering a net-new company"
 description: Reference for the Track contact job changes skill.
