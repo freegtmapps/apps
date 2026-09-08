@@ -1,0 +1,183 @@
+# The leg of the outbound chain that had nothing covering it.
+#
+# `research-the-account` produces a brief about the COMPANY and lands it at
+# `records.<lead>.brief`. `bulk-enrich-contacts` works over a LIST and declares
+# no `type` and no `output`, so it has no per-record destination at all. Between
+# them, nothing on this repo's 48 answers "what is this one person's address",
+# and a play that ends in a send cannot end in a send without one.
+#
+# So this app is deliberately narrow: ONE person, ONE record, one destination.
+# The list-level app is not a worse version of this one, it is a different job —
+# it reports hit rates across a file, and a hit rate is not a fact about a lead.
+name: Enrich the contact
+description: Find a deliverable address for one person, with the sources shown and the gaps named.
+category: find-and-research
+type: research
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "find an email for this lead"
+  - "how do I reach this person?"
+
+# ENRICHMENT IS THE CAPABILITY, NOT THE VENDOR (APP-BUNDLE §5). Declared at the
+# top level because `requires.tools` is DERIVED from this rather than
+# hand-written — hand entry plus a load-time check is two sources that agree
+# until somebody edits one.
+#
+# `enrichment` is required rather than optional, unlike research-the-account's.
+# That app degrades honestly without it: a brief written from public web pages
+# is a thinner brief but still a brief. This one does not degrade — an address
+# guessed from a naming pattern is not a thinner answer, it is a bounce, and a
+# bounce on a warming domain costs more than the lead is worth.
+tools: [enrichment]
+
+requires:
+  optional:
+    tools: [web, linkedin, crm, github]
+
+may:
+  - read
+  - write_lead
+  - emit
+
+# CORRECTION. An earlier version of this block justified `enrichment.done` by
+# quoting seed.go:95 — "facts written to the lead are invisible to the next app
+# in the same play" — and concluded that a downstream app must read the address
+# off this signal rather than off the record. THAT COMMENT IN gtmsrv IS STALE
+# and the conclusion drawn from it was wrong.
+#
+# `engine/leadmemory.go` closed that gap. `leadMemory` implements
+# `agentkit.Memory` over the lead, the engine wires it as the default, and
+# `engine/app.go` sets `MemoryReadPreload` so the facts are RENDERED INTO THE
+# PROMPT rather than offered as a tool the model may decline. The next app in
+# the play does see what this one found, and no signal is needed to carry it.
+#
+# Worth being exact about the route. `domain.LeadFacts` renders lead stage,
+# score, `FlattenFields(lead.Fields)` and recent timeline summaries — which is
+# what `update_lead` writes. **Nothing resolves `output.target` yet**; dev1 is
+# building that. So today the instructions below are the only thing that puts
+# this app's findings where the next app can read them, which is why they say so
+# explicitly rather than leaving it to habit.
+#
+# Do not read that as a general rule about output targets, because it is not one.
+# A `records.<lead>.*` target resolves to the LEAD STORE — a record has no owner,
+# is never proposed and is never versioned — so once resolution lands, this app's
+# output will reach LeadFacts by itself. It is a SECTION target
+# (`market.competitor_profiles` and the like) that lands in the pipeline context
+# table and never appears in LeadFacts. The gap between the two destinations is
+# real; it just does not run through this manifest.
+#
+# SO WHAT ARE THE EMITS FOR. Not chaining. The test this repo applies is
+# write-outreach's: a declared emit earns its place when it is the ONLY way the
+# thing can be known — which is why `outreach.blocked` stays and
+# `outreach.drafted` was deleted for being a weaker second account of an event
+# stage_draft already reported from inside the tool.
+#
+# `enrichment.done` is kept for TRIGGERING rather than for carrying. Enrichment
+# is legitimately its own play over an imported list, and "everything that
+# arrived today is now enriched" is a state a later play starts from. The kind
+# already exists in the vocabulary — `enrich-from-github` declares it — and two
+# apps raising one signal kind is fine, unlike two apps owning one say-line.
+#
+# `enrichment.skipped` was here and is deliberately gone. It fails the test: a
+# lead that already had a verified address still HAS that address in the record,
+# so "there was nothing to do" is visible without a signal announcing it.
+#
+# `contact.unreachable` replaces it, and passes. A person nobody can reach is a
+# dead end that leaves no row saying the outreach stopped here, and it is the
+# one outcome of this app that needs routing to a human to source an address by
+# hand. Nothing downstream will happen and, without this, nothing would say why.
+emits:
+  - enrichment.done
+  - contact.unreachable
+
+# No `context:` block, and that is a claim rather than an omission. This app
+# needs nothing said about the workspace before it runs — it reads a lead and
+# looks the person up. Declaring `product` or `icp` here because most apps have
+# them would make the list stop meaning "what must be said before this runs",
+# which is the rule research-the-account and write-outreach both state in their
+# own manifests.
+
+# WHERE THE CONTACT LANDS, AND IN WHAT SHAPE.
+#
+# `type: research` requires `output` (contracts/app.schema.yaml delta 2) and
+# `target` is a DESTINATION, NOT A PERMISSION (delta 3). The agent running this
+# app must carry `records.<lead>.contact` in `scope.context.writes`, or the
+# pairing is refused at load with E_WRITES_EXCEED_SCOPE.
+#
+# `type: enrichment` was the obvious label — it is what `Enrich from GitHub`
+# uses — and it is deliberately NOT used here. `enrichment` carries no schema
+# consequence, so this app could then ship without an `output` block, and the
+# address would reach the send path as whatever the model happened to say. The
+# type is chosen for the constraint it imposes, which is the honest reason.
+#
+# `email_status` IS REQUIRED AND MAY SAY "none". That is the whole discipline
+# of this app in one field. A verified address, a guessed address and no address
+# are three different facts with three different costs, and an optional field
+# would collapse the last two into an absent key — which reads as "not looked
+# for" when it means "looked for and not found".
+#
+# `sources` (minItems 1) makes the instruction checkable, the same way
+# research-the-account's does: an address with no source was invented, and until
+# the field was required nothing could tell the difference.
+output:
+  name: contact_details
+  target: records.<lead>.contact
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [email, email_status, sources, gaps]
+    properties:
+      email:
+        description: The address, or empty when none was found. Never a pattern-guess.
+        type: string
+      email_status:
+        description: >-
+          verified is confirmed deliverable by a source that checked. found is a real
+          address seen somewhere but not checked. guessed is a naming pattern and must
+          never be sent to. none means it was looked for and not found.
+        type: string
+        enum: [verified, found, guessed, none]
+      name:
+        type: string
+      title:
+        description: Their role, in their own organisation's words rather than a normalised one.
+        type: string
+      company:
+        type: string
+      sources:
+        description: What you actually read to get this. At least one — an address with no source was invented.
+        type: array
+        minItems: 1
+        items: {type: string}
+      gaps:
+        description: What you could not find. Empty only when nothing was missing.
+        type: array
+        items: {type: string}
+
+instructions: |-
+  Find how to reach one person, and be honest about how well you found it.
+
+  NEVER GUESS AN EMAIL. A pattern like first.last@company.com is not a finding,
+  it is a bounce with a plausible shape, and a bounce costs the sending domain's
+  reputation rather than just this lead. If you can only guess, set
+  `email_status: guessed` and leave the reader to decide, or set `none`.
+
+  Say where each fact came from. Name what you could not find rather than
+  filling it in — a gap stated is worth more than a gap invented, because the
+  invented one gets sent to.
+
+  WRITE WHAT YOU LEARN TO THE LEAD WITH update_lead. The lead's own fields are
+  rendered into the next app's prompt, so this is what actually carries your
+  findings forward to whatever drafts the email.
+
+  Then emit enrichment.done. If there is no way to reach this person at all,
+  emit contact.unreachable instead and say what you tried, because nothing
+  downstream will happen and this is the only record of why.

@@ -1,6 +1,6 @@
 ---
 name: revops-metrics
-description: ">"
+description: "Revenue performance measurement, funnel math, and unit economics for B2B teams. Use when the user mentions revenue metrics, conversion rates, pipeline velocity, unit economics, LTV, CAC, payback period, cohort analysis, NRR, GRR, churn rate, expansion…"
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/revops-metrics/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

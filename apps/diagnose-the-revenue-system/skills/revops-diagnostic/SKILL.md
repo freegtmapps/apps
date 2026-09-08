@@ -1,6 +1,6 @@
 ---
 name: revops-diagnostic
-description: ">"
+description: "Revenue operations diagnostic frameworks for identifying system constraints and root causes in B2B GTM organizations. Use when the user mentions diagnosing revenue problems, finding the constraint, IFA diagnostic, six stages of check, system thinking, root…"
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/revops-diagnostic/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

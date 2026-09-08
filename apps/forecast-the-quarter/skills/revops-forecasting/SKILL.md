@@ -1,6 +1,6 @@
 ---
 name: revops-forecasting
-description: ">"
+description: "Use this skill when the forecast is consistently wrong: over-forecasting, missed quarter-ends, deals slipping unexpectedly. Installs category-based forecasting (Commit, Best Case, Upside), multi-method triangulation combining stage-weighted and historical…"
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/revops-forecasting/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

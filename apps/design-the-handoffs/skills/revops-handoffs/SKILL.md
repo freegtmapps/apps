@@ -1,6 +1,6 @@
 ---
 name: revops-handoffs
-description: ">"
+description: "Use this skill when revenue leaks between teams: leads go dark after handover to sales, promised commitments disappear after signature, expansion signals stay invisible, CS never learns what sales committed. Designs handoff protocols across the full…"
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/revops-handoffs/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

@@ -1,6 +1,6 @@
 ---
 name: procurement-navigation
-description: ">"
+description: "Navigate the buyer's procurement gauntlet from 'you're selected' to signature: map the gauntlet early, pre-bake the artifact pack, run security, legal, and privacy reviews in parallel on a mutual close plan, and negotiate procurement's game without giving…"
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/procurement-navigation/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

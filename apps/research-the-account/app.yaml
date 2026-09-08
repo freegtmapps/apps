@@ -34,9 +34,24 @@ skills:
   - recent-discourse-sweep
   - account-research-brief
 
+# `emit` is here because `emits:` below declares `research.blocked`, and without
+# it that declaration was a promise the app could not keep.
+#
+# `may` is enforced by projection alone (APP-BUNDLE §3, conformance rule 14): an
+# app without `emit` never has `emit_signal` projected. So this manifest declared
+# a signal it structurally could not raise — the app could be blocked, would know
+# it was blocked, and had no way to say so. It would fail silently, which is the
+# one failure this tree argues against everywhere else.
+#
+# The fix is the permission, not the deletion. A research app that cannot
+# announce a refusal leaves nothing for a play to route to a person, and
+# `research.blocked` is a NON-EVENT — nothing else records that the research did
+# not happen, because not happening leaves no row. That is exactly the test
+# write-outreach applies to keep `outreach.blocked` and drop `outreach.drafted`.
 may:
   - read
   - write_lead
+  - emit
 
 # `web` is required rather than optional because every one of these three skills
 # is a research method, and a research app with nothing to read is not a
@@ -56,9 +71,14 @@ requires:
   optional:
     tools: [enrichment, linkedin, crm, github]
 
-# Declarations that are INERT ON THE REGISTRY and live on the platform. Signals
-# are the commercial product (ruled 2026-09-06); nothing here raises these, and
-# they stay so one bundle describes one app on both products.
+# Inert on the registry and live on the platform. Signals are the commercial
+# product (ruled 2026-09-06), so nothing raises this where the bundle is merely
+# browsed; it stays declared so one bundle describes one app on both products.
+#
+# "Inert on the registry" was the whole of the old note, and it hid the defect
+# above: the app could not raise this on the PLATFORM either, because `may` had
+# no `emit`. Inert in one place by design and inert in the other by accident read
+# identically from here, which is why the note now says which is which.
 emits:
   - research.blocked
 

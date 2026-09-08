@@ -1,6 +1,6 @@
 ---
 name: mutual-action-plan-builder
-description: ">-"
+description: "Use this skill when a deal is live and you need to align the buyer on a shared path to value — when a champion asks 'so what are the next steps,' when you're heading into scoping, POC, security review, or procurement, when a deal has slipped once or…"
 author: Gal Aga
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/gal-aga/mutual-action-plan-builder/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

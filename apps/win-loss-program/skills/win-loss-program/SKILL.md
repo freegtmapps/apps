@@ -1,6 +1,6 @@
 ---
 name: win-loss-program
-description: ">"
+description: "Build a standing win-loss program that finds out why deals were actually won or lost, from two evidence lanes: mining the transcripts and threads of decided deals, and interviewing the buyers themselves after the decision. Triggers on 'win-loss,' 'why did…"
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/win-loss-program/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

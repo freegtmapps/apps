@@ -1,6 +1,6 @@
 ---
 name: pipeline-visibility
-description: ">"
+description: "Pipeline visibility, reporting architecture, dashboard design, pipeline hygiene, and forecast reporting for B2B revenue teams. CRM-agnostic patterns for any platform. Use when the user mentions pipeline visibility, pipeline reporting, sales dashboards,…"
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/pipeline-visibility/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

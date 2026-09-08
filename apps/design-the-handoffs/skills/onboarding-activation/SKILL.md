@@ -1,6 +1,6 @@
 ---
 name: onboarding-activation
-description: ">"
+description: "Design customer onboarding as an activation system: carry the why-they- bought evidence across the signature, drive to first realized value on a clock, detect stalls while they are cheap, and graduate accounts into the steady-state cadence with a value…"
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/onboarding-activation/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

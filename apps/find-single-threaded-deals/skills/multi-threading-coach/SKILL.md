@@ -1,6 +1,6 @@
 ---
 name: multi-threading-coach
-description: ">-"
+description: "Use this skill on a live deal when you need to stop relying on one contact and build a coalition across the buying committee. Run it when a deal is single-threaded (everything runs through one champion), when you can't name who actually decides, when a…"
 author: Gal Aga
 source: https://github.com/swan-gtm/gtm-skills/blob/772390315dc4f5593a730ccca7e1bb6ea7a5aaba/skills/gal-aga/multi-threading-coach/SKILL.md
 source_version: 772390315dc4f5593a730ccca7e1bb6ea7a5aaba

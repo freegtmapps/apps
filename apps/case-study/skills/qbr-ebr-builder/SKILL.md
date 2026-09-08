@@ -1,6 +1,6 @@
 ---
 name: qbr-ebr-builder
-description: ">"
+description: "Design and build customer business reviews that buyers actually attend: QBR (operational cadence) and EBR (executive cadence), with the value recap in the customer's own numbers as the load-bearing artifact. Triggers on 'QBR,' 'EBR,' 'business review,'…"
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/qbr-ebr-builder/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

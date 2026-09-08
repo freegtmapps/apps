@@ -1,6 +1,6 @@
 ---
 name: revops-hubspot
-description: ">"
+description: "Use this skill when CRM architecture breaks revenue clarity: lifecycle stages that do not match the funnel, unmaintainable properties, reporting that needs three spreadsheets. Covers object model design, lifecycle architecture, property governance,…"
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/revops-hubspot/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

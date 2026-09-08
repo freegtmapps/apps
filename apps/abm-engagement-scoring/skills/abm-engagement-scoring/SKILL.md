@@ -1,6 +1,6 @@
 ---
 name: abm-engagement-scoring
-description: ">"
+description: "Use this skill when an ABM program cannot prove engagement matters, accounts get handed to sales on gut feel, or nobody knows which activity moves buying groups forward. Builds an account engagement score (weighted signals plus decay), maps buying group…"
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/abm-engagement-scoring/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

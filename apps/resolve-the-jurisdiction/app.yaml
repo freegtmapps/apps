@@ -1,0 +1,146 @@
+# The app that exists because of a clause in somebody else's terms.
+#
+# contracts/send-constraints.md §2: "The platform must know a recipient's
+# jurisdiction before it sends, and must refuse rather than degrade when it does
+# not." That comes from Smartlead's clause 3.4(d), which prohibits unsolicited
+# commercial electronic messages "as defined by the Spam Laws", and clause 20's
+# definition of those as the laws "in other jurisdictions in which you or your
+# intended audience are in". A recipient in a consent regime is a contract
+# breach with the transport as well as a legal exposure.
+#
+# THIS APP REPORTS A FACT. IT DOES NOT DECIDE THE GATE.
+#
+# That split is the whole design and it is deliberate. The model says where the
+# person appears to be and on what evidence; the send path maps country to
+# regime and refuses. Putting the mapping here would put a legal determination
+# inside a model's judgement, where it cannot be reviewed, cannot be diffed, and
+# changes whenever the prompt does. Putting it in Go makes it a table somebody
+# can read — the same "rules first, judgement second" shape score-against-your
+# -icp states in its own header, applied where the cost of being wrong is an
+# account termination rather than a bad score.
+#
+# So there is no `regime` field below, and no enum of "consent_required". Adding
+# one would look like more safety and would be less.
+name: Resolve the jurisdiction
+description: Where this recipient is, and on what evidence — the fact the send gate reads.
+category: qualify
+type: research
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "where is this lead based?"
+  - "can we email this person?"
+
+requires:
+  optional:
+    tools: [web, linkedin, enrichment, crm, github]
+
+may:
+  - read
+  - write_lead
+  - emit
+
+# Both are declared because the gate's two outcomes are different events, not
+# one event with a field. `jurisdiction.unknown` is the one that earns its place
+# by the usual test: it announces a NON-EVENT. A lead nobody could place leaves
+# no row saying so, and a play that wanted to route those to a person for a
+# manual look would otherwise have nothing to trigger on.
+#
+# Neither of these is the gate. The gate is in the send path, beside
+# suppression, and it fails closed whether or not a signal was raised — see
+# send-constraints §2: "A gate a draft can be approved past is not a gate."
+emits:
+  - jurisdiction.resolved
+  - jurisdiction.unknown
+
+# WHY THIS IS A SEPARATE APP AND NOT A FIELD ON `Enrich the contact`.
+#
+# Three reasons, in the order they bite.
+#
+# An app declares ONE `output.target`, so a field inside `records.<lead>.contact`
+# would put a gate input inside an object about something else, and the gate
+# would read a sub-field of a schema that is free to change for reasons that have
+# nothing to do with it.
+#
+# The failure postures differ. A missing address means this lead cannot be
+# mailed. A missing jurisdiction means this lead MUST NOT be mailed. Those want
+# to be separately observable and separately re-runnable, and coupling them
+# means a lead with a known address and an unknown country looks half-enriched
+# rather than blocked.
+#
+# And it has to run for leads whose address we already had. An imported list
+# skips contact enrichment entirely and still needs placing.
+#
+# `type: research` is chosen for the constraint it imposes: it is what makes
+# `output` required (contracts/app.schema.yaml delta 2), and this is the last
+# app in the chain that should be allowed to answer in prose.
+output:
+  name: jurisdiction
+  target: records.<lead>.jurisdiction
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [country, basis, confidence, sources]
+    properties:
+      country:
+        description: >-
+          ISO 3166-1 alpha-2, upper case — or the literal "unknown". Required either way:
+          an absent country and a stated-unknown country are different facts. The gate
+          refuses both, but only one of them says somebody looked.
+        type: string
+        pattern: "^([A-Z]{2}|unknown)$"
+      basis:
+        description: >-
+          What the country was read off. stated is the person or their profile saying it.
+          company_location is the employer's registered or headquarters address, which is
+          not the same claim. inferred is anything weaker — a timezone, a language, a
+          top-level domain — and is the value that should make a reader uncomfortable.
+        type: string
+        enum: [stated, company_location, inferred, none]
+      confidence:
+        description: >-
+          How sure you are, 0-100. Not a gate input by itself: the send path decides on
+          country and basis, and this is here so a person reviewing a refusal can see
+          whether it was close.
+        type: integer
+        minimum: 0
+        maximum: 100
+      evidence:
+        description: The exact wording you read it from, quoted rather than summarised.
+        type: array
+        items: {type: string}
+      sources:
+        description: >-
+          Where you looked. At least one, INCLUDING when the answer is unknown — "we
+          checked these three places and none of them said" is the useful form of not
+          knowing, and an empty list cannot be told from not having run.
+        type: array
+        minItems: 1
+        items: {type: string}
+
+instructions: |-
+  Work out where this recipient is, and say how you know.
+
+  DO NOT DECIDE WHETHER WE MAY EMAIL THEM. That is not your call and it is not
+  in your output — the send path holds the rule and refuses on its own. Your job
+  is to give it something true to refuse on.
+
+  Prefer what the person states about themselves over where their employer is
+  registered; a developer in Berlin working for a Delaware company is in Berlin
+  for this purpose, and those two facts have different `basis` values for
+  exactly that reason.
+
+  UNKNOWN IS A GOOD ANSWER WHEN IT IS THE TRUE ONE. Set country to "unknown",
+  basis to "none", and still list where you looked. Do not reach for a timezone
+  or a top-level domain to avoid saying it — an `inferred` country that is wrong
+  is worse than an honest unknown, because the gate trusts the first one.
+
+  Write it to the lead with update_lead. Emit jurisdiction.resolved when you
+  placed them, or jurisdiction.unknown when you could not.

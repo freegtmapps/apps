@@ -1,6 +1,6 @@
 ---
 name: sales-methodology
-description: ">"
+description: "Implement and operationalize proven sales methodologies across revenue teams, with deep SPICED qualification depth. Use when the user mentions SPICED, MEDDIC, MEDDPICC, BANT, Challenger, SPIN, Gap Selling, sales qualification, deal scoring, sales process…"
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/sales-methodology/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

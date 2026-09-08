@@ -1,6 +1,6 @@
 ---
 name: deal-qualification-gates
-description: ">"
+description: "Install evidence-gated qualification on a live pipeline: score the QUALITY of evidence behind every deal (1-5 per qualification dimension), set minimum scores per stage, and enforce qualify-or-kill at each gate. Triggers on 'zombie deals,' 'pipeline is…"
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/deal-qualification-gates/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

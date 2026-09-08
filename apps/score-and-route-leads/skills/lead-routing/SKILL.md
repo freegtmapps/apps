@@ -1,6 +1,6 @@
 ---
 name: lead-routing
-description: ">"
+description: "Lead routing strategy, assignment logic, round-robin patterns, territory design, speed-to-lead SLA frameworks, and routing automation for B2B revenue teams. Use when the user mentions lead routing, lead assignment, round-robin, territory assignment, lead…"
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/lead-routing/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80

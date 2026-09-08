@@ -1,6 +1,6 @@
 ---
 name: data-enrichment
-description: ">"
+description: "Use this skill when inbound leads arrive incomplete (missing company size, industry, revenue), the TAM list lacks data for scoring, or the CRM cannot route and segment without enrichment. Maps coverage gaps, compares single-source and waterfall provider…"
 author: Rutger Katz
 source: https://github.com/NEON-Rutger/B2B-revops-skills/blob/7a108f1da6b20b1e0e4eff377cfc766412ab3c80/data-enrichment/SKILL.md
 source_version: 7a108f1da6b20b1e0e4eff377cfc766412ab3c80
