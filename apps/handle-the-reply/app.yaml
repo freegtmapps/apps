@@ -36,18 +36,62 @@ may:
   - stage
   - emit
 
-# NO `rules:` YET, AND THE ABSENCE IS DELIBERATE.
+# NO `rules:` YET, AND THE ABSENCE IS STILL DELIBERATE — BUT NOT FOR THE REASON
+# THIS COMMENT USED TO GIVE.
 #
 # APP-CATALOG gives this app `confidence-gate.yaml` — below 0.8, ask a human
-# rather than answer. It is the right gate and it is not declared here, because
-# measured on 2026-09-07: no code reads a rules/ directory and nothing calls
-# RegisterRule, so Engine.Rules is empty in every deployment. An app declaring a
-# rule does not skip the gate — the gate does not exist.
+# rather than answer. It is the right gate.
 #
-# Declaring it anyway would ship a manifest that says a human is consulted below
-# 0.8 while nothing consults anybody. That is a worse failure than the gate
-# being late, because it is the kind a person only discovers from the outcome.
-# The mechanism is being built; the declaration lands with it.
+# ⚠ THE OLD REASON WAS WRONG, and it was wrong in the expensive direction. It
+# said: "measured on 2026-09-07: no code reads a rules/ directory and nothing
+# calls RegisterRule, so Engine.Rules is empty in every deployment... the gate
+# does not exist." That measurement was half a measurement. `rules:` was the
+# mechanism DEFINED TWICE AND BUILT ONCE (APP-BUNDLE §1), and the sentence
+# measured the dead half and concluded about the live one:
+#
+#   DEAD — `Engine.RegisterRule` (engine.go:58), the Go-registered evaluator.
+#   Still called from tests only. `Engine.Rules` really is empty everywhere.
+#
+#   LIVE — `app.Bundle.Rules`, the file the bundle carries. `evalPreRules`
+#   (engine.go:229) looks up `app.Bundle.Rules[rName]` FIRST and hands it to
+#   `evalBundleRule` (bundlerules.go), with the registered evaluator consulted
+#   only second. engine.go says so in place: "THE BUNDLE FIRST, because that is
+#   where a rule now lives." `score-against-your-icp` ships `rules/icp-gate.yaml`
+#   and it executes.
+#
+# So a bundle rule declared here WOULD run today. A comment asserting a
+# capability does not exist, when it does, is the same failure as the gate it was
+# protecting against — and the same shape as gtmsrv's `seed.go:95`, which told a
+# reader to build a seam that already existed.
+#
+# THREE THINGS STILL MISSING, and they are a specification rather than a shrug:
+#
+#   1. AN `output` BLOCK WITH A `confidence` FIELD. This app declares
+#      `type: reply`, which is not one of {research, scoring, analysis}, so
+#      nothing forces `output` and nothing structured comes out of the run.
+#      "Below 0.8" has no field to read. Note the scale when it is added:
+#      confidence is a real in 0..1 everywhere on this platform
+#      (contracts/context-table.md declares the column `real -- 0..1`), and a
+#      threshold written `> 0.8` against integers passes for every value from 1
+#      upward, silently.
+#
+#   2. A SECOND RULE KIND. `requires_context` is the only one that exists —
+#      `RuleSpec.Validate` (domain/rule_spec.go) refuses any other at LOAD, and
+#      `evalBundleRule`'s default arm fails closed naming the kind it could not
+#      run. "Has this been said" cannot express "is this number above a floor".
+#
+#   3. A PLACE TO RUN IT, which is the structural one and is easy to miss.
+#      Rules today are PRE-rules: `evalPreRules` runs "on an app before its
+#      handler is called". This gate reads the model's own classification
+#      confidence, so it cannot run before the model has produced one. Even with
+#      1 and 2 built, a pre-rule would evaluate a field that does not exist yet.
+#      `RuleEvaluator`'s own doc comment says "pre/post rule" and there is no
+#      `evalPostRules` anywhere in the tree — the second half is named and not
+#      built, which is how this whole field got its reputation.
+#
+# Declaring the gate before those three would ship a manifest saying a human is
+# consulted below 0.8 while nothing consults anybody — a failure a person only
+# discovers from the outcome.
 #
 # Until then the gate is prose: the instructions below ask for the uncertainty
 # to be staged as a question, which a model can decline to do and a rule cannot.
