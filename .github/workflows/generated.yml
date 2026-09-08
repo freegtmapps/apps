@@ -80,6 +80,14 @@ jobs:
         working-directory: gtmsrv
         run: go run ./cmd/skillslock -check ../apps/apps ../apps/skills.lock
 
+      # Provenance without a network: each app copy's body against the bytes in
+      # vendor/. The same comparison publish makes over HTTP, against a file —
+      # which is what makes it runnable in CI at all, and what stops an upstream
+      # deletion or an outage from being indistinguishable from a clean check.
+      - name: vendored bodies match vendor/
+        working-directory: gtmsrv
+        run: go run ./cmd/vendorfetch -check ../apps/apps ../apps/vendor
+
       # Every app must also be loadable and publishable, which is the check that
       # actually reads the schema. A manifest can be well-formed YAML, produce a
       # perfectly current index entry, and still be refused at load.
