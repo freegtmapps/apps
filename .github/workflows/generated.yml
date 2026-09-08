@@ -66,6 +66,20 @@ jobs:
         working-directory: apps
         run: python3 tools/check-generated --gtmsrv ../gtmsrv
 
+      # The pin, which is a different question from the projections above.
+      #
+      # check-generated asks "do the derived files match the manifests". This
+      # asks "is a vendored copy still the bytes we vendored" — and nothing else
+      # in this repository can answer it. `source_version` names a revision, so a
+      # copy rewritten after vendoring keeps a correct-looking sha and passes;
+      # the body diff in `validate` passes too, because our own tooling rewrote
+      # the FRONTMATTER and left the body alone. That is not hypothetical: it is
+      # what happened to 116 skills, and the product's own validator was the only
+      # thing that disagreed.
+      - name: vendored skills still match skills.lock
+        working-directory: gtmsrv
+        run: go run ./cmd/skillslock -check ../apps/apps ../apps/skills.lock
+
       # Every app must also be loadable and publishable, which is the check that
       # actually reads the schema. A manifest can be well-formed YAML, produce a
       # perfectly current index entry, and still be refused at load.
