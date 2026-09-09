@@ -1,0 +1,89 @@
+# Weekly: has an upstream we vendored from moved past the revision we pinned?
+#
+# THIS OPENS AN ISSUE, NOT A PULL REQUEST, AND THAT IS A DELIBERATE DEVIATION.
+#
+# The brief asked for a PR. Nothing in either repository can fill one:
+# `gtmsrv/cmd/vendorfetch` fetches upstream bytes at the sha a skill ALREADY
+# names — it verifies a pin and cannot see past one — and its header says it
+# deliberately does not write app copies. `tools/vendor-skill`, which
+# CONTRIBUTING names as the only sanctioned way to vendor, does not exist.
+#
+# A weekly job claiming to open a re-vendored PR would be an accurate-sounding
+# instruction pointing at something that cannot be done. That failure has been
+# found four times in this estate in two days, and it is the one that survives
+# longest, because it reads like diligence.
+#
+# The issue delivers the property that was actually wanted — a drifting upstream
+# becomes a review rather than a surprise — and it delivers it honestly. When a
+# vendoring writer exists, this changes `gh issue create` to a branch and a PR,
+# and the body it already produces becomes the PR body.
+#
+# WHY A SCHEDULE AT ALL. `generated.yml` catches what a PR changes. Nothing
+# catches what nobody changed: an upstream moving under a pinned copy produces no
+# commit here, so no PR-triggered check can ever see it. A sync that decays is
+# the failure this exists for, and a sync nobody notices failing is the same
+# class one layer along — which is why this reports rather than silently
+# succeeding.
+name: upstream drift
+
+on:
+  schedule:
+    # Mondays, early. A weekly cadence because vendored prose is not a
+    # dependency with CVEs — the cost of learning a week late is a slightly
+    # older page, and the cost of a daily issue nobody reads is that nobody
+    # reads the one that matters.
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: has any vendored source moved
+        id: drift
+        # Authenticated: 103 API calls against 60/hour unauthenticated would
+        # fail as a rate limit and read exactly like "no drift".
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +e
+          out=$(python3 tools/upstream-drift skills.lock 2>&1)
+          code=$?
+          echo "$out"
+          {
+            echo "report<<DRIFT_EOF"
+            echo "$out"
+            echo "DRIFT_EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          # Never fail the job on drift. Upstream moving is normal and is a thing
+          # to read; a red cron nobody can act on is a red people learn to
+          # ignore, and then it is red for the one that mattered too.
+          exit 0
+
+      - name: open an issue when something moved
+        if: steps.drift.outputs.code != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPORT: ${{ steps.drift.outputs.report }}
+        run: |
+          # One open issue at a time. A weekly job that opens a fresh issue on
+          # every run buries the first one, and the first one is the one with the
+          # oldest drift in it.
+          existing=$(gh issue list --label upstream-drift --state open \
+            --json number --jq '.[0].number // empty')
+          body=$(printf '%s\n\n---\n\n%s\n' "$REPORT" \
+            "Vendored copies are pinned by \`source_version\` and by content hash in \`skills.lock\`. Nothing has changed here: this is upstream moving under a pin, which is a thing to read rather than to fix in a hurry. Re-vendoring is deliberate and manual — see CONTRIBUTING. Run \`tools/upstream-drift\` locally, or the \`upstream drift\` workflow by hand, to refresh this.")
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$body"
+          else
+            gh issue create --label upstream-drift \
+              --title "Vendored skills: upstream has moved past our pin" \
+              --body "$body"
+          fi
