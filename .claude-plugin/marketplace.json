@@ -88,6 +88,15 @@
       }
     },
     {
+      "name": "competitor-research",
+      "source": "./apps/competitor-research",
+      "description": "Who else your buyer is considering, what they claim, and where each one is weak.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "define-your-icp",
       "source": "./apps/define-your-icp",
       "description": "Who you sell to, built from won deals and real conversations \u2014 refined, not declared.",

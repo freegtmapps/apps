@@ -245,6 +245,34 @@
       }
     },
     {
+      "slug": "competitor-research",
+      "name": "Competitor research",
+      "description": "Who else your buyer is considering, what they claim, and where each one is weak.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "research our competitors",
+        "who are we up against?",
+        "build competitor profiles"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "web",
+          "enrichment"
+        ]
+      },
+      "needs_answered": [
+        "company_name",
+        "product"
+      ]
+    },
+    {
       "slug": "define-your-icp",
       "name": "Define your ICP",
       "description": "Who you sell to, built from won deals and real conversations — refined, not declared.",
@@ -1324,5 +1352,5 @@
       ]
     }
   ],
-  "count": 50
+  "count": 51
 }

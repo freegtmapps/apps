@@ -1,0 +1,122 @@
+# The research half of positioning: who else the buyer is considering.
+#
+# `Brand and competitor mentions` watches what people SAY about competitors as
+# it happens; this builds the standing account of who they are. Two apps because
+# they answer different questions on different clocks — a mention is an event, a
+# profile is a document — and one app doing both would refresh a profile every
+# time somebody posted.
+#
+# ITS OUTPUT TARGET IS PINNED BY A CONTRACT, not chosen here.
+# contracts/examples/product/competitor-researcher.yaml says in its own comment:
+# "competitor-research declares output.target: market.competitor_profiles, which
+# this covers. That pairing is the loader's one rule." So the agent's
+# scope.context.writes and this target are two ends of a check
+# (E_WRITES_EXCEED_SCOPE), and changing this line without changing that file
+# fails the pairing at compose rather than at run.
+#
+# EVIDENCE OR NOTHING. Every profile carries the pages it was built from, and
+# the schema requires at least one: a competitor profile with no sources is a
+# model's recollection of a market, which is exactly the artefact that reads as
+# authoritative and cannot be checked. Where the web is not reachable, the app
+# says so and writes fewer profiles rather than better-sounding ones.
+name: Competitor research
+description: Who else your buyer is considering, what they claim, and where each one is weak.
+category: find-and-research
+type: research
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "research our competitors"
+  - "who are we up against?"
+  - "build competitor profiles"
+
+# Named capabilities, never brands — and both are real needs rather than a wish
+# list. `web` is how a claim is read off a competitor's own page; `enrichment`
+# is how a company that only has a name acquires a domain and a size.
+#
+# A deployment that binds neither cannot run this app, and it fails at bind with
+# both named rather than running and inventing. That is the same fail-closed
+# rule every manifest with a `tools:` list is under.
+tools: [web, enrichment]
+
+may:
+  - read
+
+context:
+  # One app-scoped key, and it is the one the model cannot get right by
+  # guessing. Everything else it needs — what this workspace sells, to whom —
+  # is a workspace value another app already asked for.
+  - key: competitor_set
+    scope: app
+    ask: "Which competitors should I profile? Name them, or say 'work it out' and I will."
+    type: list
+
+output:
+  name: competitor_profiles
+  target: market.competitor_profiles
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [profiles, sources, gaps]
+    properties:
+      profiles:
+        description: One per competitor. Ordered by how often this buyer actually meets them.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, positioning, sources]
+          properties:
+            name: {type: string}
+            domain: {type: string}
+            positioning:
+              description: What they say they are, in their words rather than yours.
+              type: string
+            pricing:
+              description: What it costs and how it is charged. Empty when they do not publish it — which is itself a fact about how they sell.
+              type: string
+            strengths: {type: array, items: {type: string}}
+            weaknesses:
+              description: Where they are weak against THIS product, not in general.
+              type: array
+              items: {type: string}
+            sources:
+              description: The pages this profile was built from. At least one — a profile with none was remembered, not researched.
+              type: array
+              minItems: 1
+              items: {type: string}
+      sources:
+        description: Everything read across the whole run, so a reader can retrace it.
+        type: array
+        items: {type: string}
+      gaps:
+        description: What could not be found, per competitor. Empty only when nothing was missing.
+        type: array
+        items: {type: string}
+
+instructions: |-
+  You are building the standing account of who {{company_name}} competes with,
+  for a team selling {{product}}.
+
+  Work from what competitors publish about themselves. Read their pages; quote
+  their positioning in their own words. Never describe a competitor from memory —
+  if you cannot reach a page, that competitor gets a profile with the gaps named
+  rather than a confident summary.
+
+  Weakness means weakness against this product, for this buyer. "Enterprise
+  pricing" is not a weakness; "no self-serve trial, and our buyer evaluates by
+  trying" is.
+
+  When the competitor set is 'work it out', find them the way a buyer would:
+  who comes up when somebody searches for the problem, who is named in the
+  reviews, who this workspace's own customers say they compared against.
+
+  Return the profiles as your structured output. Say in one line how many you
+  profiled and what you could not reach.
