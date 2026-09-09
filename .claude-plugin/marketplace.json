@@ -160,6 +160,15 @@
       }
     },
     {
+      "name": "founder-intake",
+      "source": "./apps/founder-intake",
+      "description": "The founder's own account of the company \u2014 what it sells, who buys, and what it is up against.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "give-first-email",
       "source": "./apps/give-first-email",
       "description": "An email that offers something concrete \\u2014 a teardown, a benchmark, an estimate \\u2014 instead of asking for time.",

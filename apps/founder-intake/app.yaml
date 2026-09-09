@@ -1,0 +1,158 @@
+# The first conversation, and the one every later app reads the answers of.
+#
+# WHAT THIS APP IS FOR is a founder describing their own company once. Nine apps
+# open with {{product}} and thirty-five read {{company_name}}; today those get
+# filled by whichever app happens to run first and asks. `Define your ICP`
+# declares `company_name` for exactly that reason — its own comment says the app
+# whose thesis is "nobody is asked twice" was the one value nobody was asked
+# once. That fix was right and it is per-app: the value still gets asked by
+# whoever gets there first, and what a founder actually has to say about their
+# company is larger than the four fields any one app needs.
+#
+# So this is the app that asks. It is deliberately a CONVERSATION and not a
+# form: the order changes with what somebody says, half the answers arrive
+# inside another answer, and a founder who has said "we sell to RevOps leads at
+# Series B companies" has answered three questions.
+#
+# WHAT IT DOES NOT DO, and the omission is the design.
+#
+# It does not write the shared pipeline context. On the commercial side an agent
+# — product.founder-interviewer, contracts/examples/product — loads this app and
+# writes `company.*` there, bounded by its own scope.context.writes. Those
+# writes are FREE-FORM, because the model decides what the founder just told it,
+# and the agent file says so in its own header: "nothing about them is
+# declarable in an app manifest". So there is no `output:` block here. An app
+# declares one validated object going to one place; an intake produces a dozen
+# facts arriving in whatever order somebody says them, and a manifest claiming
+# otherwise would be a destination that does not describe the work.
+#
+# It also has no `skills:`. Interviewing a founder about their own company is
+# not a method somebody else has written down better; a vendored skill here
+# would be credit for prose nobody needed.
+name: Founder intake
+description: The founder's own account of the company — what it sells, who buys, and what it is up against.
+category: qualify
+type: intake
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "set up my company"
+  - "I want to tell you about our company"
+  - "start the founder interview"
+
+# `read` and `stage` and nothing else.
+#
+# NO `write_lead`: this app is about the workspace's own company, and there is no
+# lead in the conversation at all. An app that declared it would have update_lead
+# projected into a prompt with nothing to point it at.
+#
+# `stage` is how it asks rather than guesses — a question a founder has not
+# answered is staged, not filled in with something plausible.
+may:
+  - read
+  - emit
+  - stage
+
+# Two signals, and the second is a threshold rather than an event.
+#
+# `company.updated` says the account of the company changed, which is what makes
+# the intake worth re-running: a workspace that answers three more questions next
+# week should not need somebody to remember which apps care.
+#
+# `handoff.product` says this stage has nothing left outstanding. It is emitted
+# ONLY when every key below has an answer — see the instructions, where the
+# condition lives, because it is a fact about this run and not about the app.
+#
+# NOTE FOR WHOEVER WIRES THE ORCHESTRATOR: `product.lead` triggers on
+# `context.company.updated`, not on `company.updated`, and nothing in gtmsrv
+# derives the first from a context write today. Two spellings of one event, and
+# the one that is emitted is not the one that is listened for. Left as declared
+# here — an app knows what it emits — and named so the gap is closed on purpose
+# rather than discovered when the orchestrator never fires.
+emits:
+  - company.updated
+  - handoff.product
+
+context:
+  # Workspace-scoped: shared, and every later app reads them, so nobody is asked
+  # twice. These three are the only company facts that are real
+  # `domain.WorkspaceValues` fields — the workspace scope is a closed set, and a
+  # key invented here would be a value nothing can store.
+  - key: company_name
+    scope: workspace
+    ask: "What's the company called?"
+    type: text
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+  - key: industry
+    scope: workspace
+    ask: "What industry do you sell into?"
+    type: text
+
+  # App-scoped: the rest of the founder's account. They are the `company` and
+  # `market` fields of the pipeline map with the dots removed, because a context
+  # key is `^[a-z][a-z0-9_]*$` and the dotted pipeline keys live in a different
+  # table with a different writer. Keeping them app-scoped is what stops an
+  # intake answer being mistaken for a setup value some other app relies on.
+  - key: stage
+    scope: app
+    ask: "Where are you — pre-launch, first customers, or scaling something that works?"
+    type: enum
+    options: [pre_launch, first_customers, scaling]
+  - key: founders
+    scope: app
+    ask: "Who founded it, and what did each of you do before?"
+    type: text
+  - key: customers
+    scope: app
+    ask: "Who is paying you today? Names if you have them, the shape of them if you don't."
+    type: text
+  - key: competitors
+    scope: app
+    ask: "Who else do people consider when they consider you?"
+    type: list
+  # The two `market` fields the interviewing agent is scoped to write. They are
+  # asked here because a founder answers them better than research does: what
+  # people did before you existed is something you heard in a sales call.
+  - key: problem_statement
+    scope: app
+    ask: "What problem do you solve, in the words a customer would use?"
+    type: text
+  - key: alternatives
+    scope: app
+    ask: "What do people do instead of buying from you — including doing nothing?"
+    type: list
+
+instructions: |-
+  You are talking to a founder about their own company. Everything you learn here
+  is read by every other app in this workspace, so it is worth getting right once.
+
+  This is a conversation, not a form. Ask about what they just said before moving
+  on, and never ask for something they have already told you — one answer often
+  contains three. Two or three questions at a time, in their words, not the key
+  names above.
+
+  Record each answer as you get it with set_context, one key at a time. Do not
+  wait until the end: a conversation that is interrupted halfway should leave
+  everything said so far already saved.
+
+  Never fill a key in yourself. If a founder does not know who their competitors
+  are, that is an answer about the company and you record that they do not know —
+  it is not an invitation to name three plausible ones. Where something is
+  genuinely unanswered and you need it, stage the question with stage_draft and
+  say which one.
+
+  When you have recorded anything at all, emit company.updated.
+
+  Emit handoff.product only when every key above has an answer — including the
+  ones a founder gave you in passing. It says this stage has nothing outstanding,
+  and a workspace with three unanswered questions is not that. If anything is
+  still missing, say which in one line and emit nothing else.
