@@ -79,12 +79,36 @@ def apps():
     # twice in the library, and a name-only lookup gave our skill somebody
     # else's description with every field well formed. See CONTRIBUTING.
 
+    stray = [n for n in sorted(os.listdir(APPS)) if n.endswith(".yaml")]
+    if stray:
+        raise SystemExit(
+            f"{APPS} holds degenerate bundles this generator does not support: "
+            + ", ".join(stray)
+            + "\nAPP-BUNDLE §0 makes them legal and the loader reads them; this tool walks "
+              "directories, so they would be silently absent from every generated file. "
+              "Convert to folder form, or teach this tool the second shape."
+        )
     for name in sorted(os.listdir(APPS)):
         p = os.path.join(APPS, name, "app.yaml")
         if os.path.isfile(p):
             yield name, read_manifest(p)
 
 
+# TWO BUNDLE SHAPES, AND THIS TOOL SUPPORTS ONE.
+#
+# APP-BUNDLE §0 makes a single top-level `foo.yaml` as legal as `foo/app.yaml`
+# — the degenerate bundle: instructions inline, no skills. The loader accepts
+# both and the registry ships four of them. This generator walks directories,
+# so a `.yaml`-form app would be SILENTLY ABSENT from index.json,
+# marketplace.json and every plugin.json, and `check-generated` would report
+# "current" because it iterates the same way.
+#
+# Nothing is broken today: this repository has no degenerate bundles. But the
+# loader accepts one, so a contributor can add one and watch it vanish.
+#
+# So it REFUSES rather than skips. A search for one shape does not answer
+# whether the app exists — and a search that finds nothing looks exactly like a
+# search that looked in the wrong half.
 def main():
     entries, plugins = [], []
     for slug, m in apps():

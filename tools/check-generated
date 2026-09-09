@@ -34,6 +34,16 @@ GENERATED = ["index.json", os.path.join(".claude-plugin", "marketplace.json")]
 def plugin_jsons(root):
     out = []
     apps = os.path.join(root, "apps")
+    # Same blind spot as build-index, refused for the same reason: this walks
+    # directories, so a degenerate `foo.yaml` bundle would be reported "current"
+    # while being absent from every generated file.
+    stray = [n for n in sorted(os.listdir(apps)) if n.endswith(".yaml")]
+    if stray:
+        raise SystemExit(
+            f"{apps} holds degenerate bundles this checker does not cover: "
+            + ", ".join(stray)
+            + "\nIt would report 'current' about files that never described them."
+        )
     for name in sorted(os.listdir(apps)):
         p = os.path.join("apps", name, ".claude-plugin", "plugin.json")
         if os.path.isfile(os.path.join(root, p)):
