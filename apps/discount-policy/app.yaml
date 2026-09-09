@@ -1,0 +1,332 @@
+# The price everyone else ends up paying, decided before anybody is on a call.
+#
+# `revenue.discount-policy` (gtmsrv/agents/revenue/discount-policy.yaml) is the
+# card this app is the tool for, and its first line is that nothing in the
+# catalogue covers discounting or contract term. Pricing sets the number and
+# packaging cuts the tiers; neither says what a rep may give away at 5pm on the
+# last day of the quarter. Today that is decided in the call, and a discount
+# granted once is the price for everyone who hears about it.
+#
+# ONE OUTPUT TARGET, and the card produces exactly one key — `revenue.discount_policy`.
+# So there is nothing to split off: the ceilings, the approver above each and the
+# exchange for each all travel inside one validated object. The card's `approval`
+# ("the discount ceilings, and who may approve past them") is the agent's gate at
+# `gate: ask`, not a second destination, and the app declares no authority for it.
+#
+# DONE_WHEN IS STRUCTURAL, NOT PROSE. The card says every discount a rep can
+# offer has a ceiling, a named approver above it, and something the buyer gives
+# in return, so `buyer_gives` is `minItems: 1` on every band and `approver` is
+# required with `minLength: 1` — a band that got past validation cannot be a
+# concession with nothing coming back, and cannot be approved by "management".
+# `approval_step` is an OBJECT and not an array because the card's instruction is
+# "exactly one step for asking above them": a second rung is not expressible.
+# `percent_off_list` is a number, because "percentage off list only — a bespoke
+# price is a second price list nobody maintains" is enforced by having nowhere to
+# write a bespoke price.
+#
+# NO `skills:`. TEAMS.md names `discounting` and `deal-desk` for this row and
+# neither exists in either vendored inventory under any spelling. The two near
+# misses were both checked and both refused:
+#   - `sales-methodology` (NEON-Rutger) has a discount section, but it is a
+#     qualification framework for reps working deals, and its vendored copy ships
+#     SKILL.md alone while the body routes to eleven `references/*.md` pages —
+#     including `references/discount-objection-handlers.md`, the one page that
+#     sounds relevant here. Naming it would compose a body telling a model to
+#     open files this bundle does not contain.
+#   - `procurement-navigation` (NEON-Rutger) is the BUYER's process after
+#     selection, and its own frontmatter draws the boundary for us: "deal-desk-
+#     operations owns your INTERNAL approvals, quoting, and concession
+#     governance". That is this app. That skill is not vendored. It too routes to
+#     a `references/` page it does not ship.
+# A skill about working one deal is not a method for writing the rule that binds
+# every deal, so the honest answer is none.
+#
+# NO `emits:`. The policy IS the output and it lands in `revenue.discount_policy`,
+# where the rep-facing apps and the forecaster read it. A signal would be a second
+# name for a fact that already has one — and with no `may: [emit]` beside it, a
+# name this app structurally cannot raise.
+name: Discount policy
+description: What a rep may discount unaided, who approves past that, and what the buyer gives back for each step.
+category: sell
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "set our discount policy"
+  - "how much can a rep discount without asking?"
+  - "what do we give away to get an annual deal?"
+
+# NO `tools:`. Every input is something a person can say — the list price, the
+# margin, who signs off, how the company sells — and `tools:` is fail-closed: a
+# capability named here is one a deployment must bind before the app runs at all.
+# Refusing to write a discount policy because nobody connected a CRM would be a
+# worse app than one that asks four questions.
+may:
+  - read
+
+context:
+  # The list the percentages are off. There is no workspace field for a price —
+  # the workspace scope is a closed set (company_name, crm, icp, industry,
+  # product, regions, sender_name, sender_voice) and a ninth key invented here
+  # would be asked for and then dropped — so it is app-scoped, which is the
+  # honest state. The card's `needs.context` reads `revenue.*` through the
+  # pipeline tool when it is filled; this is what the app asks when it is not.
+  - key: list_price
+    scope: app
+    ask: "What does it cost at list, per tier — the number and what it is charged on?"
+    type: text
+
+  # The unit economics, because the card escalates on "a discount the unit
+  # economics do not survive" and you cannot notice that without them. Asked in
+  # the words a founder would answer, not as a margin percentage they would have
+  # to compute on the spot.
+  - key: unit_economics
+    scope: app
+    ask: "Roughly what does it cost you to serve one customer for a year, and is there a floor you know you must not go under?"
+    type: text
+
+  # The named approver. The card's done_when requires a NAME above every ceiling,
+  # and a role is a name a rep can find; "management" is not. This is the one key
+  # the model cannot get right by guessing, because it is a fact about who works
+  # here.
+  - key: approver
+    scope: app
+    ask: "Who says yes to a discount bigger than a rep may give on their own — the role, by name?"
+    type: text
+
+  # How the company sells. `sales.motion` is what the card actually needs and the
+  # pipeline holds it; this is the fallback when it is empty, in the same four
+  # values `sales-motion` writes so the two never disagree. A self-serve motion
+  # with no reps needs a policy about published promotions, not about a rep's
+  # unaided ceiling, and the answer changes the whole artefact.
+  - key: sales_motion
+    scope: app
+    ask: "How do deals get done — people buy on their own, a rep works the deal, or both?"
+    type: enum
+    options: [self_serve, sales_led, hybrid, undecided]
+
+  # Workspace-scoped and shared, so nobody is asked twice: what is being sold is
+  # read by thirty other apps and answered once in the founder intake.
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+
+output:
+  name: discount_policy
+  target: revenue.discount_policy
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [basis, bands, approval_step, term_trade, never_tradeable, evidence, escalate]
+    properties:
+      basis:
+        description: >-
+          The list every percentage below is off, named precisely enough that two
+          people reading it discount the same number — which tier, which unit,
+          which currency. A percentage with no stated basis is not a ceiling.
+        type: string
+        minLength: 1
+      bands:
+        description: >-
+          What a rep may give WITHOUT asking anyone, in order. At least one, and
+          usually one or two: a policy with no unaided band is not a policy, it is
+          a queue outside the approver's door.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, percent_off_list, approver, buyer_gives]
+          properties:
+            name:
+              description: What a rep would call this in front of a colleague — "annual prepay", "three-year term".
+              type: string
+              minLength: 1
+            percent_off_list:
+              description: >-
+                The ceiling, as a percentage off the basis. A number, never a
+                price: a bespoke price is a second price list nobody maintains.
+              type: number
+              minimum: 0
+              maximum: 100
+            approver:
+              description: >-
+                Who applies it. For an unaided band this is the rep's own role —
+                say which role, because "the rep" is only a name where there is
+                one kind of rep.
+              type: string
+              minLength: 1
+            buyer_gives:
+              description: >-
+                What the buyer returns for it, and at least one thing always. This
+                is the card's done_when made structural: a discount with nothing
+                coming back is a concession, and this schema has nowhere to put
+                one.
+              type: array
+              minItems: 1
+              items:
+                type: object
+                additionalProperties: false
+                required: [gives, checked_by]
+                properties:
+                  gives:
+                    description: Term, prepayment, volume, a reference, a case study, a logo.
+                    type: string
+                    minLength: 1
+                  checked_by:
+                    description: >-
+                      How anyone knows it was actually given — the clause in the
+                      order form, the field on the record, the signed release. A
+                      trade nobody checks is a discount with a story attached.
+                    type: string
+                    minLength: 1
+      approval_step:
+        description: >-
+          The ONE step for asking above the bands, and there is deliberately no
+          way to express a second. The card's instruction is "exactly one step" —
+          a ladder is how a 12% discount becomes a 40% one, one reasonable rung at
+          a time. Its own `percent_off_list` is the absolute floor: past it the
+          answer is no, and the escalation is a pricing decision rather than a
+          discount.
+        type: object
+        additionalProperties: false
+        required: [approver, percent_off_list, buyer_gives, ask_by]
+        properties:
+          approver:
+            description: >-
+              A named role, because a rep has to be able to find them. "Management"
+              is not an approver, it is the absence of one.
+            type: string
+            minLength: 1
+          percent_off_list:
+            description: The floor this approver may go to, and nobody goes past it.
+            type: number
+            minimum: 0
+            maximum: 100
+          buyer_gives:
+            description: What the buyer must be returning before the ask is even worth making. At least one.
+            type: array
+            minItems: 1
+            items: {type: string, minLength: 1}
+          ask_by:
+            description: >-
+              How the rep asks and what they must bring — the channel and the
+              facts. An approval route nobody can follow at 5pm on the last day of
+              the quarter is a route that gets skipped.
+            type: string
+            minLength: 1
+      term_trade:
+        description: >-
+          The annual-versus-monthly price, priced deliberately: the card's second
+          responsibility is that a discount buys committed term rather than
+          goodwill.
+        type: object
+        additionalProperties: false
+        required: [annual_percent_off_monthly, minimum_term, because]
+        properties:
+          annual_percent_off_monthly:
+            description: What a year up front is worth against paying monthly, as a percentage.
+            type: number
+            minimum: 0
+            maximum: 100
+          minimum_term:
+            description: The shortest commitment that earns it — "12 months", "24 months, prepaid".
+            type: string
+            minLength: 1
+          because:
+            description: >-
+              What the company gets for it in its own terms — cash now, churn
+              removed for a year, a renewal date that is not in December.
+            type: string
+            minLength: 1
+      never_tradeable:
+        description: >-
+          What is off the table at any discount, and what is given INSTEAD when a
+          buyer asks for it. This is where a bespoke price, a perpetual price lock
+          or an unlimited-seat clause goes to be refused once rather than argued
+          in every deal. Empty only if nothing is.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [item, instead]
+          properties:
+            item: {type: string, minLength: 1}
+            instead:
+              description: The thing a rep offers in its place, so "no" has somewhere to go.
+              type: string
+              minLength: 1
+      evidence:
+        description: >-
+          What these numbers were read off — the list price, the margin or floor,
+          the motion, anything won or lost on price. AT LEAST ONE. A ceiling
+          derived from none of these was derived from a feeling about what sounds
+          generous, which is exactly the artefact this app exists to replace.
+        type: array
+        minItems: 1
+        items: {type: string, minLength: 1}
+      escalate:
+        description: >-
+          What a person has to settle, empty when nothing does. The card escalates
+          on two things and they are both here: the motion needs a discount the
+          unit economics do not survive, and the policy is already being routinely
+          exceeded — the second being an observation about deals, so say what you
+          saw that made you think it.
+        type: array
+        items: {type: string, minLength: 1}
+
+instructions: |-
+  You are writing down what may be given away on a deal for {{product}}, before
+  anybody is on a call and under pressure to decide it.
+
+  A discount is a trade, never a concession. Every band you write has something
+  the buyer gives back: term, prepayment, volume, a reference, a case study.
+  Nothing comes off the price for goodwill, for the end of a quarter, or because
+  the buyer asked twice. If you cannot name what comes back, the number is too
+  high, not the trade too hard to find.
+
+  Percentage off list only. Never write a bespoke price — a special number for one
+  account is a second price list, nobody maintains it, and the next renewal is
+  negotiated against it instead of against list.
+
+  Set the unaided ceiling where a rep can move without a founder in the room. One
+  band, or two if the trades are genuinely different. Set it from the margin: work
+  out what is left at each percentage and stop where the deal stops paying for
+  itself. If you have no margin to read, say so in escalate and set a deliberately
+  conservative ceiling rather than a confident one.
+
+  Then write exactly one step above it. One. Not a ladder — a ladder is how 12%
+  becomes 40%, one reasonable rung at a time, and the number you chose stops
+  meaning anything the moment there is a rung above the rung. Name the approver by
+  role, say how the rep reaches them and what they must bring, and set the floor
+  past which the answer is no. Past that floor it is not a discount any more, it
+  is a pricing decision, and it belongs with whoever owns the price.
+
+  Price the annual-versus-monthly trade on purpose. A year of committed term is
+  worth cash and a churn risk removed; say what the company gets, not just what
+  the buyer saves. If monthly and annual cost the same today, that is a finding
+  worth stating plainly.
+
+  Name what is never tradeable, and what a rep offers instead. "No" is easier to
+  say when there is something to say after it.
+
+  If the motion is self-serve, the ceiling is a published promotion and the
+  approver is whoever changes the page — write it that way rather than inventing
+  a rep who does not exist.
+
+  Say what you read every number off. Quote the price and the floor as they were
+  given to you. And say so in escalate if the deals you were shown are already
+  routinely outside the policy you would write — that means the policy was decided
+  by whoever was on the last call, and a new document does not fix it.
+
+  Return the whole thing as your structured output. Say in one line what a rep may
+  now do without asking, and the one thing you would want checked before this is
+  handed to them.

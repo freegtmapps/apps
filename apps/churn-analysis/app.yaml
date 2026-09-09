@@ -1,0 +1,421 @@
+# The tool for ONE JOB CARD — `retention.churn-analyst` (gtmsrv/agents/retention/
+# churn-analyst.yaml). Its done_when is "every churn in the window carries a
+# coded primary reason with evidence, and the cohort curve is stated with its
+# dates", and its whole instruction block is four sentences: one primary reason
+# per churn with the quote or the number behind it; never code to "price" what
+# is really unrealised value; a reason the customer would not recognise is ours,
+# not theirs; do not soften what the exit interview says. Everything below is
+# downstream of those lines, and where the card and this manifest could have
+# disagreed, the card won.
+#
+# THE CARD PRODUCES THREE THINGS AND THIS APP TARGETS ONE.
+# `produces.context` is `[retention.churn_reasons, company.*, positioning.*]`.
+# An app declares ONE validated object going to ONE place, so the target here is
+# `retention.churn_reasons` — the field this job owns (retention/lead.yaml:
+# `{agent: retention.churn-analyst, owns: [retention.churn_reasons]}`). The
+# upstream `company.*` and `positioning.*` writes are the agent's, made
+# free-form through the pipeline tool and landing as `status: proposed` on a key
+# it does not own (contracts/context_owners.yaml). They are not declarable here
+# and are deliberately not declared. What this app CAN do is make them
+# unavoidable: `proposals` is a required part of the output, so the material for
+# those writes is produced and evidenced rather than remembered.
+#
+# WHY `type: analysis` AND NOT `research`. Nothing is discovered out in the
+# world. The churns are ours, the exit notes are ours, the cohort dates are in
+# our own billing records; `research` would promise a search that never happens.
+# Both types force an `output:` block (schema delta 2), which is what this app
+# needs either way.
+#
+# NO `skills:` KEY. docs/TEAMS.md names `churn-analysis` and `cohort-retention`
+# for this row and NEITHER EXISTS: the vendored inventory is
+# vendor/skills/swan-gtm/gtm-skills (83 dirs) and
+# vendor/skills/NEON-Rutger/B2B-revops-skills (19 dirs), and no directory in
+# either is about churn coding or cohort curves. The nearest thing is
+# `win-loss-program`, and it is a near-miss in three ways that each matter: it
+# works DECIDED DEALS (won and lost opportunities), not customers who already
+# bought and then left; its taxonomy is deal drivers (champion strength,
+# competitive move) rather than reasons for leaving; and its synthesis step
+# explicitly codes "multiple drivers per deal, weighted primary/secondary",
+# which is the opposite of this card's first instruction. Its body also routes
+# to `references/win-loss-provenance.md`, a page the vendored copy of that skill
+# does not carry. Naming it would be credit for prose that does not do this
+# work. `resolve-the-jurisdiction` ships with no skills too.
+name: Churn analysis
+description: Codes every churn to one primary reason with its evidence, and states the cohort curve behind them.
+category: find-and-research
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "why are customers leaving?"
+  - "code our churn reasons"
+  - "build the cohort retention curve"
+
+# THE CARD NAMES `[pipeline, brain, records]` AND NONE OF THE THREE IS SPELLABLE
+# HERE. `pipeline` and `brain` are platform tools granted by the agent's scope,
+# not capabilities a bundle declares; `records` is the lead store every app
+# reads through. The capability vocabulary is web, crm, enrichment, github,
+# linkedin, email.read, email.send, calendar, product, website, slack.
+#
+# `crm` is the real and required one: cancellations, contract dates and the exit
+# notes somebody typed after the call all live there, and a deployment that
+# binds nothing to it cannot code a single churn. It fails at bind rather than
+# running and inventing a churn reason, which is the point of naming it.
+tools: [crm]
+
+requires:
+  optional:
+    # Product usage is what separates "price" from unrealised value — the one
+    # miscoding the card names by name. It is OPTIONAL because plenty of
+    # workspaces cannot see usage per account, and its absence costs this app a
+    # class of evidence, not the analysis. When it is missing, a churn coded to
+    # unrealised value says so from the customer's own words or it is not coded
+    # to it at all.
+    tools: [product]
+
+# `read` alone.
+#
+# NO `emit`: the card's `produces` names no signal — unlike its sibling
+# `retention.health-scorer`, which declares `retention.health_dropped` and gets
+# `emit` in the app that serves it. Everything this app has to say lands in
+# `retention.churn_reasons`, and a signal beside it would be a second label for
+# a fact already written. An `emits:` list without `may: [emit]` declares kinds
+# the app structurally cannot raise; the schema refuses that pairing, and the
+# 24-of-50 sweep recorded in contracts/app.schema.yaml is what the rule was
+# written from.
+#
+# NO `stage`: the card is `profile: unattended`, `gate: none`. A churn coded
+# against a reason nobody can reach belongs in `uncoded` where it is counted,
+# not in an approval queue where it waits.
+may:
+  - read
+
+context:
+  # Four app-scoped keys. None is workspace-scoped: the workspace scope is a
+  # closed set of eight real WorkspaceValues fields and not one of these is
+  # among them, so an invented workspace key here would be asked for and then
+  # silently dropped after somebody had answered it.
+  - key: churn_window
+    scope: app
+    ask: "Which churns should I code — how far back?"
+    type: enum
+    options: [last_30_days, last_quarter, last_12_months]
+
+  - key: churn_source
+    scope: app
+    ask: "Where do cancellations and their exit notes live? Name the CRM object, list or view — or paste an export."
+    type: text
+
+  # The coding is supposed to survive the quarter. Asking for the standing set
+  # up front is what makes an added reason visible as a decision instead of a
+  # convenience invented mid-run; the instructions say what to do when the
+  # answer is 'work it out'.
+  - key: reason_taxonomy
+    scope: app
+    ask: "Which reasons do we code churn to? Give me the standing list, or say 'work it out' and I'll propose one and mark it as mine."
+    type: list
+
+  # A cohort curve is meaningless until somebody says what a cohort starts on.
+  # Signup and first payment are months apart in a product with a trial, and
+  # the two curves tell different stories about the same customers.
+  - key: cohort_basis
+    scope: app
+    ask: "What starts a cohort — when they signed up, when they first paid, or when the contract started?"
+    type: enum
+    options: [signup_month, first_paid_month, contract_start_month]
+
+# One validated object going to one place: the field this job owns. A section
+# (`retention`) or a wildcard would be an app claiming the section. This is a
+# destination and not a permission — the loader still checks it against
+# retention.churn-analyst's scope.context.writes (E_WRITES_EXCEED_SCOPE), and
+# changing this line without changing that card fails the pairing at compose
+# rather than at run.
+output:
+  name: churn_reasons
+  target: retention.churn_reasons
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [window, taxonomy, churns, uncoded, reason_totals, cohort_curve, proposals, gaps]
+    properties:
+      window:
+        description: The dates every churn below was counted between. First, because "this quarter" is still being quoted a year later.
+        type: object
+        additionalProperties: false
+        required: [start, end]
+        properties:
+          start: {type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"}
+          end: {type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"}
+
+      taxonomy:
+        description: >-
+          The reason codes in force this run, definitions included. At least one:
+          coding without a written taxonomy is labelling. `new_this_run` is what
+          makes an added reason a decision somebody can see and argue with rather
+          than a convenience that quietly ends the comparison with last quarter.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [code, definition, new_this_run]
+          properties:
+            code: {type: string}
+            definition:
+              description: What has to be true of a churn for it to be coded here, in a sentence somebody else could apply.
+              type: string
+            new_this_run: {type: boolean}
+
+      churns:
+        description: >-
+          One entry per churn coded in the window. MAY BE EMPTY — a month with no
+          cancellations is a real finding — but every entry that exists carries
+          its primary reason and the evidence behind it.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [account, churn_date, primary_reason, reason_source, evidence, route]
+          properties:
+            account:
+              description: The customer, named as the CRM names them.
+              type: string
+            churn_date: {type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"}
+            arr_lost:
+              description: Annual revenue that left with them. Absent when the contract value is not recorded — an absent number is better than a rounded guess.
+              type: number
+            primary_reason:
+              description: >-
+                ONE code from `taxonomy`. A string and not an array on purpose:
+                the card's first instruction is one primary reason per churn, and
+                a schema that accepted two would be the CRM dropdown problem
+                rebuilt in JSON.
+              type: string
+            secondary_reasons:
+              description: What else was true. Never a substitute for choosing a primary one.
+              type: array
+              items: {type: string}
+            reason_source:
+              description: >-
+                Whether the customer said this or we concluded it. `inferred_by_us`
+                is the honest label for a reason the customer would not recognise —
+                that reason is ours, not theirs, and marking it is what stops it
+                being counted later as something a customer told us.
+              enum: [customer_said, inferred_by_us]
+            evidence:
+              description: >-
+                The quote or the number behind the code. At least one, always: a
+                coded churn with no evidence is an opinion with a label on it.
+              type: array
+              minItems: 1
+              items:
+                type: object
+                additionalProperties: false
+                required: [kind, detail, source]
+                properties:
+                  kind: {enum: [quote, usage, billing, support, note]}
+                  detail:
+                    description: The customer's words verbatim, or the number with its dates. Not a summary of either.
+                    type: string
+                  source:
+                    description: Where it can be read again — the call, the ticket, the record, the query.
+                    type: string
+            route:
+              description: >-
+                Which team can actually fix this one. `product` and `positioning`
+                are the two the card is required to send patterns to; `retention`
+                is ours to fix; `none` is for a churn nobody could have prevented,
+                and it should be rare enough to notice.
+              enum: [product, positioning, retention, none]
+
+      uncoded:
+        description: >-
+          The churns in the window that could NOT be coded, and why not. Required
+          and separate from `churns` so the reachable rate is visible: the card
+          escalates when most churns cannot be reached, and a coverage number
+          buried in prose is one nobody computes. Empty when everything was coded.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [account, churn_date, reason_not_coded]
+          properties:
+            account: {type: string}
+            churn_date: {type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"}
+            reason_not_coded:
+              description: What was missing — no exit interview, no reply, no notes, account left through self-serve without a word.
+              type: string
+
+      reason_totals:
+        description: >-
+          The pattern layer: how the window distributes across the taxonomy.
+          Counts, not shares — a percentage of nine churns reads as a finding
+          about a market.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [code, count]
+          properties:
+            code: {type: string}
+            count: {type: integer, minimum: 0}
+            arr_lost:
+              description: Revenue behind this code, when every churn under it recorded one. Absent otherwise; a partial sum quoted as a total is worse than no total.
+              type: number
+
+      cohort_curve:
+        description: >-
+          The curve the coded reasons sit on. Required, because the card is not
+          done until it is stated with its dates — reasons without a curve say
+          why people left and never say whether it is getting worse.
+        type: object
+        additionalProperties: false
+        required: [basis, cohorts]
+        properties:
+          basis:
+            description: What starts a cohort here. The same answer that was asked for at setup, restated so a reader of the artefact does not have to go and find it.
+            enum: [signup_month, first_paid_month, contract_start_month]
+          cohorts:
+            type: array
+            minItems: 1
+            items:
+              type: object
+              additionalProperties: false
+              required: [cohort, started_on, accounts, retained]
+              properties:
+                cohort:
+                  description: The cohort's label, e.g. "2025-03".
+                  type: string
+                started_on: {type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"}
+                accounts:
+                  description: How many accounts the cohort began with.
+                  type: integer
+                  minimum: 0
+                retained:
+                  description: How many were still customers after each period. At least one point, or there is no curve.
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required: [months_since_start, accounts_retained]
+                    properties:
+                      months_since_start: {type: integer, minimum: 0}
+                      accounts_retained: {type: integer, minimum: 0}
+          break:
+            description: >-
+              The cohort that broke and when — the card asks for both by name.
+              Absent only when no cohort separates from the others, which is
+              itself worth saying out loud in the closing line.
+            type: object
+            additionalProperties: false
+            required: [cohort, months_since_start, what_changed]
+            properties:
+              cohort: {type: string}
+              months_since_start: {type: integer, minimum: 0}
+              what_changed:
+                description: What was different about that cohort or that month, and how you know. "Retention fell" is the observation, not the answer.
+                type: string
+
+      proposals:
+        description: >-
+          What goes back to the team that can fix it. This is the material for the
+          agent's `company.*` and `positioning.*` writes, produced here so those
+          writes are evidenced rather than remembered — the app cannot make them
+          itself, and a proposal with no reason codes under it is an opinion
+          travelling upstream with this app's name on it. Empty when a window's
+          reasons are all ones this team owns.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [to, finding, reason_codes, accounts]
+          properties:
+            to:
+              description: Product for the product-caused reasons, positioning for the promise-versus-reality ones.
+              enum: [product, positioning]
+            finding:
+              description: One sentence, in the customers' terms rather than ours.
+              type: string
+            reason_codes:
+              description: The codes this finding rests on. At least one — otherwise it rests on nothing in this document.
+              type: array
+              minItems: 1
+              items: {type: string}
+            accounts:
+              description: The churned accounts behind it, so the team receiving it can go and read the calls.
+              type: array
+              minItems: 1
+              items: {type: string}
+
+      gaps:
+        description: What could not be established and why. Empty only when nothing was missing.
+        type: array
+        items: {type: string}
+
+instructions: |-
+  You are coding why {{company_name}} lost the customers it lost, so that the
+  pattern reaches the team that can do something about it instead of being
+  retold one account at a time.
+
+  Start by fixing the taxonomy, because everything else is coded against it. If
+  the workspace gave you a standing list, use it exactly as given and add nothing
+  — the value of the coding is that this quarter can be compared with the last
+  one, and a code invented mid-run quietly ends that. If a churn genuinely does
+  not fit, propose the new code, mark it new_this_run, and say in your closing
+  line that you added one and why. If the answer was "work it out", propose a
+  small set — six or seven, not fifteen — define each one in a sentence somebody
+  else could apply, and mark every one of them as new.
+
+  Then take every churn in the window one at a time. Read the exit interview if
+  there is one, the cancellation note, the last few support tickets, the usage in
+  the final ninety days, the billing history. Code it to ONE primary reason. If
+  three things were true, one of them was the reason they actually left and the
+  others are secondary; choosing is the work, and a churn carrying two primary
+  reasons is a churn nobody coded.
+
+  Every coded churn carries the quote or the number behind it, in the customer's
+  own words or as a figure with its dates. Never paraphrase a quote into
+  something tidier — a paraphrase is where the softening gets in. Do not soften
+  what the exit interview says. If somebody said "we never got it working and
+  your support stopped replying", that sentence goes in the evidence as they said
+  it, not as "onboarding friction".
+
+  Never code to price what is really unrealised value. A customer who says "too
+  expensive" about a product they logged into four times in six months did not
+  have a price problem, and the usage is the evidence that says so. Price is the
+  code when they got the value and could not justify the cost, and there should
+  be a number or a sentence about budget behind it. Where you have no usage data
+  to check the claim with, say so in gaps rather than accepting the words.
+
+  A reason the customer would not recognise is ours, not theirs. Whenever you
+  conclude something they did not say, set reason_source to inferred_by_us. That
+  is not a failure — some of the truest reasons are ones nobody says out loud —
+  but it must never be counted later as something a customer told us.
+
+  A churn you could not reach is uncoded, not guessed. Put it in `uncoded` with
+  what was missing. If most of the window ends up there, say so plainly in your
+  closing line: a coded reason set built from a quarter of the churns describes
+  the quarter that answered the phone.
+
+  Build the cohort curve on the basis the workspace chose, and state it with its
+  dates. Say which cohort broke and when, and what was different about it — a
+  release, a price change, an onboarding change, a segment you started selling
+  to. If nothing separates, say that; a flat curve is a finding.
+
+  Finally, route the pattern. Reasons the product caused go to Product;
+  promise-versus-reality ones — where they bought what we said and got something
+  else — go to Positioning. Put each one in `proposals` with the codes and the
+  accounts behind it, then write it upstream with the context tool: it lands as a
+  proposal on a field this team does not own, which is exactly what it is.
+
+  Return the whole thing as your structured output. Close with one line: how many
+  churns you coded, how many you could not reach, and the single reason that took
+  the most revenue with it.

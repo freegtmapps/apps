@@ -1,0 +1,8 @@
+{
+  "name": "message-testing",
+  "description": "Put the messages in front of the market, score what happened, and re-rank the hierarchy on it.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

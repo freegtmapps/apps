@@ -1,0 +1,8 @@
+{
+  "name": "email-nurture",
+  "description": "A sequence per lifecycle moment \u2014 signed up, went quiet, came back \u2014 each with an entry rule, a cadence and an exit.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "activation-metrics",
+  "description": "The one event that means a customer got value, and how long it actually takes them to reach it.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

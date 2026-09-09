@@ -1,0 +1,8 @@
+{
+  "name": "intent-signals",
+  "description": "Decide which observable events mean a buyer has the problem now \u2014 and which look-alikes are noise.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

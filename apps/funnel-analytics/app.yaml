@@ -1,0 +1,283 @@
+# The only app on the demand team whose job is to check.
+#
+# Every other job here spends money or attention on a belief — a channel plan,
+# a landing page, a sequence. This one goes back afterwards and says what each
+# channel actually produced, where the funnel lost people, and what a qualified
+# record cost. It is the tool for the Funnel Analyst card (gtmsrv/agents/demand/
+# funnel-analyst.yaml), and the card's rules are encoded here in the schema
+# wherever they could be, rather than only asked for in prose:
+#
+#   - "every active channel has stage counts, a cost per qualified record and a
+#     date range"  →  `window` is required at the top, `channels` has minItems 1,
+#     and each channel REQUIRES both `stages` and `cost_per_qualified_record`.
+#     A channel cannot be reported without the two numbers that make it a report.
+#   - "the largest leak is named with its number"  →  `biggest_leak` is required
+#     and carries `conversion_rate` and `records_lost`, so naming a stage without
+#     the number that makes it the largest does not validate.
+#   - "unknowable attribution is reported as unknown rather than split evenly"
+#      →  `unattributed` is a required object with its own count and share. There
+#     is nowhere in this schema to quietly redistribute those conversions.
+#   - "never interpret a small sample as a trend"  →  every channel carries
+#     `enough_data`, a boolean the model must decide rather than a caveat it can
+#     leave out of a sentence.
+#
+# ONE OUTPUT TARGET, and the card produces exactly one key: demand.funnel_metrics.
+# The card's `needs.context` — demand.campaigns, demand.channel_plan, records —
+# are READS. They arrive through the pipeline and the record scope, not through
+# `context:` here: those dotted keys live in a different table with a different
+# writer, and a manifest cannot spell a dot in a context key anyway.
+#
+# NO SKILLS, and it was a close call. `revops-metrics` in the vendored
+# NEON-Rutger set is genuinely this method — volume metrics, stage conversion
+# rates, CAC and payback — but its body routes to `references/benchmarks.md` and
+# `references/revenue-data-model-scaffold.md`, and neither page exists anywhere
+# in the vendored tree. Shipping it would put a model in front of two pages that
+# are not there, in the voice of the skill that was supposed to keep it honest.
+# So the method is written out below instead, in our own words, and this bundle
+# claims no upstream authorship.
+#
+# NO EMITS. The card's escalations — nothing attributable, or a real CAC more
+# than half again the plan's estimate — belong to the agent, which holds the
+# signal sink. Everything this app has to say lands in demand.funnel_metrics;
+# an emits list beside it would be a second label for the same numbers.
+name: Funnel analytics
+description: What each channel actually produced, where the funnel leaks, and what a qualified record costs.
+category: watch-signals
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "how did our channels do last month?"
+  - "where is the funnel leaking?"
+  - "what does a qualified lead actually cost us?"
+
+# `crm` is where the records and their stage history live, and without it there
+# is no funnel to count — so it is required and this app fails at bind rather
+# than running against nothing.
+#
+# Site and product analytics are OPTIONAL on purpose: plenty of workspaces can
+# only see the funnel from the first known contact onwards. Missing them costs
+# this app the top of the funnel, not the report.
+tools: [crm]
+
+requires:
+  optional:
+    tools: [website, product]
+
+may:
+  - read
+
+context:
+  # Four app-scoped keys, and every one of them changes a number. None is
+  # guessable: a model that invents a qualified-lead definition produces a cost
+  # per qualified record that looks precise and means nothing.
+  #
+  # Nothing here is workspace-scoped. Which CRM holds the records is already
+  # answered by the `crm` binding above, and a second answer to that question
+  # is a second thing to keep in sync.
+  - key: funnel_stages
+    scope: app
+    ask: "What are your funnel stages, in order? Say them the way your team says them — lead, MQL, SQL, opportunity, closed won, or whatever you actually use."
+    type: list
+  - key: qualified_definition
+    scope: app
+    ask: "What has to be true for a record to count as qualified? This is the denominator in cost per qualified record, so it needs to be the line your team really draws."
+    type: text
+  - key: reporting_window
+    scope: app
+    ask: "What window should I report on each time — the last 7 days, the last 30, the last quarter, or since the last report?"
+    type: enum
+    options: [last_7_days, last_30_days, last_quarter, since_last_report]
+  - key: spend_source
+    scope: app
+    ask: "Where do I find what each channel cost in that window — an ad platform, a spreadsheet, or a number you'll tell me? Say 'no spend data' if there isn't one."
+    type: text
+
+output:
+  name: funnel_metrics
+  target: demand.funnel_metrics
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [window, channels, biggest_leak, unattributed, underperforming, sources]
+    properties:
+      window:
+        description: The date range every count in this report is inside. Stated once, at the top, because a number without its window is not a measurement.
+        type: object
+        additionalProperties: false
+        required: [start, end]
+        properties:
+          start: {type: string, description: "ISO date, inclusive."}
+          end: {type: string, description: "ISO date, inclusive."}
+          note:
+            description: Anything that makes this window not comparable with the last one — a tracking change, a campaign that started mid-window.
+            type: string
+      channels:
+        description: One per channel that was active in the window. A channel that spent money and produced nothing still appears, with zeros.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, stages, cost_per_qualified_record, enough_data]
+          properties:
+            name: {type: string}
+            stages:
+              description: The counts, in funnel order, using this workspace's own stage names.
+              type: array
+              minItems: 1
+              items:
+                type: object
+                additionalProperties: false
+                required: [name, count]
+                properties:
+                  name: {type: string}
+                  count: {type: integer, minimum: 0}
+                  conversion_from_previous:
+                    description: Share of the previous stage that reached this one, 0 to 1. Absent on the first stage.
+                    type: number
+                    minimum: 0
+                    maximum: 1
+            cost_per_qualified_record:
+              description: Spend divided by qualified records. `cost` is null when spend is unknown — never a guess, and never zero standing in for unknown.
+              type: object
+              additionalProperties: false
+              required: [spend, qualified_records, cost, currency]
+              properties:
+                spend: {type: ["number", "null"]}
+                qualified_records: {type: integer, minimum: 0}
+                cost: {type: ["number", "null"]}
+                currency: {type: string}
+                vs_plan:
+                  description: What the channel plan assumed this would cost, and the gap in the same units. Empty when the plan said nothing about this channel.
+                  type: string
+            campaigns:
+              description: The same counts one level down, for channels where more than one campaign ran.
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [name, stages]
+                properties:
+                  name: {type: string}
+                  stages:
+                    type: array
+                    minItems: 1
+                    items:
+                      type: object
+                      additionalProperties: false
+                      required: [name, count]
+                      properties:
+                        name: {type: string}
+                        count: {type: integer, minimum: 0}
+            enough_data:
+              description: False when the counts are too small to read as anything. A channel with 6 records and one conversion has a 17% rate and no trend.
+              type: boolean
+      biggest_leak:
+        description: The single stage transition that lost the most, named with the number that makes it the largest.
+        type: object
+        additionalProperties: false
+        required: [from_stage, to_stage, conversion_rate, records_lost]
+        properties:
+          from_stage: {type: string}
+          to_stage: {type: string}
+          conversion_rate: {type: number, minimum: 0, maximum: 1}
+          records_lost: {type: integer, minimum: 0}
+          channel:
+            description: The channel it is worst in, when it is not the whole funnel.
+            type: string
+          note:
+            description: What is known about why, and nothing that is only plausible.
+            type: string
+      unattributed:
+        description: Conversions that cannot be tied to a channel. Reported as their own number — never spread across the channels that were running.
+        type: object
+        additionalProperties: false
+        required: [converted_records, share_of_conversions, reason]
+        properties:
+          converted_records: {type: integer, minimum: 0}
+          share_of_conversions: {type: number, minimum: 0, maximum: 1}
+          reason:
+            description: Why they are unknowable — no source on the record, a form with no hidden fields, a self-reported field nobody fills in.
+            type: string
+      underperforming:
+        description: The messages and campaigns that lost, for Positioning to read against its hierarchy. A result with its number, not an opinion about the copy. Empty when nothing underperformed enough to say so.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [campaign, channel, metric, value, compared_with]
+          properties:
+            campaign: {type: string}
+            channel: {type: string}
+            metric:
+              description: What was measured — reply rate, MQL rate, cost per qualified record.
+              type: string
+            value: {type: number}
+            compared_with:
+              description: What it is worse than, and by how much — the other campaigns in the same channel, the same campaign last window, or the plan.
+              type: string
+      not_enough_data:
+        description: Channels or campaigns deliberately not called, and what would have to arrive before they could be.
+        type: array
+        items: {type: string}
+      sources:
+        description: Where each set of numbers was read from, so somebody can retrace the report rather than trust it.
+        type: array
+        minItems: 1
+        items: {type: string}
+
+instructions: |-
+  You are reporting what {{company_name}}'s demand channels actually produced.
+  Everyone else on this team is spending money on a belief; you are the one who
+  goes back and checks.
+
+  Numbers with dates, and the window stated at the top. Every count in the report
+  belongs to the same window, and if something you are counting straddles it —
+  a campaign that started midway, a tracking change — say so in the window note
+  rather than letting the number carry the caveat silently.
+
+  Count each stage by channel, then by campaign where more than one campaign ran.
+  Use the stage names this workspace gave you, in their order, even when they are
+  not the names you would choose. Renaming somebody's funnel makes the report
+  uncomparable with the last one.
+
+  Cost per qualified record is spend divided by records meeting this workspace's
+  own qualified definition. If you cannot find what a channel spent, `cost` is
+  null and you say where you looked. A zero standing in for unknown turns a
+  missing number into a free channel, and somebody will double down on it.
+  Where the channel plan assumed a cost, put the plan's number and the gap in
+  `vs_plan` — and when the real cost is more than half again what the plan
+  assumed, say that in your closing line in plain words. That is the thing the
+  person reading this has to act on this week.
+
+  Never read a small sample as a trend. Set `enough_data` to false and say "not
+  enough data" — it is an answer, and it is a better one than a rate computed
+  from nine records. A channel with a 17% conversion rate off six records has a
+  17% conversion rate and no finding.
+
+  Attribution that is unknowable is reported as unknown. Put those conversions in
+  `unattributed` with their share and the reason they are unknowable. Do not
+  split them evenly across the channels that happened to be running, do not give
+  them to the last touch because it is the one you can see, and do not quietly
+  drop them so the channel numbers add up.
+
+  Name one biggest leak, with the stage transition, the rate and the count of
+  records lost. One. A list of four leaks is a list of things nobody will fix.
+
+  A message that lost is reported as a result: the campaign, the metric, its
+  number, and what it is worse than. Positioning reads this against its own
+  message hierarchy and decides what it means — that judgement is theirs, and a
+  sentence from you about why the copy was weak takes it away from them.
+
+  Return the whole report as your structured output, and cite in `sources` where
+  each set of numbers came from. Then say in one line: the window, the biggest
+  leak with its number, and the channel whose real cost is furthest from what
+  the plan assumed.

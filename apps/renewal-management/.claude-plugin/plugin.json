@@ -1,0 +1,8 @@
+{
+  "name": "renewal-management",
+  "description": "Every renewal in the window, with a dated plan and the value recapped in the customer's own numbers.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

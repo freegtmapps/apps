@@ -1,0 +1,254 @@
+# The tool for the Signal Definer (agents/demand/signal-definer.yaml).
+#
+# It writes the standing list of what counts. Everything downstream in demand —
+# the campaign, the opener, the digest — points at an event and says "because
+# this happened". This is where the list of things that may be pointed at gets
+# decided, once, in advance, in writing.
+#
+# ONE TARGET, AND IT IS THE CARD'S: demand.signal_definitions. The card produces
+# exactly that one key, so there is nothing here that has to be written another
+# way. The dotted key is the pipeline map's, not a context key — `context:` below
+# holds undotted setup values and nothing else.
+#
+# NOT `interpret-the-signal`, and the pair is deliberate. That app is handed one
+# event that already fired and decides what to do about it; this one decides, in
+# advance, which events are worth firing on at all. A definition is a document; a
+# fired signal is a moment. One app doing both would re-open the definitions
+# every time something happened, which is how a watchlist quietly becomes
+# whatever last week's noise suggested.
+#
+# NO `emits`. The whole result of a run is the definitions object, and it lands
+# in demand.signal_definitions where the agent's scope already permits it. A
+# signal saying "the definitions changed" would be a second label for a context
+# write anybody interested is already reading — and an `emits` list without
+# `may: [emit]` declares something this app structurally cannot raise.
+name: Intent signals
+description: Decide which observable events mean a buyer has the problem now — and which look-alikes are noise.
+category: watch-signals
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "define our buying signals"
+  - "which events should we watch for?"
+  - "what counts as a signal for our ICP?"
+
+# ONE VENDORED SKILL, and it is the method rather than a decoration.
+#
+# `website-to-signals` is the same move this card makes: reason from what is
+# sold to what has to become true in a buyer's world for them to need it now,
+# turn each why-now into an observable proxy, and DROP anything not visible in
+# public data at volume. Its own rule — "detectability is the gate" — is the
+# card's "drop any you have no way to observe", written by somebody else first.
+#
+# The one difference is where the buyer's why-now comes from: upstream reads it
+# off a company's website, and here the ICP is already written down. Same test,
+# an input this workspace has. The instructions below say so rather than leaving
+# the model to reconcile it.
+#
+# What the skill does NOT carry — the freshness window, the weight and its
+# reason, the dismissed look-alikes — is this app's own, and lives in the output
+# schema where it is checked rather than in prose where it is hoped for.
+#
+# Vendored whole at the sha its frontmatter names, body byte-for-byte, and it
+# routes to no reference pages, so there are none to ship.
+skills:
+  - website-to-signals
+
+may:
+  - read
+
+# `web` is how a candidate signal is checked for detectability: if a job board,
+# a filings page or a newsroom does not actually show this event for companies
+# of this shape, it is not a signal and does not go on the list.
+tools: [web]
+
+# Degrades without these rather than refusing. Enrichment and the CRM are how a
+# weight stops being an opinion — they are where "what changed at the accounts
+# that bought" can be looked at. Say no once through set_reach and the app stops
+# asking and writes the weights as the judgements they then are.
+requires:
+  optional:
+    tools: [enrichment, crm]
+
+# WORKSPACE SCOPE IS A CLOSED SET — company_name, crm, icp, industry, product,
+# regions, sender_name, sender_voice. `icp` is the card's stated input and it is
+# a real WorkspaceValues field, so it is shared and asked once. The other two are
+# app-scoped because nothing else in the catalogue means the same thing by them.
+context:
+  - key: icp
+    scope: workspace
+    ask: "Who do you sell to? Paste your ICP, or say no."
+    type: text
+  # The detectability gate needs to know what this workspace can actually watch.
+  # A definition sourced from a place nobody here can see is a signal that never
+  # fires, and a list of those reads exactly like a list that works.
+  - key: watchable_sources
+    scope: app
+    ask: "Where can you actually watch for things — job boards, LinkedIn, news, filings, your own site analytics, a data vendor? List what you have."
+    type: list
+  # Weight is a judgement, and this is the only input that makes it an informed
+  # one. What changed at an account just before it bought is a fact somebody in
+  # the room remembers; asking for it is cheaper than inferring it and better
+  # evidence than either.
+  - key: recent_wins_why_now
+    scope: app
+    ask: "Think of the last few deals you won — what had just changed at those companies when the conversation started?"
+    type: text
+
+# The done_when, encoded where it is checked.
+#
+# Every field the card asks a definition to name is required on the item, so a
+# definition missing its freshness window or its weight cannot be returned at
+# all rather than being noticed in review. `dismissed` has minItems 1 for the
+# same reason: "the dismissed look-alikes are listed" is half the job, and an
+# empty list would mean nothing was ever tempting, which is never true.
+#
+# `signals` HAS NO minItems, on purpose. The card's escalate_when is "no
+# observable event distinguishes this ICP from the market" — an empty list plus a
+# filled-in `escalation` is that answer, and a schema forcing one entry would
+# turn an honest escalation into an invented signal. `maxItems: 7` is the other
+# half of the card's "keep it small enough that every entry is actually watched".
+output:
+  name: signal_definitions
+  target: demand.signal_definitions
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [signals, dismissed]
+    properties:
+      signals:
+        description: >-
+          The definitions, strongest first. Fewer than you can think of — every
+          entry here is something somebody has to actually watch.
+        type: array
+        maxItems: 7
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, observable_event, source, freshness_days, weight, weight_reason, implication]
+          properties:
+            name:
+              description: What this signal is called out loud, e.g. "hiring their first RevOps lead".
+              type: string
+            observable_event:
+              description: >-
+                The thing somebody could point at, with a date. "Posted three SDR
+                roles this month" is one; "growing fast" is not.
+              type: string
+            source:
+              description: >-
+                Where it is observed, specifically enough to go and look — a named
+                board, a filing, a page on their own site, our own analytics.
+              type: string
+            freshness_days:
+              description: >-
+                How stale is too stale. Days from the event, not from the day an
+                aggregator surfaced it.
+              type: integer
+              minimum: 1
+            weight:
+              description: >-
+                What this signal is worth relative to the others on this list.
+                1 is weak, 5 is the one you drop everything for.
+              type: integer
+              minimum: 1
+              maximum: 5
+            weight_reason:
+              description: >-
+                Why that number. A weight is a judgement, and one with no reason
+                beside it cannot be argued with later or corrected by a result.
+              type: string
+            implication:
+              description: >-
+                What this event means about the buyer's problem — the line from
+                the event to why they need this now.
+              type: string
+            false_positive:
+              description: The case that looks like this signal firing and is not.
+              type: string
+            target:
+              description: Who to look at when it fires — the role, and any filter that has to hold.
+              type: string
+      dismissed:
+        description: >-
+          The look-alikes that did not make it, and why. This is the half of the
+          job that stops the same tempting non-signal being argued for monthly.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [event, why_not]
+          properties:
+            event:
+              description: The event somebody would reasonably propose watching.
+              type: string
+            why_not:
+              description: >-
+                Why it is noise here — unobservable, too common to mean anything,
+                or true of the whole market rather than this buyer.
+              type: string
+      escalation:
+        description: >-
+          Filled in only when no observable event distinguishes this ICP from the
+          market at all. It says signal-based outbound is the wrong plan for this
+          segment, in one line, so the demand lead can act on it.
+        type: string
+
+# NO {{placeholders}}. A workspace value named by a placeholder and left unset
+# refuses composition, and every value this app declares reaches the prompt
+# through the Context section anyway.
+instructions: |-
+  You are writing down, in advance, which events mean somebody in this ICP now
+  has the problem — so that every message this team sends later can point at the
+  thing that prompted it. Outbound with no reason to write is spam with a merge
+  field, and this list is the reason.
+
+  Start from the ICP in your context, not from a menu of signals. For this buyer,
+  what has to change inside a company before they need this? Then, and only then,
+  ask what that change looks like from the outside.
+
+  A signal is an event somebody could point at, with a date. "Growing fast" is
+  not a signal; "posted three SDR roles this month" is. If you cannot say where
+  you would go to see it, and see it for companies of this shape rather than for
+  one famous example, it is not a signal — drop it. The sources this workspace
+  actually has are in your context; a definition sourced from somewhere nobody
+  here can watch never fires, and a list of those reads exactly like a list that
+  works.
+
+  The skill above works from a company's website; here the ICP is already
+  written down, so read it as the same test applied to a buyer you already know.
+
+  For every definition, name four things: what is observed, where it is observed,
+  how stale is too stale, and what it is worth relative to the others. Freshness
+  is from the day the event happened, not the day you found out. Weight is a
+  judgement — write the reason next to it, and let what had just changed at the
+  deals this team won recently do the arguing rather than a general theory about
+  which signals are strong.
+
+  Then write down what you dismissed. Funding rounds, generic hiring, a tool
+  appearing in a stack, "they raised a Series B" — these are the events everyone
+  proposes, and if you do not say why they are noise here, somebody proposes them
+  again next month. Each one gets a line saying what makes it noise for this
+  buyer.
+
+  Define fewer signals than you can think of. Every entry is something a person
+  has to actually watch every week, so a list of eleven is a list where four get
+  watched and nobody knows which four.
+
+  If nothing observable distinguishes this ICP from the market — if every event
+  you can see is equally true of companies that will never buy — say so in
+  `escalation` and return no signals rather than padding the list. That answer
+  means signal-based outbound is the wrong plan here, and it is worth more to the
+  demand lead than five weak definitions.
+
+  Return the definitions as your structured output. Say in one line how many you
+  defined, and which source you are least sure you can actually watch.

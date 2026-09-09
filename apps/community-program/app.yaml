@@ -1,0 +1,345 @@
+# The tool for the Community Builder job (gtmsrv/agents/expansion/community-builder.yaml).
+# That card's needs.apps names this slug, and everything the card says about the
+# work is said again here in the maintainer's own words — the card is read by the
+# agent, this manifest is read by the model doing the run, and the two must not
+# say different things.
+#
+# THE OUTPUT TARGET IS THE CARD'S KEY, NOT A CHOICE MADE HERE.
+# The card's produces.context is a single key, `expansion.community_plan`, and it
+# reads the same key back on the next run. The loader checks
+# `output.target ⊆ agent.scope.context.writes` (E_WRITES_EXCEED_SCOPE), so this
+# line and that card are two ends of one check: changing either alone fails the
+# pairing at compose rather than at run. The commissioning brief for this app
+# named `expansion.community` instead; the card is the document the loader
+# compares against, so the card wins and the difference is flagged in the report
+# rather than split across two spellings. The card's `drafts:` — launch posts and
+# ritual templates — are staged for a person with stage_draft, not returned as
+# structured output: an app declares ONE validated object going to ONE place.
+#
+# NO `skills:`, and that is the honest answer rather than a gap.
+# TEAMS.md names `community-building` for this row. It does not exist in either
+# vendored library — checked directory by directory under
+# vendor/skills/swan-gtm/gtm-skills and vendor/skills/NEON-Rutger/B2B-revops-skills.
+# The nearest real ones are near-misses, and a near-miss is worse than nothing:
+# `subreddit-research` vets ONE venue type against live Reddit data this app does
+# not hold a connection to, and it is already the method of the
+# `reddit-and-community-presence` bundle; `recent-discourse-sweep` reads what was
+# said inside a dated window, which is an input to the question of where people
+# gather rather than a method for designing a program; `newsletter-format` is one
+# ritual's format, not the decision to run one. Naming any of them would be a
+# method this app cannot follow.
+#
+# NO `emits`, on purpose. Everything this app has to say lands in
+# expansion.community_plan — including the verdict that no community should be
+# built. A signal beside that would be a second label for the same fact, and an
+# `emits:` list without `may: [emit]` declares signals the app structurally
+# cannot raise. The card's `sinks: [signal]` is the agent's route out, not this
+# app's.
+#
+# THE CARD'S done_when IS ENFORCED BY THE SCHEMA, NOT BY THE PROSE.
+# "the plan names a venue, a seed list, a recurring ritual, an ambassador tier and
+# the signal that would prove it is working" — so a plan object requires all five,
+# every ritual requires a cadence and an owner, and the evidence that these people
+# gather anywhere requires at least one source with a link. A community plan built
+# from a model's recollection of where a persona hangs out is exactly the artefact
+# that reads as authoritative and cannot be checked.
+#
+# AND THE "DO NOT BUILD ONE" ANSWER IS A FIRST-CLASS RESULT, not an empty plan.
+# `verdict: do_not_build` is valid with no plan attached and evidence saying why;
+# a verdict of build_new or join_existing without a plan does not validate. An
+# empty forum costs more credibility than it saves, so the shape of the output
+# has to let the app say no without inventing a venue to fill a required field.
+name: Community program
+description: Whether this ICP would actually gather, where, around what ritual — and who runs it every week.
+category: content
+type: research
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "should we build a community?"
+  - "design our customer community"
+  - "plan a community program"
+
+# The card asks for pipeline, brain and web. The first two are platform tools
+# every app already has; `web` is the capability name for the rest, and it is a
+# real need rather than a wish: where these buyers already congregate is read off
+# live forums, groups, event pages and the threads themselves. A deployment that
+# binds nothing fails at bind rather than running and inventing a venue.
+tools: [web]
+
+# `read` and `stage` and nothing else.
+#
+# NO `write_lead`: this app writes a segment-level plan, and the seed list it
+# names is a list of accounts to invite rather than a field to set on any one of
+# them. NO `emit` — see the header.
+#
+# `stage` is the card's `drafts:` — the launch post and the ritual templates go
+# in front of a person before anything is published anywhere.
+may:
+  - read
+  - stage
+
+# WORKSPACE SCOPE IS A CLOSED SET — company_name, crm, icp, industry, product,
+# regions, sender_name, sender_voice. A manifest inventing a ninth is refused,
+# because a workspace-scoped key nothing reads from the profile would be asked
+# for and then silently dropped after the person answered. The dotted keys this
+# card reads — expansion.references, positioning.brand_voice — are pipeline
+# context with a different writer and never appear here.
+context:
+  - key: icp
+    scope: workspace
+    ask: "Who is this community for — the same people you sell to, or a slice of them?"
+    type: text
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+
+  # App-scoped, and both are things the model cannot get right by guessing.
+  #
+  # `weekly_owner` is the card's escalate_when written down as a question asked
+  # before the work rather than a surprise after it: a plan that needs staff time
+  # nobody has committed is a plan that dies in week three, and the honest answer
+  # "nobody" is one this app is expected to receive and act on.
+  - key: weekly_owner
+    scope: app
+    ask: "Who would actually run this every week, and roughly how many hours do they have for it? 'Nobody yet' is a real answer."
+    type: text
+  - key: existing_venues
+    scope: app
+    ask: "Where do your customers already talk to you or to each other — a Slack, a WhatsApp group, a recurring call, a conference, anything?"
+    type: list
+
+output:
+  name: community_plan
+  target: expansion.community_plan
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [verdict, rationale, gathering_evidence]
+    properties:
+      verdict:
+        description: >-
+          join_existing is the default answer where the buyers already gather somewhere;
+          build_new has to earn itself. do_not_build is a result, not a failure.
+        type: string
+        enum: [build_new, join_existing, do_not_build]
+      rationale:
+        description: Why that verdict, in two or three sentences a founder would say out loud.
+        type: string
+      gathering_evidence:
+        description: >-
+          Where these people were actually found gathering, with a link each. At least one —
+          a venue named with no evidence was remembered, not researched, and a verdict of
+          do_not_build needs evidence of ABSENCE just as much.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [venue, source, what_happens_there]
+          properties:
+            venue: {type: string}
+            source:
+              description: The page this was read off. A URL, not a recollection.
+              type: string
+            what_happens_there:
+              description: What people actually post or do there, in one line, with the activity level if it is visible.
+              type: string
+            fit:
+              description: Whether this is where the ICP is, adjacent to it, or the wrong room.
+              type: string
+              enum: [on_icp, adjacent, wrong_room]
+      plan:
+        description: >-
+          Required when the verdict is build_new or join_existing. Absent when the answer is
+          do_not_build — an empty plan with a placeholder venue is worse than no plan.
+        type: object
+        additionalProperties: false
+        required: [venue, seed_members, rituals, ambassador_tier, first_ninety_days, health_signal]
+        properties:
+          venue:
+            type: object
+            additionalProperties: false
+            required: [where, why_here, rules]
+            properties:
+              where:
+                description: The named place — a Slack, a subreddit, a LinkedIn group, a standing call, a city dinner series.
+                type: string
+              why_here:
+                description: Why this venue rather than the next one, in terms of where the people already are.
+                type: string
+              rules:
+                description: The rule set members are held to, including what the team may and may not post.
+                type: array
+                minItems: 1
+                items: {type: string}
+              moderation:
+                description: Who moderates and what they do when a rule is broken.
+                type: string
+          seed_members:
+            description: >-
+              The named people or accounts invited first, and why each one. At least three —
+              a room that opens with one person in it does not open twice.
+            type: array
+            minItems: 3
+            items:
+              type: object
+              additionalProperties: false
+              required: [who, why_them]
+              properties:
+                who: {type: string}
+                why_them:
+                  description: What they get out of being here, not what you get out of them.
+                  type: string
+                source:
+                  description: Where they came from — an existing reference, a case study, an account, a thread they already posted in.
+                  type: string
+          first_conversations:
+            description: The questions or threads the room opens with, so it is not an empty channel on day one.
+            type: array
+            items: {type: string}
+          rituals:
+            description: >-
+              What happens every week without anybody launching anything. At least one — a
+              community with no ritual is a dead channel with a logo on it.
+            type: array
+            minItems: 1
+            items:
+              type: object
+              additionalProperties: false
+              required: [name, cadence, owner, what_happens]
+              properties:
+                name: {type: string}
+                cadence:
+                  description: How often, in plain words — weekly, first Tuesday, monthly.
+                  type: string
+                owner:
+                  description: The person or role who runs it. A ritual with no owner is a plan for somebody else to do work.
+                  type: string
+                what_happens: {type: string}
+                first_date:
+                  description: When the first one happens, if a date has been set.
+                  type: string
+          ambassador_tier:
+            type: object
+            additionalProperties: false
+            required: [who_qualifies, what_they_do, what_they_get]
+            properties:
+              who_qualifies:
+                description: Which existing advocates this is drawn from, and the bar for being one.
+                type: string
+              what_they_do:
+                description: The specific commitment, not goodwill.
+                type: array
+                minItems: 1
+                items: {type: string}
+              what_they_get:
+                description: What is on the other side of it for them.
+                type: array
+                minItems: 1
+                items: {type: string}
+              candidates:
+                description: Named advocates who could be asked first.
+                type: array
+                items: {type: string}
+          first_ninety_days:
+            description: What happens in each stretch of the first ninety days, in order.
+            type: array
+            minItems: 1
+            items:
+              type: object
+              additionalProperties: false
+              required: [window, what_happens]
+              properties:
+                window:
+                  description: e.g. "days 1-14", "month 2".
+                  type: string
+                what_happens: {type: string}
+                owner: {type: string}
+          health_signal:
+            description: >-
+              The one measure that says the thing is alive, with the number that would count as
+              alive and when it is checked. "Engagement" is not a signal; "eight people post
+              who do not work here, in a week, by day 60" is.
+            type: object
+            additionalProperties: false
+            required: [measure, threshold, checked_when]
+            properties:
+              measure: {type: string}
+              threshold: {type: string}
+              checked_when: {type: string}
+          staffing:
+            description: Hours a week this needs and who committed them. Say "uncommitted" where nobody has.
+            type: string
+      escalations:
+        description: >-
+          What a person has to decide before this can proceed — nobody has committed the hours,
+          or the ICP shows no evidence of gathering anywhere. Empty when there is nothing to raise.
+        type: array
+        items: {type: string}
+      gaps:
+        description: What could not be found or reached, named rather than filled in.
+        type: array
+        items: {type: string}
+    allOf:
+      - description: A verdict to go ahead has to carry the plan it is a verdict on.
+        if:
+          properties: {verdict: {enum: [build_new, join_existing]}}
+          required: [verdict]
+        then:
+          required: [plan]
+
+instructions: |-
+  You are deciding whether the people this workspace sells to would actually
+  gather — and if they would, designing the thing they gather in.
+
+  Start with the question that is allowed to end the run. Customers who know each
+  other stay longer and bring others; customers who only know the vendor churn
+  quietly. But an empty forum costs more credibility than it saves. If these
+  buyers show no evidence of gathering anywhere — no group, no recurring thread,
+  no conference bar, nothing — the answer is do_not_build, and you say it plainly
+  with the places you looked and found nothing. That is a finished piece of work,
+  not a failure to produce a plan.
+
+  Prefer joining where the buyers already are over founding somewhere they are
+  not. Go and look: the groups, forums, subreddits, Slack and Discord rooms, the
+  events, the newsletters people reply to, the threads where somebody asks the
+  question this product answers. Read the room before naming it — how many people,
+  what actually gets posted, how often, and what the rules there allow a company
+  to do. Every venue you name carries the page you read it off. Never describe a
+  community from memory; a venue with no link is a guess wearing a plan's clothes.
+
+  A community with no ritual is a dead channel with a logo on it. The ritual is
+  the design: the standing session, the digest, the office hour, the thing that
+  happens every week without anybody launching it. Each one gets a cadence and a
+  named owner. If you cannot name who runs it, you have written work for somebody
+  who has not agreed to do it.
+
+  Seed it with people, not with an invite link. Draw the first members from the
+  advocates this workspace already has — the references, the case study
+  customers, the accounts that answer — and say what each of them gets out of
+  being in the room. The ambassador tier comes from the same bench: a specific
+  commitment on one side, something real on the other. Never invent an advocate.
+  If the reference bench is thin, that is a fact about the launch and it goes in
+  the gaps.
+
+  Say what alive looks like as a number. One measure, a threshold, and the date
+  it gets checked, so ninety days from now somebody can tell whether this worked
+  without relitigating it.
+
+  Two things go to a person rather than into the plan. Draft the launch post and
+  the ritual templates with stage_draft, in this workspace's own voice — nothing
+  gets published anywhere until somebody decides. And if nobody has committed the
+  hours to run it, or the ICP gathers nowhere at all, put it in escalations and
+  say so in your closing line; do not quietly assume a founder will find the time.
+
+  Return the plan as your structured output. Close with one line: the verdict, the
+  venue, and what you could not reach.

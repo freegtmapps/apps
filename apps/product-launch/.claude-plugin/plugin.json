@@ -1,0 +1,8 @@
+{
+  "name": "product-launch",
+  "description": "A dated launch plan \u2014 the claim, the waitlist, the assets per destination, and the sequence.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

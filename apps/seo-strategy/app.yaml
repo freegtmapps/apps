@@ -1,0 +1,286 @@
+# The tool for the SEO Strategist card (gtmsrv/agents/demand/seo-strategist.yaml).
+#
+# WHAT THE JOB IS: search is the one channel where the buyer arrives already
+# looking, so this app finds the words THEY use — for the problem, for the
+# category, and for the workaround they use today — and clusters them into a
+# small number of pillars a company can own. Not a spreadsheet of every term
+# with a volume beside it; nobody works that.
+#
+# ONE OUTPUT TARGET, TWO CARD KEYS. The card produces `demand.keyword_map` and
+# `demand.content_pillars`. An app declares ONE validated object going to one
+# place, so the target is `demand.keyword_map` — the artefact this app builds.
+# The ranked pillars come back inside the same object, under `pillars`, and the
+# agent running this app writes `demand.content_pillars` through the pipeline
+# tool from that list, bounded by its own scope.context.writes. That is the same
+# split `Founder intake` makes: the app validates what it produced, the agent
+# decides where the rest of it belongs.
+#
+# DATED NUMBERS OR NO NUMBER. The card's instructions say "dated numbers with
+# the source", so `volume` is an object — a basis, a date and a source are all
+# required, and the count itself is the optional part. A model that cannot reach
+# a real figure has somewhere honest to put that (`basis: estimated` or
+# `unknown`) and no way at all to emit a bare confident integer. An invented
+# search volume is the artefact that reads as authoritative and cannot be
+# checked, and every downstream decision about what to write rests on it.
+#
+# THE CONCEDED TERMS ARE A SEPARATE LIST, not a flag on a term, because
+# done_when asks for them separately: "the terms conceded to competitors are
+# listed separately". A field somebody has to filter for is a field somebody
+# forgets to filter for.
+#
+# NO SKILLS. TEAMS.md names keyword-research, topic-clusters,
+# competitor-keyword-gap and programmatic-seo for this row and none of the four
+# exists in the vendored inventory — the closest bodies there are about ONE
+# ACCOUNT or about competitor positioning, which is a different artefact at a
+# different altitude. A skill name with no file fails to load, and a near-miss
+# body is a method this app cannot follow. So the method is in `instructions`,
+# where the maintainer stands behind it.
+#
+# NO `emits`. Everything this app has to say lands in the target, including the
+# escalation: `channel_verdict.worth_pursuing: false` IS the finding that the
+# category has no search demand worth chasing, and a signal beside it would be a
+# second label for the same fact.
+name: SEO strategy
+description: The searches your buyer actually runs, clustered into pillars you have a right to win.
+category: content
+type: research
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "what should we rank for?"
+  - "build our keyword map"
+  - "which content pillars should we own?"
+
+# Capabilities, not brands. `web` reads what people are actually searching and
+# what already ranks for it; `website` is how the app sees the pages this
+# company has today, which is what makes "we have a right to win this" a claim
+# about a real product rather than an ambition.
+#
+# The card also lists analytics, brain and pipeline. Those are platform tools
+# the agent holds, not app capability bindings, so they are not named here.
+tools: [web, website]
+
+may:
+  - read
+
+context:
+  # Search demand is country-shaped. The same term is a category in one market
+  # and a mistranslation in the next, so the regions this company sells into
+  # change which numbers are even worth pulling. Workspace-scoped: it is a real
+  # WorkspaceValues field and every channel app wants the same answer.
+  - key: regions
+    scope: workspace
+    ask: "Which countries or regions are you selling into? Search demand is different in each."
+    type: list
+
+  # The words the buyer uses BEFORE they know you exist. A founder can name
+  # three of these off the top of their head and no amount of research recovers
+  # them cleanly, because they are the customer's vocabulary rather than the
+  # market's.
+  - key: seed_terms
+    scope: app
+    ask: "What do people call this problem when they have never heard of you? Their words, not yours."
+    type: list
+
+  # What they do INSTEAD. The workaround is usually the highest-intent search on
+  # the map — somebody searching for a spreadsheet template has the problem and
+  # is already trying to solve it — and it is the part a keyword tool never
+  # suggests.
+  - key: workarounds
+    scope: app
+    ask: "What do people use instead today — a spreadsheet, an agency, doing nothing?"
+    type: list
+
+  # The honest one. Real volumes come from a keyword tool or Search Console, and
+  # this app has a web tool rather than a data provider. Paste an export and the
+  # numbers are measured; skip it and every number is marked estimated and the
+  # map is ranked on intent, which is what the card asks for anyway.
+  - key: volume_export
+    scope: app
+    ask: "Have you got a keyword export or Search Console data? Paste it and I'll use real numbers instead of estimates."
+    type: sample
+
+output:
+  name: keyword_map
+  target: demand.keyword_map
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [pillars, conceded, excluded, channel_verdict, sources]
+    properties:
+      pillars:
+        description: >-
+          The small number of topics this company should own. Ranked, best first.
+          Small is the point: a map with fourteen pillars has none.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, buyer_problem, right_to_win, terms]
+          properties:
+            name: {type: string}
+            buyer_problem:
+              description: The problem the searcher has, in their words rather than the product's.
+              type: string
+            right_to_win:
+              description: >-
+                The product fact or customer evidence that lets this company speak to
+                this pillar. Required, because the card forbids proposing a pillar the
+                company cannot speak to from its own facts — so a pillar that cannot
+                fill this field is one that does not get written.
+              type: string
+            terms:
+              description: The searches that sit under this pillar. At least one — a pillar with no terms is a theme, not a plan.
+              type: array
+              minItems: 1
+              items:
+                type: object
+                additionalProperties: false
+                required: [term, intent, volume, difficulty]
+                properties:
+                  term:
+                    description: The search exactly as somebody would type it.
+                    type: string
+                  intent:
+                    description: >-
+                      Where the searcher is when they type it. `problem` and `workaround`
+                      are the buyer already looking; `category` and `comparison` are the
+                      buyer shortlisting; `adjacent` is somebody who does not have the
+                      problem yet, and belongs in `excluded` far more often than in a pillar.
+                    enum: [problem, workaround, category, comparison, brand, adjacent]
+                  volume:
+                    description: >-
+                      A number is only worth having with a date and a source attached, so
+                      those are required and the count is not. Say `estimated` or `unknown`
+                      rather than producing a figure nothing stands behind.
+                    type: object
+                    additionalProperties: false
+                    required: [basis, as_of, source]
+                    properties:
+                      monthly:
+                        description: Monthly searches across the regions in scope. Omit when basis is unknown.
+                        type: integer
+                      basis: {enum: [measured, estimated, unknown]}
+                      as_of:
+                        description: The date this figure is true as of, ISO 8601.
+                        type: string
+                      source:
+                        description: Where it came from — the export, the console, the page it was read off.
+                        type: string
+                  difficulty:
+                    description: How hard this is to rank for as this company, today.
+                    enum: [low, medium, high, unknown]
+                  note:
+                    description: One line, when the term needs it — a nuance, an ambiguity, a reason it ranks where it does.
+                    type: string
+      conceded:
+        description: >-
+          Terms already owned by a competitor, listed separately rather than
+          scattered through the pillars. Empty only when the gap analysis found
+          nothing conceded, which is rare and worth saying out loud.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [term, held_by, evidence]
+          properties:
+            term: {type: string}
+            held_by:
+              description: Who ranks for it today.
+              type: string
+            evidence:
+              description: The page or result that shows they hold it.
+              type: string
+            contestable:
+              description: Whether it is worth attacking anyway, and what it would take.
+              type: string
+      excluded:
+        description: >-
+          High-volume terms deliberately left off the map, with the reason. This is
+          where "traffic, not demand" gets written down — a term the buyer searches
+          before they have the problem belongs here, named, so nobody adds it back
+          next quarter because the number looked good.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [term, why_excluded]
+          properties:
+            term: {type: string}
+            why_excluded: {type: string}
+      channel_verdict:
+        description: >-
+          Whether search is worth pursuing for this category at all. The card's
+          escalation is a finding about the channel plan, so it is a field here
+          rather than a note in the summary: a category with no demand produces a
+          verdict, not a thin map that looks like a bad quarter.
+        type: object
+        additionalProperties: false
+        required: [worth_pursuing, reason]
+        properties:
+          worth_pursuing: {type: boolean}
+          reason: {type: string}
+      sources:
+        description: >-
+          Everything the numbers and the gap analysis were read from, so a reader
+          can retrace it. At least one — a map with no sources was remembered.
+        type: array
+        minItems: 1
+        items: {type: string}
+
+instructions: |-
+  You are building the search map for {{company_name}}, a company selling
+  {{product}} into {{industry}}.
+
+  Start from the buyer, not from a tool. Take the seed terms and the workarounds
+  the founder gave you and go and read what people actually write when they have
+  this problem — the questions on forums, the phrasing in reviews, the way
+  competitors' own pages title themselves. The words the market uses are almost
+  never the words the product uses, and the gap between them is most of the job.
+
+  Buyer intent over volume, every time. A term with ten thousand searches that
+  people type before they have the problem is traffic, and you say so and put it
+  in `excluded` with the reason. A term with ninety searches from somebody who
+  has already built the spreadsheet workaround is demand. Rank on who is
+  searching, not on how many.
+
+  Never write a number you cannot date and source. If the founder pasted an
+  export, use it and mark those figures `measured` with the date on the export.
+  If they did not, mark what you estimate as `estimated` and say what you
+  estimated it from — a competitor's ranking pages, the breadth of the discourse,
+  a comparable term you do have a figure for. Where you genuinely have nothing,
+  `unknown` is an honest answer and a fabricated integer is not: everything
+  downstream about what gets written rests on these, and an invented volume is
+  indistinguishable from a real one once it is in the map.
+
+  Run the competitor gap against the profiles already in this workspace's
+  market context, and against what you find ranking. A term a competitor owns
+  with a page that has been there for three years and answers the question
+  better than you would is conceded — list it in `conceded` with the evidence,
+  and say whether it is worth attacking anyway. Do not quietly drop it: the
+  team needs to know what was ceded and by whom.
+
+  Cluster into a handful of pillars, not a spreadsheet. Each pillar is a topic
+  this company could plausibly be the best answer on, and every one has to carry
+  `right_to_win` — a real product fact, a customer this company already has, a
+  thing it knows that nobody else does. If you cannot fill that field from the
+  workspace's own context, the pillar does not go in the map, however good the
+  volume looks. A pillar the company cannot speak to is a brief for content that
+  will never be written or will be written badly.
+
+  If the honest finding is that this category has almost nobody searching for it,
+  say so: set `channel_verdict.worth_pursuing` to false with the reason. That is
+  a real finding about the channel plan and it is more use to the demand lead
+  than a map padded out to look like a quarter's work.
+
+  Return the map as your structured output. Then say in one line how many
+  pillars you landed on, how many of the volumes are measured rather than
+  estimated, and what you could not reach.

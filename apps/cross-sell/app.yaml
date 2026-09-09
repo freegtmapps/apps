@@ -1,0 +1,322 @@
+# The tool for `expansion.cross-sell-mapper` (gtmsrv/agents/expansion/cross-sell-mapper.yaml),
+# whose needs.apps names this slug and nothing else.
+#
+# Its sibling `Packaging tiers` cuts one product into a ladder somebody climbs. This one
+# does the other half of expansion revenue: which SECOND product a customer of the first is
+# already ready for. The card's mission is the whole design brief — "two products sold to the
+# same buyer are not automatically adjacent" — so the artefact this writes is not a bundle
+# list, it is a ranked account of which pairings the customers' own behaviour supports.
+#
+# THE OUTPUT TARGET IS PINNED BY THE CARD, not chosen here. The card's
+# `produces.context` is `[expansion.cross_sell_paths]` and expansion/lead.yaml's member row
+# says `owns: [expansion.cross_sell_paths]`. The loader checks
+# `output.target ⊆ agent.scope.context.writes` (E_WRITES_EXCEED_SCOPE) and those writes are
+# derived from `produces`, so `expansion.cross_sell_paths` is the only spelling that pairs.
+# The commissioning note for this app said `expansion.cross_sell`; that key exists nowhere in
+# the tree and would fail the pairing at compose. Named here rather than found at load.
+#
+# ONE OUTPUT TARGET, and it is the only key this card produces — so nothing travels through
+# the pipeline tool on the side. Everything the card owes lands in this one validated object.
+#
+# NO `skills:`, and the name TEAMS.md gives for this row was checked rather than assumed.
+# `cross-sell-mapping` does not exist in either vendored inventory
+# (vendor/skills/swan-gtm/gtm-skills, vendor/skills/NEON-Rutger/B2B-revops-skills) under any
+# spelling. The three nearest real bodies are all near-misses, which is worse than nothing:
+#   - `revops-handoffs` has a genuine three-type cross-sell model, but it is about the DEAL
+#     AFTER the adjacency is known — which pipeline stages a new buying group needs, who owns
+#     the account, what the SLA is — and it routes to `references/hubspot-workflows.md`. It
+#     answers "how do we run this cross-sell", not "which pairing is real".
+#   - `icp-lookalike-expansion` and `won-deal-icp-finder` expand a TARGET LIST from customers
+#     you already have. Both find more accounts for one product; neither finds a second
+#     product for one account.
+# Composing any of them would be a method this app cannot follow, in the voice of a skill
+# whose whole purpose was to stop the model improvising.
+name: Cross-sell
+description: Which second product each customer segment is already ready for, ranked by evidence, with the accounts it applies to.
+category: sell
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "map our cross-sell paths"
+  - "which of our products actually sell together?"
+  - "who is ready for a second product?"
+
+# NO `tools:`. `tools:` is fail-closed — a capability named here is one a deployment must
+# bind before the app runs at all — and the evidence this app needs is something a founder
+# can answer out loud: who owns what today, and where one product's job ends. Refusing to
+# map adjacency because nobody connected a CRM would be a worse app than one that asks.
+#
+# `crm` and `product` go in `requires.optional` instead, which is the honest statement: with
+# them the ownership matrix is read rather than recalled, and the `bought_both` evidence
+# kind has real counts behind it. Without them the app still runs on what a person pastes,
+# and says so in `assumptions`.
+requires:
+  optional:
+    tools: [crm, product]
+
+may:
+  - read
+
+# NO `emits:`. The map IS the output and it lands in `expansion.cross_sell_paths`, which is
+# where the Lead and the upsell strategist already look. A signal would be a second label for
+# a fact that already has one — and without `may: [emit]` beside it, a label nothing can
+# raise. What the card escalates travels in `escalate` below, in front of the person who has
+# to settle it. The account-level moment that OPENS a path is `expansion.signal_detected`,
+# and `expansion.signal-detector` already emits it; this app reads those signals, it does not
+# reissue them.
+
+context:
+  # The one input without which there is nothing to map. It is also where the card's first
+  # escalation is caught: a portfolio with one product in it has no adjacency, and the honest
+  # answer is to say so rather than to invent a module.
+  - key: product_portfolio
+    scope: app
+    ask: "What do you sell as separate things — products, modules, add-ons? Name each one and the job it does."
+    type: list
+
+  # `company.product_facts` and `revenue.tiers` are what the card reads from the pipeline, but
+  # a dotted pipeline key is a different table with a different writer. These are the
+  # questions a person answers when nobody has run the packager yet — the honest state, rather
+  # than an app that silently assumes an upstream document exists.
+  - key: ownership_matrix
+    scope: app
+    ask: "Paste what your customers own today — a few rows of account, products they have, and roughly when each was bought."
+    type: sample
+
+  # The card's whole thesis in one question. Adjacency is a claim about the customer's
+  # workflow, so the workflow has to be described by somebody who has watched it.
+  - key: workflow_seams
+    scope: app
+    ask: "Where does the job one product does end and another one's begin? Describe the handoff a customer makes today, even if it is to a spreadsheet."
+    type: text
+
+  # Workspace-scoped and shared, so nobody is asked twice: the founder intake and
+  # `Define your ICP` already put both of these in the workspace profile.
+  - key: icp
+    scope: workspace
+    ask: "Who buys this — the person and the size of company, in a line or two?"
+    type: text
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+
+output:
+  name: cross_sell_paths
+  target: expansion.cross_sell_paths
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [products_mapped, paths, pairings_without_a_path, escalate]
+    properties:
+      products_mapped:
+        description: >-
+          Every separately sellable thing in the portfolio, named once. It is what makes the
+          rest of this object checkable: each ordered pair of these either appears in `paths`
+          or appears in `pairings_without_a_path`, and a pair in neither was not considered.
+          A portfolio of one lands here alone, with `escalate` saying why nothing follows.
+        type: array
+        minItems: 1
+        items: {type: string, minLength: 1}
+
+      paths:
+        description: >-
+          The proven adjacencies, best evidence first. NO `minItems`, deliberately: a company
+          with one product, or with no customer who has ever bought two things, has no paths,
+          and a floor here would make a model invent one to satisfy a schema. That case is an
+          escalation, not an empty result dressed up.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [from_product, to_product, rank, evidence, trigger, accounts]
+          properties:
+            from_product:
+              description: What the customer already has.
+              type: string
+              minLength: 1
+            to_product:
+              description: What they are ready for. Direction matters — the pairing is rarely symmetric.
+              type: string
+              minLength: 1
+            segment:
+              description: >-
+                The customer segment this path holds for, in the words the ICP uses. Absent
+                when it holds across all of them, which is rare enough to be worth noticing.
+              type: string
+            rank:
+              description: >-
+                Position in the ranking, 1 first. The card's done_when begins here: an
+                unranked list of adjacencies is a menu, and the point of the ranking is that
+                somebody has to choose which one to work this quarter.
+              type: integer
+              minimum: 1
+            evidence:
+              description: >-
+                Why this pairing is real. AT LEAST ONE, and this floor is the app's whole
+                conscience — the card's rule that adjacency is a claim about the customer's
+                workflow rather than about the price list, in the one form a validator can
+                hold. A path with no evidence is a bundle looking for a reason.
+              type: array
+              minItems: 1
+              items:
+                type: object
+                additionalProperties: false
+                required: [kind, what]
+                properties:
+                  kind:
+                    description: >-
+                      The three kinds the card names, plus the one a customer says out loud.
+                      Closed, because an observation that fits none of these is usually an
+                      opinion about the roadmap.
+                    enum: [bought_both, workflow_handoff, same_team, asked_for_it]
+                  what:
+                    description: >-
+                      The observation itself, concrete enough that somebody could go and check
+                      it. "Eleven of the forty accounts on Core added Reports within six
+                      months" is one. "Natural fit" is not.
+                    type: string
+                    minLength: 1
+                  count:
+                    description: >-
+                      How many customers or accounts this observation covers, where it is
+                      countable. Absent when it is not — never a guessed number, because an
+                      invented count is worse than a missing one: nothing downstream can tell
+                      it apart.
+                    type: integer
+                    minimum: 0
+                  source:
+                    description: Where it was read — the CRM view, the usage report, the call it was said on.
+                    type: string
+            trigger:
+              description: >-
+                What has to have happened in an account before this path opens. Observable, so
+                the signal detector can watch for it rather than somebody guessing at renewal.
+              type: string
+              minLength: 1
+            accounts:
+              description: >-
+                The accounts this path applies to today, named. AT LEAST ONE — the second half
+                of the card's done_when. A path nobody can be pointed at is not yet a path; it
+                belongs in `pairings_without_a_path` with "no account list" as the reason,
+                where the next run can pick it up.
+              type: array
+              minItems: 1
+              items: {type: string, minLength: 1}
+            bundle:
+              description: >-
+                A packaged pairing, and ONLY where the adjacency above is proven — the card
+                designs bundles nowhere else. Absent is the normal case: most paths are a
+                conversation at the right moment, not a SKU.
+              type: object
+              additionalProperties: false
+              required: [name, justified_by]
+              properties:
+                name: {type: string, minLength: 1}
+                justified_by:
+                  description: >-
+                    What the customer gets from having both together that they do not get from
+                    having them separately. A discount is not an answer to this question. If
+                    the only sentence available is about the price, there is no bundle.
+                  type: string
+                  minLength: 1
+                discount:
+                  description: The concession, if there is one. It follows the reason; it is never the reason.
+                  type: string
+            objection:
+              description: What the customer says back, and what answers it. Empty when nobody has raised one yet.
+              type: string
+
+      pairings_without_a_path:
+        description: >-
+          Every pairing that was considered and rejected, with why. Required, because "say
+          which pairings have no evidence" is a responsibility on the card and an app that
+          only reported its wins would leave the next run to rediscover the same dead ends.
+          Empty only when every ordered pair became a path, which happens in a two-product
+          portfolio and almost nowhere else.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [from_product, to_product, why]
+          properties:
+            from_product: {type: string, minLength: 1}
+            to_product: {type: string, minLength: 1}
+            why:
+              description: >-
+                What is missing — no customer has ever bought both, the two jobs never touch,
+                different buyer entirely, or the adjacency is plausible but no account can be
+                named for it yet. Say which; "no evidence" on its own tells the next run
+                nothing about where to look.
+              type: string
+              minLength: 1
+
+      assumptions:
+        description: >-
+          What had to be taken on trust: an ownership matrix pasted from memory rather than
+          read from a system, a segment nobody has measured, a workflow described by one
+          person. Empty when nothing was assumed.
+        type: array
+        items: {type: string, minLength: 1}
+
+      escalate:
+        description: >-
+          What a person has to settle before this ships. The card escalates on exactly two
+          things — there is only one product, and no customer has ever bought two things —
+          and both are stated here rather than worked around, because both mean the ranking
+          would be a set of guesses wearing an order.
+        type: array
+        items: {type: string, minLength: 1}
+
+instructions: |-
+  You are working out which second product a customer of {{product}} is already ready for.
+
+  Start from the portfolio and the customers, in that order. List everything sold
+  separately. Then take the ownership matrix and read what has actually happened: who owns
+  more than one thing, which pairing came up most, and how long after the first purchase
+  the second one landed. That interval is the trigger hiding in plain sight.
+
+  Adjacency is a claim about the customer's workflow, not about the price list. For every
+  pairing you are considering, answer the same question: same problem, same team, same
+  moment? A pairing survives when the job one product does ends where the other one's
+  begins — when the customer is exporting something out of the first to get it into the
+  second, or when the person who runs one sits next to the person who would run the other.
+  A pairing that only shares a logo on the invoice does not survive.
+
+  Rank by evidence and say what the evidence is. Customers who bought both, counted, beats
+  a workflow you can describe, which beats a customer who once asked. Never write a count
+  you did not read — if you cannot get the number, name the observation without one and put
+  the missing source in `assumptions`. An invented figure is worse than a missing one,
+  because nothing downstream can tell them apart.
+
+  Every path names the accounts it applies to. If you can describe the adjacency but cannot
+  point at a single account it is true of today, it is not a path yet — put it in
+  `pairings_without_a_path` and say that the account list is what is missing. Every pairing
+  you considered belongs in one list or the other, so that the next run knows where you
+  already looked.
+
+  Bundle only where the adjacency is proven, and write down what the customer gets from
+  having both together. If the only sentence you can write is about the price, there is no
+  bundle — a discount looking for a reason is not a cross-sell path, and packaging one is
+  how a company gives away margin on a purchase that was going to happen anyway.
+
+  Say what has no evidence out loud. A pairing the founder is fond of and no customer has
+  ever made is worth naming as exactly that; it is the most useful line in the document,
+  because somebody was about to build a bundle on it.
+
+  Escalate rather than fill the gap. If there is only one product, there is no cross-sell
+  map — say so, and stop. If no customer has ever bought two things, you have no observed
+  adjacency at all: write the workflow argument if there is one, mark every pairing
+  unproven, and put the reason in `escalate`. Both are a person's decision, not a hole for
+  you to paper over.
+
+  Return the map as your structured output, and say in one line how many pairings you
+  considered, how many became paths, and what you had to assume.

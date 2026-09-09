@@ -1,0 +1,8 @@
+{
+  "name": "churn-analysis",
+  "description": "Codes every churn to one primary reason with its evidence, and states the cohort curve behind them.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

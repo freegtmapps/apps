@@ -1,0 +1,8 @@
+{
+  "name": "packaging-tiers",
+  "description": "Cuts the product into tiers a buyer picks between \u2014 each with one persona, one named fence and a price.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

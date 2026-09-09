@@ -1,0 +1,344 @@
+# A message hierarchy ranked by taste is an opinion. This app is how it stops
+# being one.
+#
+# IT SERVES ONE JOB CARD — `positioning.message-tester`, whose mission is to put
+# the messages in front of the market "as page variants, as ad copy, as
+# interview questions" and re-rank them by what happened, and whose done_when is
+# "each message carries a score, the sample it came from, and its new rank, or
+# is marked untested". Where this manifest and that card could disagree, the
+# card wins; everything below is downstream of its four instructions.
+#
+# THE LINE THIS APP MUST NOT CROSS. The card says: re-rank the hierarchy, never
+# rewrite the messages — that is the Messaging Writer's key, and a rewrite here
+# lands as a proposal nobody asked for. So a message travels through this app as
+# a verbatim string it copies and never edits, and the only thing this app is
+# allowed to change about a message is the number in front of it and the
+# evidence behind that number. The schema says so as loudly as YAML can: the
+# ranked entries carry `message` as the writer wrote it and no field anywhere
+# invites better wording.
+#
+# WHY `type: analysis` AND NOT `research`. Nothing here is discovered out in the
+# world. The messages are already written, the variants are already live, and
+# the numbers already exist in somebody's funnel — this app designs the split,
+# reads the result and does arithmetic on it. `research` would promise a search
+# that never happens. `analysis` forces an `output:` block (schema delta 2),
+# which is what this job needs anyway: a re-ranked hierarchy is a structured
+# object or it is a paragraph nobody can act on.
+#
+# NO `skills:` KEY, and the omission is the researched answer rather than a
+# shortcut. TEAMS.md names landing-page-variants, ad-copy-test-design and
+# interview-feedback-synthesis for this row; none of the three exists in either
+# vendored repo, and an app naming a skill with no file fails to load. The two
+# real near-misses were read and rejected on purpose:
+# `personalized-outbound-ab-test` is a control/personalized/holdout split over a
+# LEAD LIST with a per-message safety gate — a per-account outbound method, not
+# a segment-level page-and-ad test, and it assumes email sending this app does
+# not do; `positioning-messaging-designer` DESIGNS messaging, which is exactly
+# the neighbouring card's job and exactly what this one is forbidden to do.
+# Naming either would be a method this app cannot follow, in the voice of an
+# author who never wrote it. `resolve-the-jurisdiction` ships with no skills too.
+name: Message testing
+description: "Put the messages in front of the market, score what happened, and re-rank the hierarchy on it."
+category: content
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "test our messaging"
+  - "which message actually won?"
+  - "re-rank the message hierarchy on the results"
+
+# THE CARD NAMES `[analytics, website, brain, pipeline]` AND ONLY ONE IS
+# SPELLABLE HERE.
+#
+# `analytics` is not in the capability vocabulary and a manifest naming it fails
+# to load. `brain` and `pipeline` are not capabilities at all — they are the
+# platform tools every app gets and the shared context an agent's scope grants,
+# so there is nothing to list. `website` is real, and it is where the page
+# variants live.
+#
+# It is OPTIONAL rather than required, which is a maintainer's judgement and the
+# honest one: the numbers this app ranks on arrive as `demand.funnel_metrics`
+# through the pipeline, and the messages arrive as `positioning.message_hierarchy`,
+# so the job is doable for a workspace that pastes its variant results. A site
+# binding makes it better — it is how the app reads what a variant ACTUALLY says
+# rather than what somebody meant to ship — and `web` is how an ad's landing
+# destination gets checked. Requiring either would fail at bind for a workspace
+# whose test ran in interviews.
+requires:
+  optional:
+    tools: [website, web]
+
+# `read` alone.
+#
+# NO `emit`, and therefore NO `emits:` list. The card's produces is
+# `{context: [positioning.message_hierarchy]}` and names no signal kind. Its
+# escalate_when — no variant reached a sample worth reading, or the winner
+# contradicts the approved positioning statement — is real and is carried
+# STRUCTURALLY in the output's `escalations` array, where it sits beside the
+# ranking it is about. A signal saying the same thing would be a second label
+# for a fact already written down, and declaring one without `emit` would be a
+# signal this app cannot raise: 24 of 50 manifests had that defect and it was
+# swept. The agent's `sinks: [signal]` is the agent's business, not the bundle's.
+#
+# NO `write_lead`: there is no lead in this job. NO `stage`: the card's gate is
+# `none` and its profile is unattended, so a staged draft here would be an app
+# waiting on a click nobody was told to make.
+may:
+  - read
+
+# Three app-scoped keys, and each is something the model gets wrong by guessing.
+#
+# Nothing is workspace-scoped. The workspace scope is a closed set of eight real
+# WorkspaceValues fields — company_name, crm, icp, industry, product, regions,
+# sender_name, sender_voice — and none of them is a test design; every declared
+# workspace value already reaches the prompt through the Context section whether
+# or not this app names it, so declaring one here would only get somebody asked
+# a question another app already asked.
+#
+# The messages under test are NOT declared here either. They are
+# `positioning.message_hierarchy` and `positioning.messaging_by_persona`, dotted
+# pipeline keys with a different writer, read through the pipeline tool. A
+# context key is `^[a-z][a-z0-9_]*$` and cannot spell them.
+context:
+  # The card's first instruction is "state the metric before the test, never
+  # after". This key is that rule made mechanical: the metric is answered before
+  # the app runs, and it is copied into the output as `decided_by` so a reader
+  # can see it was not chosen once the numbers were in.
+  - key: decision_metric
+    scope: app
+    ask: "Which single metric decides a winner — signups, demo requests, qualified replies? Name it before the test runs, not after."
+    type: text
+
+  # The other half of "a difference inside the noise is not a result". Without a
+  # floor agreed in advance, every run finds a winner.
+  - key: minimum_sample
+    scope: app
+    ask: "How much traffic, spend or how many conversations does a variant need before you'd believe the number? Say 'work it out' and I'll set a floor and show you what I set."
+    type: text
+
+  # Which tests this workspace can actually run. An app that designs an ad test
+  # for a team with no ad budget has produced homework, not a result.
+  - key: test_channels
+    scope: app
+    ask: "Where can you actually test — landing page variants, paid ads, cold email subject lines, customer interviews, sales calls?"
+    type: list
+
+# One validated object going to one place: the field the card says this job owns
+# and the ONLY key its `produces` names. A section (`positioning`) or a wildcard
+# would be an app claiming the section. This is a destination and not a
+# permission — the loader still checks it against positioning.message-tester's
+# scope.context.writes, and changing this line without changing that agent fails
+# the pairing at compose rather than at run.
+#
+# The test designs themselves land INSIDE this object rather than in a key of
+# their own: an app declares one output target, and a score whose test is stored
+# somewhere else is a number nobody can retrace.
+output:
+  name: message_hierarchy
+  target: positioning.message_hierarchy
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [decided_by, tests, ranked, untested, escalations]
+    properties:
+      decided_by:
+        description: >-
+          The metric and the sample floor, as they stood BEFORE the tests ran. Written
+          down so a reader can tell a stated rule from a rationalised one.
+        type: object
+        additionalProperties: false
+        required: [metric, minimum_sample]
+        properties:
+          metric: {type: string}
+          minimum_sample:
+            description: The floor a variant had to clear to count, in the unit the metric is measured in.
+            type: string
+          set_before_the_test:
+            description: How the floor was arrived at — the workspace's answer, or the app's own choice shown out loud.
+            type: string
+      tests:
+        description: >-
+          Every test read for this ranking, whether it decided anything or not. A test that
+          produced nothing usable still belongs here — it is why a message is untested.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, channel, metric, variants, window, result]
+          properties:
+            name: {type: string}
+            channel:
+              description: Where it ran, in this workspace's own words — a landing page, an ad set, a round of interviews.
+              type: string
+            metric:
+              description: The deciding metric for this test. It matches decided_by.metric or the test does not decide anything.
+              type: string
+            variants:
+              description: >-
+                At least two. One arm is not a test, it is a launch — and the control is what
+                makes a number mean something.
+              type: array
+              minItems: 2
+              items:
+                type: object
+                additionalProperties: false
+                required: [label, message, differs_by, sample, outcome]
+                properties:
+                  label: {type: string}
+                  message:
+                    description: >-
+                      The message under test, copied verbatim from the hierarchy. Never a
+                      rewritten or tightened version — rewriting is the Messaging Writer's key.
+                    type: string
+                  differs_by:
+                    description: >-
+                      The ONE thing that differs from the control. If more than one thing
+                      differs, this test cannot attribute the result and says so in `result`.
+                    type: string
+                  sample:
+                    description: Visitors, impressions, sends or conversations this arm actually got.
+                    type: string
+                  outcome:
+                    description: The metric's value for this arm, with its numerator and denominator.
+                    type: string
+            window:
+              description: The dates the test ran between. "Recently" is not a window.
+              type: string
+            result:
+              description: >-
+                What the test established, in one line — including "nothing: the arms are inside
+                the noise", which is a real and common answer.
+              type: string
+      ranked:
+        description: >-
+          The re-ranked hierarchy. Ranks are contiguous from 1 and every entry carries the score
+          and the sample behind its place, which is the card's done_when made structural.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [message, rank, score]
+          properties:
+            message:
+              description: Verbatim from positioning.message_hierarchy. This app moves messages; it does not edit them.
+              type: string
+            persona:
+              description: Who this message is for, where the hierarchy is split by persona.
+              type: string
+            previous_rank: {type: integer, minimum: 1}
+            rank: {type: integer, minimum: 1}
+            score:
+              description: The number that earned the rank, and where it came from.
+              type: object
+              additionalProperties: false
+              required: [metric, value, sample, test]
+              properties:
+                metric: {type: string}
+                value: {type: string}
+                sample:
+                  description: The sample the score came from. A score without one is an impression with a decimal point.
+                  type: string
+                test:
+                  description: The name of the test in `tests` that produced it, so the reader can retrace the ranking.
+                  type: string
+      untested:
+        description: >-
+          Messages that did not earn a score — no test ran, or the arms never separated past the
+          floor. They keep a rank so the hierarchy stays whole, and they say why they are here.
+          This array is how "a difference inside the noise is not a result" survives contact with
+          somebody who wants a winner.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [message, rank, reason]
+          properties:
+            message: {type: string}
+            persona: {type: string}
+            rank: {type: integer, minimum: 1}
+            reason:
+              description: Why it is untested — never run, below the sample floor, or a difference inside the noise.
+              type: string
+      escalations:
+        description: >-
+          The card's escalate_when, written down rather than signalled. Empty when neither
+          condition fired.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [kind, detail]
+          properties:
+            kind:
+              enum: [no_readable_sample, contradicts_positioning]
+            detail:
+              description: What happened, and which message or test it concerns.
+              type: string
+
+instructions: |-
+  You are settling an argument with evidence. Somebody has written a message
+  hierarchy and ranked it by judgement; your job is to say what the market did
+  when it saw those messages, and to move the ranks accordingly.
+
+  Read the hierarchy and the persona messaging out of the pipeline before you
+  design anything, and treat every message in it as fixed text. You may move a
+  message, you may mark it untested, you may say what it scored. You may not
+  improve it. A better sentence occurring to you mid-run is not a finding — it
+  belongs to whoever owns the writing, and offering one here lands as a proposal
+  nobody asked for.
+
+  State the metric before the test. Write down the deciding metric and the
+  sample floor first, put both in `decided_by`, and then go and look at the
+  numbers. A metric chosen after the results are in is not a metric, it is a
+  preference with a chart. If the workspace said "work it out", pick a floor,
+  say plainly what you picked and why, and hold yourself to it.
+
+  Change one thing per variant. A page variant with a new headline and a new
+  call to action tells you that something worked and nothing about which. Where
+  you are reading a test somebody else designed and it moved two things at once,
+  record it, put both in `differs_by`, and say in `result` that it cannot
+  attribute — that is a finding about the test, not a reason to guess.
+
+  Every test needs a control. Two arms minimum, the control being what you
+  already believed. Read the funnel numbers per variant from the metrics you
+  are given; where a site or web binding is available, open the variant and
+  check that what shipped is what the hierarchy says — a test of copy nobody
+  actually published is the most expensive kind of nothing.
+
+  Interviews and replies count. The thing a click-through never captures is why
+  somebody bounced, and a round of five customer conversations where four
+  repeated the same objection to a message is evidence. Score it as what it is:
+  a small sample, named as such, with the words people used. Do not launder it
+  into a percentage.
+
+  A difference inside the noise is not a result. If two arms are close and the
+  sample is under the floor, both messages go in `untested` with the reason,
+  and the hierarchy keeps the order it had. This will feel like failing to
+  produce an answer. It is the answer: the alternative is re-ranking a company's
+  messaging on eleven visitors. Escalate with kind `no_readable_sample` when
+  nothing in the run reached a sample worth reading.
+
+  Re-rank, and show your work. Every message in `ranked` carries the metric, the
+  value, the sample and the name of the test it came from. Ranks run from 1 with
+  no gaps, and `previous_rank` stays on anything that moved so a reader can see
+  what changed. Everything that did not earn a score is in `untested`. Between
+  the two arrays, every message in the hierarchy you were given appears exactly
+  once — a message that quietly disappears has been deleted by an app that was
+  only allowed to reorder.
+
+  If the winning message contradicts the approved positioning statement, say so
+  and escalate with kind `contradicts_positioning`. Do not resolve it by
+  demoting the winner: the market's answer and the company's statement
+  disagreeing is exactly the thing a human is supposed to see.
+
+  Return the re-ranked hierarchy as your structured output. Say in one line how
+  many messages moved, how many are untested, and what the biggest sample you
+  read was.

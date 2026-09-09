@@ -1,0 +1,281 @@
+# The tool for `revenue.revops-auditor` — the job that goes looking for the places
+# four teams filled the same field two different ways, and hands each one to
+# whoever owns it.
+#
+# IT REPORTS AND IT DOES NOT REPAIR, and every permission on this page is that
+# sentence in another form. No `write_lead`, no `write_external`, no `stage`.
+# The card's own instruction is "you do not edit a record or a field to make it
+# agree", and a manifest that granted the right to edit one would be a promise
+# the prose then asks the model not to keep. An app whose only power is to read
+# and to return a validated object cannot repair anything, which is the point.
+#
+# WHY IT IS NOT ONE OF THE THREE APPS THAT ALREADY EXIST. The card names all
+# three in its own header and this manifest agrees with it:
+#   - `Clean the CRM, governed` stages record edits and holds write_external. It
+#     repairs, under rules. This one reports.
+#   - `Set up HubSpot properly` is one vendor's implementation pattern. A
+#     disagreement between demand and sales is not a HubSpot setting.
+#   - `Diagnose the revenue system` looks for the CONSTRAINT — the one thing
+#     whose fixing moves the whole system. This looks for DISAGREEMENT, which is
+#     a different shape of problem: nothing here is necessarily the bottleneck,
+#     and all of it quietly changes a number.
+#
+# NO `skills:`, AND THAT IS A DECISION RATHER THAN AN OMISSION.
+#
+# TEAMS.md names `revops-data-governance` and `revops-diagnostic` for this row.
+# Unusually, both are really vendored — under
+# vendor/skills/NEON-Rutger/B2B-revops-skills — so this was a judgement about
+# fit rather than about availability, and both were read in full before being
+# declined.
+#
+# `revops-diagnostic` is the body behind `Diagnose the revenue system`, the app
+# the card read and rejected. Composing it here would rebuild the rejected app
+# and give it a second name.
+#
+# `revops-data-governance` is the body behind `Clean the CRM, governed`, and it
+# is the nearer miss of the two — its §3 (the five quality dimensions) and §7
+# (shared definitions, stage definitions tied to data) are genuinely the method
+# this job uses. But six of its eight sections instruct the reader to DESIGN and
+# REPAIR: build a data dictionary, run a merge protocol, deprecate fields, and
+# its own headline rule is "if a field has no documented owner and no documented
+# use case, delete it". Put that in front of an unattended weekly run whose
+# first instruction is "report, never repair" and the app is arguing with itself
+# in the prompt — the model follows whichever half it read last. Two sections
+# that fit do not buy six that push the opposite behaviour.
+#
+# So the method lives in `instructions:` below, in our own words, and nothing on
+# this page claims credit for prose somebody else wrote. `built_on` is derived
+# from skill frontmatter; with no skills there is nothing to derive and no
+# attribution to get wrong.
+name: RevOps hygiene
+description: "Where demand, sales and revenue disagree about the same fact — with the count behind it and its owner."
+category: keep-in-sync
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "audit our revenue data"
+  - "why don't these two reports agree?"
+  - "where do sales and marketing disagree?"
+
+# One capability, and it is the one the job cannot be done without: the records
+# are where you find out what a stage MEANS as opposed to what it is called.
+# `records`, `brain` and `pipeline` are on the card's tools list and are absent
+# here on purpose — they are platform tools every app is given, not capability
+# bindings, and naming them would be a manifest asking for something it already
+# has.
+tools: [crm]
+
+may:
+  - read
+
+# NO `emits:`, AND NO `emit`.
+#
+# The temptation is `revenue.inconsistency_found`, and the reason to resist it is
+# that a signal here would be a second label for a fact the app has already
+# stated twice. Every finding is in the structured output, and the card's own
+# route to the owner is a WRITE: a non-owner write lands on the owning team's key
+# as `status: proposed` (contracts/context_owners.yaml), so the proposal IS the
+# notification and it arrives holding the finding rather than a pointer to it.
+#
+# The escalation the card describes — "a number this team publishes rests on a
+# field inconsistent enough to change it" — is the agent's act on a sink it
+# holds, not the app's. That is why `material` is a field in the schema below:
+# the app's job is to say which findings meet the bar, in a form the agent can
+# read, and the deciding belongs one level up.
+
+context:
+  # Workspace-scoped, and the only one of the eight real WorkspaceValues fields
+  # this app actually needs. Which CRM is in use decides what a "stage" and a
+  # "required field" even are — a Salesforce validation rule and a HubSpot
+  # required property are not the same object — so an audit that guessed it
+  # would be auditing a system nobody has.
+  - key: crm
+    scope: workspace
+    ask: "Which CRM holds the deals and contacts — HubSpot, Salesforce, Pipedrive, something else?"
+    type: text
+
+  # App-scoped, because the workspace scope is a closed set and these three are
+  # this app's own questions rather than shared setup values. They are the three
+  # things the audit compares AGAINST, and there is no honest way to infer any of
+  # them: a model that guessed the stage definitions would be marking records
+  # wrong for disagreeing with a standard nobody agreed to.
+  - key: stage_definitions
+    scope: app
+    ask: "What is each pipeline stage supposed to mean, and what has to be true before a deal enters it?"
+    type: text
+  - key: required_fields
+    scope: app
+    ask: "Which fields must be filled for a deal or contact to count — and at which stage does each become required?"
+    type: list
+  # The card says a finding without a count is an opinion. This is the other half
+  # of that: a count with no bar is a list nobody can act on, and where the bar
+  # sits is a business judgement rather than a fact about the data.
+  - key: materiality
+    scope: app
+    ask: "How many records behind an inconsistency make it worth someone's week — and which numbers do you publish that must not move?"
+    type: text
+
+# ONE VALIDATED OBJECT GOING TO ONE PLACE.
+#
+# The card produces `demand.*`, `sales.*` and `revenue.*`. An app declares ONE
+# output target, so this is `revenue.hygiene` — the standing account of what
+# disagrees, on the auditing team's own key. The findings that belong to demand
+# and to sales are written by the AGENT through the pipeline context tool as it
+# goes, where they land as `status: proposed` on the key each one concerns and
+# reach the team that owns it. Those writes are free-form and bounded by the
+# agent's scope.context.writes; they are deliberately not declarable here (SPEC
+# D2, and schema delta 1). Every finding appears in this object regardless of
+# whose key it also went to, so the audit is readable in one place.
+output:
+  name: hygiene
+  target: revenue.hygiene
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [findings, checked, gaps]
+    properties:
+      findings:
+        description: >-
+          One per disagreement. Ordered by how much of a published number rests on it.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [fact, disagreement, key, owner, kind, record_count, evidence, material]
+          properties:
+            fact:
+              description: The one thing two teams are describing — "when a deal is qualified", "what counts as an MQL".
+              type: string
+            disagreement:
+              description: >-
+                What each side says, in their own terms and side by side. Not a
+                verdict about who is right — that belongs to the owner.
+              type: string
+            key:
+              description: >-
+                The dotted pipeline key this finding is ABOUT, and therefore where
+                the agent writes it — `sales.stages`, `demand.mql_definition`.
+                Dotted because pipeline keys are dotted; it is data in this object,
+                not a context declaration.
+              type: string
+            owner:
+              description: >-
+                The team that gets to decide, from the ownership table
+                (contracts/context_owners.yaml). `shared` is `records`, which has
+                no owning team by design.
+              enum: [demand, sales, revenue, retention, expansion, product, positioning, shared]
+            kind:
+              description: The card's four checks, plus the two that fall out of them.
+              enum: [definition_conflict, stage_definition, required_field, date, amount, duplicate]
+            record_count:
+              description: >-
+                How many records are behind this. MINIMUM 1, because the card says
+                a finding without a count is an opinion with a table around it —
+                and a finding standing on zero records is not a finding at all. If
+                you could not count them, it belongs in `gaps`, not here.
+              type: integer
+              minimum: 1
+            evidence:
+              description: >-
+                Where each side of the disagreement was actually read — the report,
+                the field, the stage, the query. At least one, and the honest number
+                is two: a disagreement observed from one place was inferred.
+              type: array
+              minItems: 1
+              items: {type: string}
+            material:
+              description: >-
+                True when a number this team publishes would MOVE if this field
+                were filled the other way. It is the card's escalation condition,
+                stated as data so the agent can act on it rather than re-read the prose.
+              type: boolean
+            impact:
+              description: Which published number moves, and roughly by how much. Required in spirit whenever `material` is true.
+              type: string
+      checked:
+        description: >-
+          What was compared, whether or not it disagreed. This exists so that a
+          clean audit and an audit that could not see anything do not produce the
+          same empty findings list — which is the failure mode that makes an
+          audit worse than none.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [fact, sources, agreed]
+          properties:
+            fact: {type: string}
+            sources:
+              description: The places this fact was read from — at least two, or it was not compared.
+              type: array
+              minItems: 2
+              items: {type: string}
+            agreed: {type: boolean}
+      gaps:
+        description: >-
+          What could not be checked and why — a report that would not run, a field
+          the connection does not expose, a count that could not be got. Empty only
+          when nothing was out of reach.
+        type: array
+        items: {type: string}
+
+instructions: |-
+  You are auditing the data that {{company_name}} runs on, in {{crm}} and in the
+  pipeline context beside it. Four teams write it, with four sets of habits, and
+  your job is to find every place they are describing the same thing differently
+  and hand each one to whoever gets to decide.
+
+  Report, never repair. You do not edit a record, change a field, merge a
+  duplicate or fix a stage — not even one that is obviously wrong, and especially
+  not one that is obviously wrong, because "obvious" is the judgement that belongs
+  to the owner. You write down what disagrees and who owns it. That is the whole
+  job, and it is a bigger one than it sounds.
+
+  Work fact by fact, not field by field. Pick something both teams talk about —
+  what "qualified" means, when a deal is closed, what an MQL is, when revenue is
+  recognised — and go read what each of them actually does about it. Read the
+  definition where demand states it and where sales states it. Then read the
+  records and find out what they do in practice, because the third disagreement
+  is always between what a team says its stages mean and what its deals actually
+  do in them. A stage nobody ever exits is not a stage. A stage every deal skips
+  is a definition that lost an argument with reality.
+
+  Count the records behind every finding. A finding without a count is an opinion
+  with a table around it, and it will lose to whoever has a number. If you cannot
+  get the count — the report will not run, the field is not exposed — that goes in
+  `gaps` and not in `findings` as a guess. Never estimate a count. An invented
+  number here is worse than a missing one, because the missing one is visibly
+  missing and the invented one gets quoted in a meeting.
+
+  Then check the quiet things. Required fields empty at stages that require them.
+  Close dates in the past on open deals, and dates that all land on the last day
+  of a quarter. Amounts in two currencies in one field, or amounts an order of
+  magnitude apart on deals of the same shape. Contacts on two accounts, accounts
+  on one domain. None of these is dramatic and all of them change a number.
+
+  Name the owner for each finding from the ownership table, and name it as the
+  team rather than the person: demand owns its own definitions, sales owns its
+  stages, revenue owns what it publishes, and records belong to everybody who
+  touches the timeline. Write each finding onto the key it concerns as you go, so
+  it reaches its owner as a proposal rather than sitting in a report they never
+  open. Do not write onto keys you have no finding for.
+
+  Mark a finding `material` only when you can say which published number moves and
+  roughly how far. That is a strong claim and it is the one that gets escalated —
+  spend it on the two or three findings that deserve it rather than on all of them,
+  because an audit where everything is urgent is an audit nobody reads twice.
+
+  Fill `checked` with everything you compared, including what agreed. An empty
+  findings list means one of two very different things — the data is clean, or you
+  could not see it — and the person reading this next week has to be able to tell
+  which. Return the whole thing as your structured output, and say in one line how
+  many facts you compared, how many disagreed, and what you could not reach.

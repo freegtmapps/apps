@@ -1,0 +1,268 @@
+# The tool for demand.launch-manager: a launch as a dated sequence of moves.
+#
+# ONE OUTPUT, ONE PLACE. The card's done_when is a single document — a date, a
+# claim, a waitlist plan, a dated asset list and a sequence before and after —
+# so it is one validated object landing on `demand.launch_plan` and nothing
+# else. Everything the card ALSO produces (`drafts`, `approval`) is not a second
+# output target: the assets and the messages go in front of a person through
+# stage_draft, which is why `may` carries `stage`.
+#
+# THE done_when IS IN THE SCHEMA, NOT IN THE PROSE. A plan missing any of the
+# five is refused before Final rather than described as complete:
+#   - `waitlist.moves` is minItems 1 — the card's "a launch with no waitlist is
+#     a post", said in a way the model cannot talk its way past
+#   - every asset carries `destination` AND that destination's own `rules`, so
+#     "respect each destination's rules rather than reposting one text
+#     everywhere" is a required field per asset rather than an instruction
+#   - `sequence` is three required arrays, each minItems 1: before, launch day,
+#     and the week after. A launch with nothing after it is the failure mode the
+#     job exists to prevent, and an optional key would be the model's choice
+#   - `blockers` is required and may be empty, which is the exemplar's `gaps`
+#     pattern: the escalation is a field to fill, not a thing to remember
+#
+# NO `skills:`. TEAMS.md names launch-playbook, product-hunt, waitlist and
+# launch-sequence for this row; none of the four exists. Both vendored
+# inventories were listed and the nearest candidate — swan-gtm's
+# `multichannel-campaign-builder` — is an OUTBOUND sequence written to
+# prospects, cold or post-engagement, and its body routes to
+# `references/campaign-type-*.md` pages that the directory does not ship. It is
+# a near miss on the work and a broken route on the files, so it is not named.
+# An app that names a skill with no file does not load.
+#
+# NO `emits:`. Everything this app has to say lands in `demand.launch_plan`; a
+# signal here would be a second label for the same fact, and `may` carries no
+# `emit`, so declaring one would be a signal the app structurally cannot raise.
+#
+# ⚠ THE PAIRING IS NOT COMPLETE YET, and it is the card's half that is missing.
+# `agents/demand/launch-manager.yaml` declares `produces: {drafts, approval}`
+# and no `produces.context`, so its derived scope.context.writes is empty and
+# `output.target: demand.launch_plan` is not a subset of it. Nothing calls
+# agentfile.CheckWrites today (agents/agents.go says so in its own comment), so
+# this loads — but the day the composer lands, the card needs
+# `produces: {context: [demand.launch_plan]}` or this pairing is refused with
+# E_WRITES_EXCEED_SCOPE. Said here rather than fixed here: one directory is
+# this app's, and the agent tree is not it.
+name: Product launch
+description: A dated launch plan — the claim, the waitlist, the assets per destination, and the sequence.
+category: content
+type: plan
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "plan our launch"
+  - "we're launching next month, what do we do?"
+  - "build the launch plan and the waitlist sequence"
+
+# `web` and nothing else. A destination's rules are read off that destination's
+# own page — what a directory allows on launch day, what a community does to a
+# post that reads like an ad — and reciting them from memory is how a launch
+# gets removed by a moderator. No `email.send`: this app writes the sequence and
+# stages it, and sending is the approval path.
+tools: [web]
+
+may:
+  - read
+  - stage
+
+context:
+  # App-scoped, all four, because none is a `domain.WorkspaceValues` field and a
+  # launch is not a setting — it is a thing happening on a date. What this
+  # company sells and who it sells to is read from the workspace and from the
+  # positioning the plan is built on, so it is not asked again here.
+  - key: launch_date
+    scope: app
+    ask: "What date are you launching, and is that date fixed or could it move?"
+    type: text
+  - key: launching_what
+    scope: app
+    ask: "What is actually shipping — a new product, a big feature, a rebrand? In one sentence."
+    type: text
+  - key: destinations
+    scope: app
+    ask: "Where should this land? Name the directories, communities and lists you would actually show up in — not the ones you have heard of."
+    type: list
+  - key: waitlist_state
+    scope: app
+    ask: "Where is the waitlist — nothing yet, collecting names, or a list you could email tomorrow?"
+    type: enum
+    options: [none, collecting, ready]
+
+output:
+  name: launch_plan
+  target: demand.launch_plan
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [launch_date, claim, audience, waitlist, assets, sequence, blockers]
+    properties:
+      launch_date:
+        description: The date the launch happens, ISO 8601. One date — a range is a plan nobody can be ready for.
+        type: string
+      date_is_fixed:
+        description: Whether the date can move. False is the honest answer when it was picked and not committed to.
+        type: boolean
+      claim:
+        description: >-
+          THE ONE CLAIM this launch makes, in a sentence a stranger could repeat. One per launch:
+          a second claim is a second launch, and both get half the attention.
+        type: string
+      audience:
+        description: Who this launch is aimed at, in the words of the ICP rather than "everyone who builds software".
+        type: string
+      waitlist:
+        description: >-
+          The build-up. Present even when the answer was `none` — a launch with no waitlist is a
+          post, so the plan says how the list gets built between now and the date.
+        type: object
+        additionalProperties: false
+        required: [target, offer, capture, moves]
+        properties:
+          target:
+            description: How many names this needs by launch day. A number, because "as many as possible" is not a target anyone can miss.
+            type: integer
+            minimum: 1
+          offer:
+            description: What somebody gets for joining, beyond being told later.
+            type: string
+          capture:
+            description: Where the name is actually entered — the page or form, not "the website".
+            type: string
+          moves:
+            description: The dated pre-launch build-up. At least one — a waitlist with no moves is a form nobody visits.
+            type: array
+            minItems: 1
+            items:
+              type: object
+              additionalProperties: false
+              required: [on_date, channel, move]
+              properties:
+                on_date: {type: string, description: The date this happens, ISO 8601.}
+                channel: {type: string, description: The channel the plan already chose, not a new one invented here.}
+                move: {type: string, description: What gets done that day, concretely enough to do it.}
+      assets:
+        description: Everything that has to exist before or on the day, each with a date and the rules of where it goes.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, destination, due_on, rules]
+          properties:
+            name: {type: string, description: "The asset, named: the demo video, the launch post, the changelog entry."}
+            destination:
+              description: Where it goes — one named directory, community or channel. One asset per destination, never one text for all of them.
+              type: string
+            due_on: {type: string, description: The date it must be finished, ISO 8601. On or before the launch date.}
+            rules:
+              description: >-
+                That destination's own rules, read off its own page: what it allows, what it bans,
+                what its moderators remove. Empty is not an option — a destination whose rules
+                nobody read is a submission that gets pulled.
+              type: string
+            status: {type: string, description: Where it stands — not started, drafted, staged for approval.}
+      sequence:
+        description: The messages to the waitlist, in three parts because a launch is not one day.
+        type: object
+        additionalProperties: false
+        required: [before, launch_day, after]
+        properties:
+          before:
+            description: The build-up to the people who already put their name down.
+            type: array
+            minItems: 1
+            items:
+              type: object
+              additionalProperties: false
+              required: [send_on, channel, purpose, draft]
+              properties:
+                send_on: {type: string, description: The date it goes out, ISO 8601.}
+                channel: {type: string, description: Email to the waitlist, the community post, the DM to the ten people who asked.}
+                subject: {type: string, description: The subject line, where the channel has one.}
+                purpose: {type: string, description: The one reason this message exists. Two messages with the same purpose are one message.}
+                draft:
+                  description: The message as it would be sent, written out. A sequence of summaries is not a drafted sequence.
+                  type: string
+          launch_day:
+            description: What the list gets on the day. At least one, or the waitlist was collected for nothing.
+            type: array
+            minItems: 1
+            items:
+              type: object
+              additionalProperties: false
+              required: [send_on, channel, purpose, draft]
+              properties:
+                send_on: {type: string, description: The date it goes out, ISO 8601.}
+                channel: {type: string, description: Email to the waitlist, the community post, the DM to the ten people who asked.}
+                subject: {type: string, description: The subject line, where the channel has one.}
+                purpose: {type: string, description: The one reason this message exists. Two messages with the same purpose are one message.}
+                draft:
+                  description: The message as it would be sent, written out. A sequence of summaries is not a drafted sequence.
+                  type: string
+          after:
+            description: The follow-through for the week after — where launches are usually lost, having been won for a day.
+            type: array
+            minItems: 1
+            items:
+              type: object
+              additionalProperties: false
+              required: [send_on, channel, purpose, draft]
+              properties:
+                send_on: {type: string, description: The date it goes out, ISO 8601.}
+                channel: {type: string, description: Email to the waitlist, the community post, the DM to the ten people who asked.}
+                subject: {type: string, description: The subject line, where the channel has one.}
+                purpose: {type: string, description: The one reason this message exists. Two messages with the same purpose are one message.}
+                draft:
+                  description: The message as it would be sent, written out. A sequence of summaries is not a drafted sequence.
+                  type: string
+      blockers:
+        description: >-
+          What would stop this launch or move its date — the product not being ready for the claim,
+          or a date leaving no room for the build-up. Empty only when neither is true.
+        type: array
+        items: {type: string}
+
+instructions: |-
+  You are planning a launch for {{company_name}}, for the day {{product}} gets
+  the one shot it has at people's attention.
+
+  ONE CLAIM. Start there and hold it. Everything else — the waitlist offer,
+  every asset, every message — is that claim said in the words of one
+  destination. If you find yourself writing a second claim, you have found a
+  second launch; say so and pick.
+
+  A LAUNCH WITH NO WAITLIST IS A POST. If they have no list, the plan's first
+  job is the list: where the name gets entered, what somebody gets for entering
+  it, and the dated moves between now and the date that fill it. Set a target
+  number and show the arithmetic — how many people see it, how many of those you
+  would expect to sign up. A target with no reasoning behind it is a wish.
+
+  RESPECT EACH DESTINATION. Read the rules of every directory and community on
+  the list before writing anything for it — what they allow, what gets a post
+  removed, what the day's own rhythm is. Write for that room. One text reposted
+  everywhere is how a launch reads to the people who see it twice, and it is how
+  it gets pulled by the people who moderate it.
+
+  Build on the channels the plan already chose. If a destination is not one of
+  them, say why this launch is the exception rather than quietly adding a
+  channel nobody can operate the week after.
+
+  DATE THE WHOLE THING, backwards from the launch. Every asset has a day it is
+  due; every message has a day it goes out. Then look at the runway you actually
+  have. If the date leaves no time for the build-up, or the product does not yet
+  support the claim the launch would make, put it in blockers, say it in your
+  first line, and say it now — a date that moves three weeks out is a decision,
+  and a date that moves three days out is a failure everyone watches.
+
+  STAGE EVERY ASSET AND EVERY MESSAGE with stage_draft, one at a time, as you
+  finish each one. A launch is the worst place for a draft nobody approved, and
+  a person who reads them the night before will not read them all.
+
+  Return the plan as your structured output. Say in one line what the claim is,
+  what date it lands, and what is not ready.

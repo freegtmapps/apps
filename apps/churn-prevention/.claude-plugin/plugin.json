@@ -1,0 +1,8 @@
+{
+  "name": "churn-prevention",
+  "description": "Triage a customer's health drop by cause, pick the save play it earns, draft the outreach.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

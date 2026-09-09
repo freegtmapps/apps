@@ -1,0 +1,8 @@
+{
+  "name": "upsell-playbook",
+  "description": "The route from the tier a customer has outgrown to the one they need, and the message that says so.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

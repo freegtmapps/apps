@@ -1,0 +1,213 @@
+# The nurture half of Lifecycle Email. The newsletter half is `newsletter-issue`,
+# which already exists — two apps because they run on different clocks. An issue
+# is a date; a sequence is a door somebody walked through, and a person who signs
+# up on Thursday should not wait until the issue goes out.
+#
+# WHAT IT PRODUCES, AND WHAT IT DOES NOT. One validated object lands in
+# `demand.sequences`: the sequences themselves, with their entry rules, exits and
+# cadence. The drafts a person actually approves go to approvals through
+# stage_draft, and the newsletter issue is written by the other app — those are
+# writes the agent makes through its own tools, not a second output target. An
+# app declares one.
+#
+# THE MOMENT MUST BE VISIBLE IN THE RECORDS. Every sequence carries
+# `observed_from`, and it is required: a lifecycle moment nobody can see happen
+# is a sequence that never fires, which looks identical to one that works until
+# somebody checks the sends. A moment worth writing for that the records cannot
+# show goes in `moments_not_observable` instead — that is the card's escalation,
+# in the shape of a field rather than a sentence in prose.
+#
+# AND EVERY MESSAGE HAS TO GIVE SOMETHING. `gives` is required on each message
+# for the same reason: a check-in is what a cadence produces when the calendar
+# says send and nobody had anything to say, and the whole point of this job is
+# that the person on the other end is not ready yet.
+name: Email nurture
+description: "A sequence per lifecycle moment — signed up, went quiet, came back — each with an entry rule, a cadence and an exit."
+category: reach-out
+type: sequence
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "write the nurture sequences"
+  - "what do we send the people who aren't ready?"
+  - "someone signed up and went quiet — what now?"
+
+# `read` and `stage`, and nothing else.
+#
+# NO `write_lead`: this app designs what gets sent to people, it does not change
+# what is on them. NO `emit`, and therefore no `emits:` — everything this app has
+# to say lands in `demand.sequences`, and a signal saying "sequences changed"
+# would be a second label for a write somebody can already read. Staging is
+# already reported by stage_draft.
+may:
+  - read
+  - stage
+
+# WORKSPACE SCOPE IS A CLOSED SET — company_name, crm, icp, industry, product,
+# regions, sender_name, sender_voice. `sender_voice` is a real field and the one
+# that matters here: these emails go out from a person, over months, and a
+# nurture sequence in the wrong voice is worse than none because it arrives
+# repeatedly.
+#
+# The dotted pipeline keys this job reads — positioning.*, and the records —
+# are a different table with a different writer and never appear here.
+context:
+  - key: sender_voice
+    scope: workspace
+    ask: "Who do these come from, and how do they write? A sentence in their register."
+    type: text
+  - key: lifecycle_moments
+    scope: app
+    ask: "Which moments should I write for — signed up, went quiet, came back? Name them, or say 'work it out' and I'll read the records."
+    type: list
+  # Asked because the escalation depends on it: two sequences writing to the same
+  # person in the same week is the failure this job is most likely to cause, and
+  # it cannot be seen from inside this app's own output.
+  - key: other_sends
+    scope: app
+    ask: "What else already emails these people — an onboarding drip, the newsletter, a rep's follow-ups?"
+    type: list
+
+output:
+  name: sequences
+  target: demand.sequences
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [sequences, overlaps, moments_not_observable]
+    properties:
+      sequences:
+        description: >-
+          One per lifecycle moment. Deliberately no minimum: a run that can see
+          no moment in the records should say so in moments_not_observable
+          rather than invent a sequence to fill the array.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [moment, written_to, observed_from, entry_rule, exit_rules, cadence, messages]
+          properties:
+            moment:
+              description: The lifecycle event this follows, named as a thing that happened — "signed up and never came back", not "MOFU nurture".
+              type: string
+              minLength: 1
+            written_to:
+              description: The person in their situation, not the segment. What they just did, what they were trying to do, and what they do not have yet.
+              type: string
+              minLength: 1
+            observed_from:
+              description: Where in the records this moment can actually be seen firing. A moment nobody can observe belongs in moments_not_observable, not here.
+              type: string
+              minLength: 1
+            entry_rule:
+              description: What puts a person into this sequence, precise enough that somebody else would enrol the same people.
+              type: string
+              minLength: 1
+            exit_rules:
+              description: >-
+                What takes them out. At least one, and a reply is always one of
+                them — a sequence that keeps sending after somebody wrote back is
+                the thing this job exists to prevent.
+              type: array
+              minItems: 1
+              items: {type: string, minLength: 1}
+            cadence:
+              description: The clock in one line — "day 0, +4, +11, then stop" — matching the moment's own decay rather than a house standard.
+              type: string
+              minLength: 1
+            messages:
+              description: In send order. Fewer, better ones — an empty slot in a cadence is not a reason to write.
+              type: array
+              minItems: 1
+              items:
+                type: object
+                additionalProperties: false
+                required: [send_after_days, subject, body, gives]
+                properties:
+                  send_after_days:
+                    description: Days after entry. The first is usually 0.
+                    type: integer
+                    minimum: 0
+                  subject:
+                    description: What the email is about, not a trick to open it.
+                    type: string
+                    minLength: 1
+                  body: {type: string, minLength: 1}
+                  gives:
+                    description: >-
+                      What this message hands over before it asks for anything.
+                      Required, because a message with nothing here is a check-in
+                      and check-ins do not get sent.
+                    type: string
+                    minLength: 1
+                  asks:
+                    description: What it asks for, if anything. Often nothing — that is allowed and frequently right.
+                    type: string
+      overlaps:
+        description: >-
+          Where two of these, or one of these and something already sending,
+          would write to the same person. Each entry names what collides and
+          which one wins. Empty only when nothing collides.
+        type: array
+        items: {type: string, minLength: 1}
+      moments_not_observable:
+        description: >-
+          Moments worth an email that the records cannot show happening. These
+          are the escalation, not a to-do list — no sequence was written for
+          them.
+        type: array
+        items: {type: string, minLength: 1}
+
+# NO {{placeholders}}. A workspace value named by a placeholder and left unset
+# refuses composition, and this app should still run for a workspace that has
+# not finished its setup — it will just say what it could not see.
+instructions: |-
+  You are designing what gets sent to people who raised a hand and are not ready.
+  Nobody here asked to be sold to this week. They asked once, and then life
+  carried on.
+
+  Start in the records, not in a template. Look for the moments that actually
+  happen to these people — signed up and never came back, was active and went
+  quiet, came back after a month, hit the thing our product is for and did
+  nothing about it. Name the moment as an event you can point at in a record. If
+  you cannot point at it, it does not get a sequence: put it in
+  moments_not_observable and say what would have to be tracked to see it. A
+  sequence whose entry rule can never fire is indistinguishable from one that
+  works, until somebody wonders why nothing has sent.
+
+  Write to a person in a situation. "Signed up on a Tuesday, poked around for
+  four minutes, never came back" is a person; "MQLs in the mid-market segment" is
+  a spreadsheet, and nobody has ever opened an email written to a spreadsheet.
+
+  Every message gives something before it asks. Something they can use whether or
+  not they ever buy — how somebody else solved this, the number that surprised
+  us, the thing they are about to get wrong. Each one has to stand alone: people
+  read the third email and not the first, and a message that only makes sense as
+  step three of five is a message that mostly lands as nonsense.
+
+  If the positioning has nothing new to say to a moment, send less. Three good
+  emails beat six, and an empty slot in a cadence is not a reason to write. Say
+  in one line where you shortened a sequence and why.
+
+  Every sequence gets an exit rule, and a reply is always one of them. So is the
+  stage change that means this person is now somebody else's job — the moment
+  sales is talking to them, marketing stops. Write the exits before the messages;
+  it is the part everyone means to do afterwards and does not.
+
+  One sequence at a time per person. Check what already sends — the newsletter,
+  onboarding, a rep's own follow-ups — and where two would land in the same week,
+  say which one wins in `overlaps`. If you cannot make them not collide, say so
+  plainly rather than shipping the collision.
+
+  Stage every sequence with stage_draft before anything goes near a send. Nothing
+  here sends itself, and that is the design rather than a limitation.
+
+  Return the sequences as your structured output, then say in two lines: how many
+  moments you wrote for, and what you could not see in the records.

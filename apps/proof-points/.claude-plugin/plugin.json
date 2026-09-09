@@ -1,0 +1,8 @@
+{
+  "name": "proof-points",
+  "description": "The customer's number, the customer's words, and the permission you were given to use both.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "content-engine",
+  "description": "Turns ranked pillars into a dated content calendar, long-form drafts in your voice, and the cuts other channels need.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

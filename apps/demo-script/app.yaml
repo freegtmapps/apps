@@ -1,0 +1,254 @@
+# The demo the buyer would have asked for, built from what they already said.
+#
+# `Handle a demo request` books a demo; it does not design one. Two apps because
+# the questions are different on different clocks — booking is a reply to an
+# inbound hand-raiser and happens in an hour, designing is what you do with a
+# discovery call you have already had. The Demo Designer card says so in its own
+# first line, and this is the app it names.
+#
+# THE OUTPUT TARGET IS THE CARD'S ONE PRODUCED KEY. `sales.demo-designer`
+# produces `sales.demo_script` and nothing else, so the pairing here is exact:
+# one validated object, one destination, and the loader's check
+# (`output.target ⊆ agent.scope.context.writes`) has something real to compare.
+# The dots in `sales.demo_script` are a pipeline address; the dotless keys under
+# `context:` below are a different table with a different writer, and the two are
+# never the same name.
+#
+# NO `emits:`, ON PURPOSE. The card escalates when the record carries no
+# discovered pain, or when the pains need a capability the product does not have.
+# Both of those land in the output — `readiness` says which, `unscripted_pains`
+# says what — so a signal beside them would be a second label for a fact already
+# written down, and the schema's own note on `emits` is that the second label is
+# the defect. Nothing here is raised, so nothing here is declared, and `may` does
+# not carry `emit`.
+name: Demo script
+description: The demo the buyer would have asked for — every beat opens on a pain they named and closes on proof.
+category: sell
+# `script` is the label on the timeline, not the `scripts:` field: this app ships
+# no code, it writes the thing a rep reads out loud.
+type: script
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "design the demo for Acme"
+  - "what should we actually show them?"
+  - "build the demo script from discovery"
+
+# Gal Aga's bridge is the method the card describes, written down by somebody who
+# does this for a living: rank the pains by what they cost, name the root cause,
+# map the one moment that proves the fix, and cut everything else. It is a
+# ONE-DEAL skill and this is a one-deal app — the pains come off the record this
+# run is about — so it is the method and not a near neighbour of it.
+#
+# The body is byte-identical to vendor/skills/swan-gtm/gtm-skills/, and the
+# frontmatter is the one the vendoring already wrote for the copy that ships in
+# `meeting-brief` at the same sha. It routes to no references/ page and calls no
+# script, so the whole artifact is the one file.
+#
+# ORDER IS COMPOSITION ORDER and it decides the credit line: built_on is derived
+# from frontmatter and can never be typed. built_on reads Gal Aga.
+skills:
+  - discovery-to-demo-bridge
+
+# `read` and nothing else.
+#
+# NO `write_lead`: the artifact is a demo script and its home is
+# `sales.demo_script`. Writing a copy onto the lead as well would be the same
+# document in two places, going stale in one of them the first time it is rebuilt.
+# NO `stage`: the card's gate is none and its profile is unattended — a script
+# nobody asked to approve is not staged, it is written and read.
+may:
+  - read
+
+# No `tools:`. Everything this app works from is already in front of it: the pains
+# are on the record (a platform tool), the product facts are context. Naming a
+# capability here would fail the bind for a workspace that has not connected
+# something the work never touches.
+
+context:
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+  # App-scoped, because these are facts about how THIS team demos rather than
+  # values the workspace profile can hold — the workspace scope is a closed set
+  # of eight and a ninth invented here would be asked for and then dropped.
+  - key: demo_moments
+    scope: app
+    ask: "Which parts of the product can you actually show live, and what does each one prove?"
+    type: list
+  - key: demo_length
+    scope: app
+    ask: "How long is the demo slot?"
+    type: text
+
+# THE CARD'S done_when IS THE REQUIRED LIST, not a paragraph of prose.
+#
+# "every beat traces to a pain on the record" is `pain_source`, required on every
+# beat: a beat that cannot say where the pain is written down did not come from
+# discovery. "and to a product fact" is `product_facts`, minItems 1: a beat
+# resting on nothing the product does is the capability the card forbids
+# scripting. "and the script names where the rep stops to ask" is `stop_and_ask`,
+# required per beat rather than as one line at the end — the card asks for the
+# places, plural, and one field at the bottom would satisfy the sentence while
+# missing the thing.
+#
+# `beats` has NO minItems, and that is the escalation path. A record with no
+# discovered pain yields no beats, `readiness: needs_discovery`, and a document
+# somebody can act on. A minimum of one would turn the card's escalate_when into
+# a validation failure, and a strict refusal at Final leaves the agent holding
+# nothing to escalate with — which is a worse answer than an honest empty script.
+output:
+  name: demo_script
+  target: sales.demo_script
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [account, readiness, why_this_demo, beats, cut_list, unscripted_pains, confirm_with_buyer]
+    properties:
+      account:
+        description: The record this demo is for, by the name the buyer uses for themselves.
+        type: string
+      readiness:
+        description: >-
+          Whether this script stands on its own. `needs_discovery` means the record carries no
+          discovered pain and the next step is another discovery conversation, not a demo.
+          `needs_product` means the ranked pains need something the product does not do. Both are
+          the card's escalate_when, said here so nobody has to read prose to route the run.
+        type: string
+        enum: [ready, needs_discovery, needs_product]
+      why_this_demo:
+        description: >-
+          The two lines you send the buyer beforehand — the pains you will prove you solve, in
+          their words, with the stakes. Empty when readiness is not `ready`.
+        type: string
+      beats:
+        description: >-
+          The demo in order, highest-impact first, so it earns attention early. One beat is one
+          proof. Empty when there was nothing on the record to build from.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [pain, pain_source, cost, root_cause, show, proves, product_facts, transition, stop_and_ask]
+          properties:
+            pain:
+              description: What hurts, in the buyer's own words. A paraphrase is a downgrade; a quote is the thing.
+              type: string
+            pain_source:
+              description: >-
+                Where on the record this pain is written — the call, the note, the field. A beat
+                that cannot name this was remembered rather than discovered.
+              type: string
+              minLength: 1
+            cost:
+              description: >-
+                What the buyer said it costs, with the arithmetic on one line so a reader can
+                check it. Where the number is not on the record, say what you need and flag it in
+                confirm_with_buyer — never a round, plausible figure nobody sourced.
+              type: string
+            root_cause:
+              description: >-
+                The mechanism that produces the pain, not the symptom. "Deals stall" is a symptom;
+                the demo has to prove the cause is gone.
+              type: string
+            show:
+              description: >-
+                The exact moment. What you open, what you click, what appears. "Show reporting" is
+                a feature area and does not belong here.
+              type: string
+            proves:
+              description: What the buyer now knows that they did not know before this beat.
+              type: string
+            product_facts:
+              description: >-
+                The product facts this beat rests on — what the product actually does, as declared
+                or demonstrable. At least one, because a beat with none is a capability being
+                scripted into existence.
+              type: array
+              minItems: 1
+              items: {type: string}
+            transition:
+              description: What the rep says out loud coming into this beat, from the pain rather than from the menu.
+              type: string
+            stop_and_ask:
+              description: >-
+                The question the rep stops on before moving to the next beat, and what a good
+                answer sounds like. Every beat has one — a demo nobody is interrupted in is a
+                presentation.
+              type: string
+      cut_list:
+        description: >-
+          What you are deliberately not showing, and why. This is the half that prevents
+          indigestion; a script that cut nothing did not rank anything.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [screen, why_cut]
+          properties:
+            screen: {type: string}
+            why_cut:
+              description: Which ranked pain it failed to serve. "Not relevant" is not a reason.
+              type: string
+      unscripted_pains:
+        description: >-
+          Pains the buyer named that this demo does not answer, with why. Where the reason is that
+          the product does not do it, readiness is `needs_product` and this is the list the card
+          escalates with.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [pain, why]
+          properties:
+            pain: {type: string}
+            why: {type: string}
+      confirm_with_buyer:
+        description: >-
+          Every number or fact you needed and did not have, as a pre-demo task. A gap stated is
+          worth more than a gap invented, because the invented one gets said out loud in the room.
+        type: array
+        items: {type: string}
+
+instructions: |-
+  You are building a demo for one deal, from the pains that deal already told us
+  about. What we sell: {{product}}
+
+  Problem first, feature second, always. Start on the record: pull every pain the
+  buyer raised, keep it in their words, and rank it by what they said it costs.
+  The top two or three are the demo. Everything else is a candidate for the cut
+  list, and the cut list being longer than the script is the point.
+
+  If a beat cannot name the pain it serves, it is not in the demo. Cut it. If it
+  cannot name the product fact it rests on, cut it too — never script a
+  capability the product facts do not support, no matter how well it would land.
+  A beat that survives both is a proof: the pain in their words, what it costs
+  them, the mechanism underneath, the one thing you open, and what seeing it
+  settles.
+
+  Write the transitions the rep says out loud, and say where to stop and ask.
+  Every beat ends on a question, because a demo nobody is interrupted in is a
+  presentation and you learn nothing from it.
+
+  Never invent a number. If the buyer's own baseline is missing, say what you
+  need and put it in confirm_with_buyer as a pre-demo task. Their metrics on the
+  screen beat industry averages every time, and a made-up figure is worse than a
+  missing one because it gets repeated.
+
+  Two cases end differently and neither is a failure. If the record carries no
+  discovered pain, do not build a feature tour with a title on it — return no
+  beats, set readiness to needs_discovery, and say in one line what discovery
+  still has to find. If the ranked pains need something the product does not do,
+  set readiness to needs_product, list them in unscripted_pains, and script only
+  what is left.
+
+  Return the script as your structured output. Say in one line which pains you
+  built on and what you cut.

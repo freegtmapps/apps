@@ -1,0 +1,283 @@
+# Paid buys reach. It does not buy a message.
+#
+# The tool for demand.paid-media-planner, whose card says the spend should
+# answer a question rather than fill a quarter. Everything structural here comes
+# from that card's done_when — "every campaign has an audience, one message, a
+# budget inside the constraints, a pacing plan and a stated kill rule" — and it
+# is encoded in the schema rather than asked for in prose, because a done_when
+# that lives only in the instructions is a done_when a confident draft can talk
+# its way past.
+#
+# So: `campaigns` is minItems 1 and every item REQUIRES audience, message,
+# budget_usd, pacing, kill_rule, question and variable. A kill_rule needs a
+# number and a condition, because "we'll pull it if it isn't working" is not a
+# kill rule. `message.source` is required, which is the card's "copy comes from
+# the message hierarchy, never from a new claim invented for the ad" made
+# structural: a campaign cannot carry copy without naming the line it came from,
+# and an audience the hierarchy has no line for goes in
+# `audiences_without_message` instead of getting one written for it.
+#
+# ONE OUTPUT TARGET, and the card only produces one key: demand.campaigns, which
+# demand/lead.yaml lists as this agent's own (`owns: [demand.campaigns]`), so the
+# loader's `output.target ⊆ agent.scope.context.writes` check has both ends. The
+# campaigns are read downstream by demand.funnel-analyst (cost per qualified
+# record against what the plan assumed) and by revenue.unit-economist (the
+# acquisition spend behind the deals). Both of them read numbers, which is why
+# budget, pacing and the expected result are typed as numbers here and not as a
+# sentence about roughly what we might spend.
+#
+# NO `skills:`. TEAMS.md names campaign-structure, ad-copy, audience-targeting
+# and budget-pacing for this row; none of the four exists in the vendored
+# inventory, and naming a skill with no file fails the load. The nearest real
+# body, swan-gtm's `multichannel-campaign-builder`, writes an outbound sequence
+# of individual messages across email and LinkedIn — a different craft from
+# buying an audience at a pace, and it routes to references/ pages that are not
+# vendored beside it. A near-miss skill is worse than none: it would put a
+# sequence writer's method in front of somebody structuring an ad account.
+name: Paid acquisition
+description: Paid campaigns with one audience, one message, a budget the constraints allow, and a kill rule.
+category: reach-out
+type: plan
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "plan our paid campaigns"
+  - "how should we spend the ad budget?"
+  - "structure a paid test for this audience"
+
+# `read` and nothing else.
+#
+# NO `stage`: this app hands back a plan, and the plan is the thing a person
+# reads. Nothing here is a draft waiting on an approval — the ads are not being
+# bought, they are being structured.
+#
+# NO `emits`, and therefore no `emit`. The two things this app has to say that
+# somebody might want as a signal — a campaign was planned, the budget cannot
+# reach significance — both land in the output: the first IS the output, and the
+# second is `escalations`, which the agent escalates from. A signal beside them
+# would be a second label for the same fact, and an `emits` list without `emit`
+# in `may` is a declaration the app structurally cannot honour.
+may:
+  - read
+
+# Hand-written, because what an app degrades gracefully without is a judgement
+# rather than a fact about the file. `web` is how current ad formats, minimum
+# spends and targeting inventory get checked against a real platform instead of
+# recalled. Without it the plan still stands up — audience, message, budget,
+# pacing and kill rule all come from context — so it is optional and not a bind
+# requirement that would stop the app running for a workspace that declined it.
+requires:
+  optional:
+    tools: [web]
+
+# The dotted keys the card reads — icp.*, positioning.message_hierarchy,
+# company.constraints — are pipeline context written by other agents and reach
+# the run through the pipeline tool. They are NOT declarable here: a context key
+# is ^[a-z][a-z0-9_]*$, and the dotted table has a different writer.
+#
+# What is declared is the handful of things the model cannot get right by
+# guessing and no upstream agent owns. `regions` is workspace-scoped because it
+# is a real WorkspaceValues field and geography is targeting; the rest are
+# app-scoped, which is the honest state and not a workaround.
+context:
+  - key: regions
+    scope: workspace
+    ask: "Where do you sell? Countries or regions — paid targeting has to be set to something."
+    type: list
+  - key: paid_budget
+    scope: app
+    ask: "What is the most this can spend on paid in total, and over what period?"
+    type: text
+  - key: paid_channels
+    scope: app
+    ask: "Which ad platforms can you actually run on — and is any one of them off limits?"
+    type: list
+  - key: conversion_event
+    scope: app
+    ask: "What counts as a conversion here — a demo booked, a trial started, a form filled?"
+    type: text
+
+output:
+  name: campaigns
+  target: demand.campaigns
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [campaigns, total_budget_usd, budget_source, audiences_without_message, escalations]
+    properties:
+      campaigns:
+        description: One per audience-and-message pair. A campaign that covers two audiences is two campaigns or it is neither.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, channel, audience, message, ad_copy, budget_usd, pacing, kill_rule, expected_result, question, variable]
+          properties:
+            name: {type: string}
+            channel:
+              description: The platform this runs on, named as it is bought — "LinkedIn Ads", "Google Search".
+              type: string
+            audience:
+              description: One audience. Not a segment plus a lookalike plus retargeting.
+              type: object
+              additionalProperties: false
+              required: [who, targeting]
+              properties:
+                who:
+                  description: The ICP persona in the words the ICP uses, not a new segment invented for the ad account.
+                  type: string
+                targeting:
+                  description: How that person is actually selected on this platform — the filters somebody would set.
+                  type: string
+                size_estimate:
+                  description: How many people that is, when the platform will say. Absent is better than a number nobody read off a screen.
+                  type: integer
+                  minimum: 0
+            message:
+              description: One message, taken from the hierarchy. If the hierarchy has no line for this audience the campaign does not belong here — the audience goes in audiences_without_message.
+              type: object
+              additionalProperties: false
+              required: [line, source]
+              properties:
+                line:
+                  description: The claim this campaign puts in front of the audience, in the hierarchy's words.
+                  type: string
+                  minLength: 1
+                source:
+                  description: Which line of positioning.message_hierarchy it is. Required, because copy with no source is a claim invented for the ad.
+                  type: string
+                  minLength: 1
+            ad_copy:
+              description: The ads themselves, all of them saying the one message a different way.
+              type: array
+              minItems: 1
+              items:
+                type: object
+                additionalProperties: false
+                required: [headline, body]
+                properties:
+                  headline: {type: string}
+                  body: {type: string}
+                  cta: {type: string}
+            budget_usd:
+              description: The whole of what this campaign may spend. Every campaign's budget sums to total_budget_usd, and the total sits inside company.constraints.
+              type: number
+              minimum: 0
+            pacing:
+              type: object
+              additionalProperties: false
+              required: [daily_usd, duration_days]
+              properties:
+                daily_usd: {type: number, minimum: 0}
+                duration_days: {type: integer, minimum: 1}
+                notes:
+                  description: Anything that changes the pace — a launch date, a conference week, a platform's learning phase.
+                  type: string
+            kill_rule:
+              description: What ends this campaign, in a number and a condition. "We'll watch it" is not a kill rule.
+              type: object
+              additionalProperties: false
+              required: [spend_usd, condition]
+              properties:
+                spend_usd:
+                  description: Spend at which the rule is applied.
+                  type: number
+                  minimum: 0
+                condition:
+                  description: What must be true at that spend for the campaign to continue — stated so somebody else could apply it without asking you.
+                  type: string
+                  minLength: 1
+            expected_result:
+              description: The arithmetic that says whether this test can conclude anything. It is also what surfaces an escalation before the money is spent.
+              type: object
+              additionalProperties: false
+              required: [cost_per_conversion_assumed, conversions_expected]
+              properties:
+                cost_per_conversion_assumed:
+                  description: The assumed cost per conversion_event, and where the assumption comes from is stated in basis.
+                  type: number
+                  minimum: 0
+                conversions_expected:
+                  description: budget_usd divided by that cost. Rounded down, because a fraction of a conversion is not a result.
+                  type: integer
+                  minimum: 0
+                basis:
+                  description: What the assumed cost is based on — this workspace's own funnel numbers, or a guess, said as a guess.
+                  type: string
+            question:
+              description: The one question this spend answers. "Whether RevOps leads at Series B convert on the integration message."
+              type: string
+              minLength: 1
+            variable:
+              description: The single thing that differs from the other campaigns. Two variables and a result means nothing.
+              type: string
+              minLength: 1
+      total_budget_usd:
+        description: The total across every campaign. Set before the campaigns were designed, not totted up after.
+        type: number
+        minimum: 0
+      budget_source:
+        description: The line of company.constraints this total comes from. A total with no source is a number the model chose.
+        type: string
+        minLength: 1
+      audiences_without_message:
+        description: Audiences worth reaching that the message hierarchy has no line for. Named here rather than given copy written for the occasion. Empty only when nothing was missing.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [who, missing]
+          properties:
+            who: {type: string}
+            missing:
+              description: What the hierarchy would need before this audience can be run.
+              type: string
+      escalations:
+        description: What a person has to decide. The standing case is a budget too small to reach significance in the chosen channel. Empty when there is nothing to decide.
+        type: array
+        items: {type: string}
+
+instructions: |-
+  You are structuring paid campaigns for a team that has already decided what it
+  says and where it says it. Paid buys reach; it does not buy a message. Your job
+  is to put the message that earned its place in front of the right audience at a
+  pace the constraints allow.
+
+  Read the constraints first and fix the total before you design anything. Every
+  campaign's budget comes out of that total, and the total never grows to fit a
+  plan. If a plan needs more money than the constraints allow, the plan is wrong,
+  not the constraint. Say which line of the constraints the total came from.
+
+  One variable per campaign. One audience, one message, one thing being tested. A
+  campaign that mixes two audiences costs the same as one that does not and
+  teaches nothing, because when it works you cannot say which half worked. If you
+  find yourself writing "and" in an audience, that is two campaigns.
+
+  Copy comes from the message hierarchy. Quote the line and name it. If the
+  hierarchy has no line for an audience you think is worth reaching, put that
+  audience in audiences_without_message and say what the hierarchy would need —
+  do not write the line yourself. A claim invented for an ad is a claim nobody
+  tested, and it will come back as a result somebody trusts.
+
+  Every campaign carries a kill rule with a number in it: at this much spend,
+  this must be true, or it stops. Write it so somebody who was not in the room
+  could apply it without calling you.
+
+  Do the arithmetic before you commit the money. Budget divided by the assumed
+  cost per conversion is how many conversions this test can produce; say where
+  the assumed cost came from, and say "guess" when it is a guess. If the answer
+  is a handful, the test cannot conclude anything — put it in escalations and
+  say what the budget would have to be, or which cheaper channel would answer
+  the same question. Do not shrink the question to fit the money, and never
+  raise a budget to hit a number the funnel does not support.
+
+  Return the campaigns as your structured output. Say in one line what the total
+  is, how many campaigns it buys, and what you are escalating.

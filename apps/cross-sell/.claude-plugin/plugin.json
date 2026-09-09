@@ -1,0 +1,8 @@
+{
+  "name": "cross-sell",
+  "description": "Which second product each customer segment is already ready for, ranked by evidence, with the accounts it applies to.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

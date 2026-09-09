@@ -1,0 +1,8 @@
+{
+  "name": "channel-strategy",
+  "description": "The two channels you can actually fund, each with a CAC estimate you can argue with, and what you dropped.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

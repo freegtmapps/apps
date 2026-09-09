@@ -1,0 +1,363 @@
+# The word every other retention job measures against, decided once from what
+# customers actually did.
+#
+# IT SERVES ONE JOB CARD — `retention.activation-designer`
+# (gtmsrv/agents/retention/activation-designer.yaml). Its mission is that
+# onboarding drives to activation, health scores decay from it and churn is
+# explained by never reaching it, so nobody downstream should be arguing from a
+# different definition. Where this manifest and that card could have disagreed,
+# the card wins.
+#
+# ONE TARGET, AND THE CARD PRODUCES TWO KEYS.
+# `produces.context` is `[retention.activation_definition,
+# retention.time_to_value_target]`. An app declares ONE validated object going
+# to ONE place, so the target here is `retention.activation_definition` — the
+# thing the job is named after and the thing everything downstream reads. The
+# time-to-value target is not dropped: it is `time_to_value` inside this same
+# validated object, and the agent writes `retention.time_to_value_target` from
+# it through the pipeline tool, which is where a second write belongs. A target
+# naming the section (`retention`) or a wildcard would be this app claiming the
+# section.
+#
+# THE BRIEF THAT COMMISSIONED THIS FILE SAID `retention.activation`. The card
+# does not have that key, and `output.target` is checked against the card's
+# `produces.context` at compose (E_WRITES_EXCEED_SCOPE — agentfile.Load copies
+# `produces.context` straight into `scope.context.writes`). `retention.activation`
+# is not a subset of that list and the pairing would be refused at load, so the
+# card's own spelling is used. If the key is ever renamed, both files move
+# together or neither does.
+#
+# WHY `type: analysis` AND NOT `research`. Nothing here is discovered out in
+# the world. The events are already this workspace's own, and `research` would
+# promise a search that never happens. `analysis` is the honest label for
+# cohorting customers by whether they stayed. Both types force an `output:`
+# block (schema delta 2), which is what this app wants either way.
+#
+# NO `skills:`, and the omission was checked rather than assumed. The nearest
+# vendored skill is NEON-Rutger `onboarding-activation`, and it is nearly right
+# on method — activation is an event not a phase, time-to-first-value as a
+# distribution and not an average, one primary event per segment. Two reasons it
+# is not named here. Its body ends "read `references/activation-provenance.md`"
+# and no such page exists anywhere in the vendored tree, so shipping it would be
+# a model told to open something that is not there. And the rest of that skill —
+# the 30-60-90 arc, stall detection, graduation — is the NEXT card's job
+# (`retention.onboarding-designer`, app `customer-onboarding`), not this one.
+# A near-miss is worse than nothing. What the skill got right is in the
+# instructions below, in this maintainer's own words, crediting nobody.
+name: Activation metrics
+description: The one event that means a customer got value, and how long it actually takes them to reach it.
+category: find-and-research
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "what counts as activation for us?"
+  - "define our activation event"
+  - "how long does it take a customer to get value?"
+
+# The card names `[analytics, pipeline, brain]` and only one of the three is
+# spellable. `analytics` is not in the capability vocabulary; `product` is the
+# real capability for a binding to the thing that records what users do, and it
+# is the one this app cannot run without. `pipeline` and `brain` are platform
+# tools granted by the agent's scope, not bundle declarations.
+tools: [product]
+
+requires:
+  # Who stayed and who left is the one input the product's own events often do
+  # not carry — renewal and churn frequently live in the CRM. Optional and not
+  # required because a workspace whose product data marks cancelled accounts can
+  # answer the whole question without one, and a workspace with neither is told
+  # so rather than given a definition built on a guessed denominator.
+  optional:
+    tools: [crm]
+
+# `read` alone.
+#
+# NO `emit`: the card's `produces` names two context keys and no signal kind.
+# Everything this app has to say lands in its output target, and a signal would
+# be a second label for the same fact. The schema refuses `emits` without
+# `may: [emit]` anyway, and 24 of 50 manifests once carried exactly that pairing.
+#
+# NO `stage`: a definition nobody has agreed to yet is still written down. The
+# retention lead reads the field and disagrees with it there; an approval queue
+# would make the definition wait on a click while onboarding has nothing to
+# build toward.
+may:
+  - read
+
+# Three app-scoped keys. Nothing here is workspace-scoped — the workspace scope
+# is a closed set of eight real WorkspaceValues fields, and an invented one is
+# asked for and then silently dropped after somebody has answered it.
+context:
+  - key: analytics_project
+    scope: app
+    ask: "Which product analytics project records what customers do? Name it, or paste the project id."
+    type: text
+
+  # The denominator. Without knowing who stayed and who left, every candidate
+  # event looks equally good, and the app would be ranking events by popularity
+  # instead of by separation.
+  - key: retention_outcome_source
+    scope: app
+    ask: "Where do I find out who stayed and who left — a CRM field, a cancellations list, a flag in the product data? Name it however you say it internally."
+    type: text
+
+  # Enum, because it becomes the date range on every number written, and
+  # "recently" is not a range. The floor is six months on purpose: churn takes
+  # time to happen, and a ninety-day window contains almost no customers who
+  # have had the chance to leave yet. This is deliberately a longer window than
+  # `Product analytics` allows itself — that app is watching a rate change, this
+  # one is waiting for an outcome.
+  - key: observation_window
+    scope: app
+    ask: "How far back should I look? Cohorts need to be old enough that some of them have already renewed or left."
+    type: enum
+    options: [last_6_months, last_12_months, last_24_months, all_time]
+
+# One validated object going to one place — the field the card says this job
+# owns. A destination, not a permission: the loader still checks it against
+# retention.activation-designer's writes, and changing this line without
+# changing that card fails the pairing at compose.
+output:
+  name: activation_definition
+  target: retention.activation_definition
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [verdict, window, source, cohort, activation_events, not_covered, gaps]
+    properties:
+      verdict:
+        description: >-
+          What this run concluded. `named` is the only value that means the
+          question is answered; the other two are the card's escalate_when, and
+          they exist so that a run which found nothing can say so instead of
+          inventing an event to fill a required field.
+        enum: [named, no_separating_behaviour, not_observable]
+      window:
+        description: >-
+          The date range every count below was measured over. First, and
+          required, because a count with no range attached gets quoted for a
+          year — and the card asks for a named event with counts AND a date
+          range behind it.
+        type: object
+        additionalProperties: false
+        required: [start, end]
+        properties:
+          start: {type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"}
+          end: {type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"}
+      source:
+        description: The project the events were read from, and where the stayed-or-left outcome came from, so somebody can run the same query.
+        type: object
+        additionalProperties: false
+        required: [events, outcomes]
+        properties:
+          events: {type: string}
+          outcomes: {type: string}
+      cohort:
+        description: >-
+          The customers this rests on, split the way the whole analysis splits
+          them. Counts and never rates: a percentage with no denominator is a
+          number nobody can check, and a separation claim made on eleven
+          customers should be visible as such.
+        type: object
+        additionalProperties: false
+        required: [customers_observed, still_customers, churned]
+        properties:
+          customers_observed: {type: integer, minimum: 0}
+          still_customers: {type: integer, minimum: 0}
+          churned: {type: integer, minimum: 0}
+      activation_events:
+        description: >-
+          One entry per persona, as icp.personas names them. Use `all` for the
+          persona when a single event genuinely covers everybody rather than
+          repeating one row per persona to look thorough. MAY BE EMPTY, and no
+          minItems is the point: a run that found no separating behaviour is a
+          real finding, and requiring a row here would turn the card's
+          escalate_when into a refused Final.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [persona, event, how_measured, customers_reaching, retention_split]
+          properties:
+            persona:
+              description: The persona this definition is for, spelled as icp.personas spells it, or `all`.
+              type: string
+            event:
+              description: >-
+                The activation event, spelled exactly as the product records it —
+                the event name in the data, not a friendlier rewrite. A phrase
+                like "fully onboarded" is a milestone of ours and is not an
+                answer.
+              type: string
+            how_measured:
+              description: >-
+                The query, field or filter that decides whether an account
+                reached it. This is the field that makes the definition
+                measurable without a meeting; if it cannot be written, the
+                definition is wrong and belongs in alternatives_rejected.
+              type: string
+            customers_reaching: {type: integer, minimum: 0}
+            retention_split:
+              description: >-
+                The evidence that this event SEPARATES. Both sides, with
+                denominators — an event reached by everyone who stayed and also
+                by everyone who left is not activation, and the only way to see
+                that is to be shown both halves.
+              type: object
+              additionalProperties: false
+              required: [reached, not_reached]
+              properties:
+                reached:
+                  type: object
+                  additionalProperties: false
+                  required: [customers, still_customers]
+                  properties:
+                    customers: {type: integer, minimum: 0}
+                    still_customers: {type: integer, minimum: 0}
+                not_reached:
+                  type: object
+                  additionalProperties: false
+                  required: [customers, still_customers]
+                  properties:
+                    customers: {type: integer, minimum: 0}
+                    still_customers: {type: integer, minimum: 0}
+            alternatives_rejected:
+              description: >-
+                Events that also separate but were not chosen, and why — usually
+                because they happen later. The card asks for the EARLIEST
+                behaviour that separates, and this is where that comparison is
+                shown rather than claimed.
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [event, why]
+                properties:
+                  event: {type: string}
+                  why: {type: string}
+      time_to_value:
+        description: >-
+          Signature to activation event, AS A DISTRIBUTION. There is deliberately
+          no place in this object to put a mean: the card sets the target from
+          the distribution rather than the average because the tail is where
+          churn lives, and a schema with an `average` field is a schema that will
+          be filled with one. Absent only when nothing activated — see the
+          conditional below, which requires it whenever a verdict was reached.
+        type: object
+        additionalProperties: false
+        required: [unit, sample_size, p50, p75, p90, target]
+        properties:
+          unit: {enum: [days]}
+          sample_size:
+            description: How many activated customers the percentiles were computed over.
+            type: integer
+            minimum: 1
+          p50: {type: number, minimum: 0}
+          p75: {type: number, minimum: 0}
+          p90:
+            description: The tail. This is the number the target is set against, not p50.
+            type: number
+            minimum: 0
+          target:
+            description: >-
+              The target, stated the only way it can be acted on: a share of
+              customers reaching activation within a number of days. "Thirty
+              days" on its own is an average wearing a target's clothes.
+              `retention.time_to_value_target` is written from this object.
+            type: object
+            additionalProperties: false
+            required: [days, percent_of_customers, basis]
+            properties:
+              days: {type: number, minimum: 0}
+              percent_of_customers: {type: number, minimum: 0, maximum: 100}
+              basis:
+                description: Which observed percentile this was taken from, and why that one. A target with no observed number behind it is an aspiration.
+                type: string
+      not_covered:
+        description: >-
+          Segments the definition does not fit, which the card asks for by name.
+          Empty only when it genuinely fits everybody — usually it does not, and
+          the segment that gets quietly measured against somebody else's event is
+          the one that shows up as unexplained churn.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [segment, why]
+          properties:
+            segment: {type: string}
+            why: {type: string}
+      gaps:
+        description: What could not be measured and why. Empty only when nothing was missing.
+        type: array
+        items: {type: string}
+    allOf:
+      # done_when, structurally. A verdict of `named` that carries no event and
+      # no distribution is the shape of a model agreeing to be helpful, and
+      # prose asking for both is prose a run that went long can skip.
+      - if:
+          properties: {verdict: {const: named}}
+          required: [verdict]
+        then:
+          required: [time_to_value]
+          properties:
+            activation_events: {minItems: 1}
+
+instructions: |-
+  You are deciding what activation means for {{company_name}} — the one event
+  that means a customer of {{product}} got value — and how long it should take
+  them to reach it. Onboarding builds toward whatever you write here, health
+  scores decay from it, and churn gets explained by never reaching it. Everyone
+  downstream is going to quote this, so it is worth being narrow and right.
+
+  Activation is an event, not a phase. Go-live, trained, configured and
+  onboarded are our milestones, not the customer's. Look for the smallest thing
+  a customer DID, on their own data, in their own workflow. If it takes a
+  meeting to find out whether an account activated, the definition is wrong —
+  pick another event and say in how_measured which query decides it.
+
+  Find it by splitting, not by counting. Take the customers who are still here
+  and the ones who left, and look for the earliest behaviour the two groups do
+  not share. An event that ninety percent of both groups reached is a popular
+  feature, not activation. Write both halves of that split with their
+  denominators, every time; a retention rate quoted without the number of
+  customers under it cannot be checked by the person who has to live with it.
+
+  Earliest wins. When two events both separate, take the one that happens sooner
+  and put the other in alternatives_rejected with the reason — a definition that
+  only lands in month four gives onboarding nothing to steer by in month one.
+
+  One event per persona, and only where the personas genuinely differ. Do not
+  manufacture a row per persona to look thorough. Where a segment does not fit
+  any definition you found, say so in not_covered rather than stretching one to
+  cover it.
+
+  Set the time-to-value target from the distribution and never from the average.
+  Report p50, p75 and p90, and set the target against the tail: "eighty percent
+  of customers activate within twenty-one days" is something onboarding can be
+  held to. "Twenty-one days on average" is a number that stays true while half
+  the cohort quietly takes ninety.
+
+  Numbers with the dates they were measured over. Every count carries the window
+  it came from, and the window carries real dates.
+
+  If no behaviour separates the customers who stayed from the ones who left, say
+  so — verdict `no_separating_behaviour` — and write the candidates you tried
+  with their splits so the next run does not repeat the work. If activation is
+  not observable at all, because the product does not record what customers do
+  or nobody can tell you who churned, verdict `not_observable`, and name what is
+  missing in gaps. Both of those are escalations and the lead will pick them up.
+  Neither is an invitation to name a plausible event: an invented activation
+  definition is worse than a missing one, because every job downstream will build
+  on it and nothing will tell them it was a guess.
+
+  Return the definition as your structured output, and close with one line: the
+  event you named, the counts behind it, and the dates you measured over.

@@ -1,0 +1,355 @@
+# What customers say, in one place, weighed by how many said it and what they are worth.
+#
+# The VoC Analyst card (gtmsrv/agents/retention/voc-analyst.yaml) is the job this
+# app is the tool for: read the survey scores, the tickets and the interview notes
+# for a window, cluster them into themes in the customers' own words, rank each by
+# customer count and the revenue behind it, and carry the ones Product owns back
+# to Product with the quotes attached.
+#
+# ONE OUTPUT TARGET, AND IT IS THE THEMES. The card produces two context
+# destinations — `retention.voc_themes`, which the Retention Lead records this job
+# as owning, and `company.*`, the proposals that go upstream to Product. Only the
+# first is structured output: one validated object with one destination, which is
+# what an `output:` block is. The Product proposals are the same run's other half
+# and are written key by key through the pipeline tool by the agent, bounded by its
+# own scope — a manifest that named both would be claiming a destination it cannot
+# validate into, and `company.*` is a wildcard, which is not a target at all.
+#
+# (The brief that commissioned this app named the key `retention.voc`. The card and
+# retention/lead.yaml both spell it `retention.voc_themes`, and proof-collector.yaml
+# reads that spelling; the card wins, because the pairing check is
+# output.target ⊆ agent.scope.context.writes against that file.)
+#
+# NO `emits:`. Nothing in gtmsrv triggers on a voice-of-customer signal — the
+# card's `sinks: [signal]` is on all twelve retention cards — and everything this
+# app has to say lands in the themes object, which proof-collector and the Lead
+# read from context. A signal here would be a second label for the same fact, and
+# an `emits` list without `may: [emit]` beside it names signals the app
+# structurally cannot raise.
+#
+# NO `skills:`, and the omission was checked rather than assumed. TEAMS.md names
+# `nps-csat-analysis`, `feedback-clustering` and `feature-request-synthesis`; none
+# of the three exists in the vendored inventory. The nearest things that do:
+# `objection-mining` (swan-gtm) mines LIVE prospect calls and reply threads for
+# pushback, to pre-handle it in outreach; `win-loss-program` (NEON-Rutger) works
+# DECIDED deals — its own frontmatter draws that boundary — and interviews buyers
+# about a purchase; `pull-call-review` diagnoses ONE sales-call transcript. All
+# three are pre-sale, and two are about a single conversation. This job reads
+# paying customers' surveys, tickets and interviews and writes a segment-level
+# document. A near-miss skill is a method the app cannot follow, delivered in the
+# confident voice of one it can.
+name: Voice of customer
+description: What customers actually say, clustered into ranked themes with the counts, quotes and sources behind each.
+category: find-and-research
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "what are our customers telling us?"
+  - "cluster our customer feedback into themes"
+  - "run voice of customer for the quarter"
+
+# NOTHING IS REQUIRED, AND THAT IS THE DECISION. A workspace whose feedback lives
+# in a spreadsheet, a shared inbox and somebody's interview notes is the normal
+# case, not the degraded one, and an app declaring `tools: [crm]` fails closed at
+# bind for exactly that workspace — the one with the most to gain from reading its
+# own tickets. The corpus arrives as context (below) or off the records the run is
+# given.
+#
+# `crm` is optional because it changes the RANKING and not the reading: it is where
+# the revenue behind a set of customers is looked up. Without it the themes are
+# ranked by customer count alone and the object says so — see `ranked_by`.
+requires:
+  optional:
+    tools: [crm]
+
+# `read` and nothing else. This app writes a document about a customer base; it
+# touches no lead, drafts nothing for approval, raises no signal and ships no
+# scripts.
+may:
+  - read
+
+context:
+  # Substituted in the instructions, so they have to be declared or composition
+  # refuses. Both are real `domain.WorkspaceValues` fields — the workspace scope is
+  # a closed set, and a key invented here would be asked for and then dropped.
+  - key: company_name
+    scope: workspace
+    ask: "What's the company called?"
+    type: text
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+
+  # THE KEY WITHOUT WHICH THERE IS NOTHING TO CLUSTER. Themes come out of what
+  # customers actually wrote and said; with no corpus a model produces the themes
+  # every B2B company has, which read as findings and are recollection.
+  - key: feedback_corpus
+    scope: app
+    ask: "Paste what customers have said — survey responses and their scores, support tickets, interview or call notes. Raw is better than tidied."
+    type: sample
+    infer_from: [connections]
+
+  # Asked because it decides what the run is ABOUT, and because a theme is only
+  # meaningful against a period. Two quarters of tickets clustered as one window
+  # hides the thing that started in March.
+  - key: window
+    scope: app
+    ask: "Which period should I read — the last month, the last quarter, since a release? Say the dates if you have them."
+    type: text
+
+  # This is what makes the second ranking dimension possible, and asking is how the
+  # app avoids inventing it. 'skip' is a real answer: it means rank by customer
+  # count alone and say so, rather than attach a plausible number to a theme.
+  - key: revenue_basis
+    scope: app
+    ask: "How should I weigh what a customer is worth — ARR, monthly revenue, contract value? Say 'skip' and I'll rank by customer count alone."
+    type: text
+    infer_from: [connections]
+
+  # Where the words came from is half of whether the ranking means anything. A
+  # corpus that is all inbound tickets is a corpus of people having a bad day.
+  - key: feedback_channels
+    scope: app
+    ask: "Where does customer feedback reach you — NPS or CSAT surveys, support tickets, calls, a community, reviews? Name the ones that are live."
+    type: list
+
+# THE THEMES, IN THE SHAPE THAT MAKES THEM COUNTABLE RATHER THAN MEMORABLE.
+#
+# The card's done_when — "themes are ranked by customer count and revenue, each
+# carrying quotes and the sources they came from" — is encoded here rather than
+# asked for in prose:
+#
+#   ranked by customer count and revenue → every theme REQUIRES `rank`,
+#       `customer_count` and `revenue`, and `ranked_by` at the top says which of
+#       the two dimensions was actually available.
+#   each carrying quotes              → `quotes` minItems 2, and each quote
+#       requires its `customer` and its `source`. Two, not one, because the card's
+#       own instruction is that a theme with one loud customer behind it is a
+#       quote and not a theme — so `customer_count` has minimum 2 and the singles
+#       have their own required home in `heard_once`.
+#   the sources they came from        → `sources` minItems 1 per theme, and
+#       `corpus.sources` minItems 1 for the run.
+#
+# The card's escalate_when is structural too: `corpus.customers_heard` and
+# `corpus.selection` make a thin or self-selected sample visible in the object
+# rather than in a sentence somebody skims, and `escalations` is REQUIRED and
+# possibly empty — "nothing to escalate" is a finding, a missing key is the app
+# not having looked.
+#
+# `job_to_be_done` is required on every theme and `feature_requested` is not:
+# "never restate a request as a feature — write the job it is trying to do".
+output:
+  name: voc_themes
+  target: retention.voc_themes
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [window, corpus, ranked_by, themes, heard_once, escalations]
+    properties:
+      window:
+        description: The period the corpus covers, with dates. A theme is a claim about a period.
+        type: string
+      corpus:
+        description: What was actually read, and who it came from. This is what tells a reader whether the ranking below can bear weight.
+        type: object
+        additionalProperties: false
+        required: [sources, customers_heard, selection]
+        properties:
+          sources:
+            description: Each channel read, with how many items came from it. At least one — a theme set built from nothing was remembered, not analysed.
+            type: array
+            minItems: 1
+            items:
+              type: object
+              additionalProperties: false
+              required: [channel, items]
+              properties:
+                channel:
+                  description: Where these came from, in the workspace's own words — "NPS survey", "Zendesk tickets", "customer interviews".
+                  type: string
+                items: {type: integer, minimum: 0}
+          customers_heard:
+            description: How many DISTINCT customers are behind the corpus. The item count is not this number, and the difference is usually one customer filing forty tickets.
+            type: integer
+            minimum: 0
+          selection:
+            description: How these customers came to be heard, and who is therefore missing — "everyone who answered the NPS email", "the six who took a call". Feedback is never a sample of the customer base until somebody checks.
+            type: string
+          total_customers:
+            description: How many customers there were to hear from, when it is known. customers_heard against this is the coverage.
+            type: integer
+            minimum: 0
+      ranked_by:
+        description: >-
+          Which dimensions the ranking actually used. `customer_count_only` is the
+          honest answer when no revenue figure was available — it is not a
+          licence to estimate one.
+        type: string
+        enum: [customer_count_and_revenue, customer_count_only]
+      themes:
+        description: Ranked, most weight first. Each one is something more than one customer said, in their words.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [rank, name, job_to_be_done, customer_count, revenue, quotes, sources, owner]
+          properties:
+            rank: {type: integer, minimum: 1}
+            name:
+              description: The theme in the customers' own vocabulary, not the company's. If three customers said "it forgets what I told it", that is the name.
+              type: string
+            job_to_be_done:
+              description: What the customer is trying to get done. Never the feature they asked for — the request is evidence of the job, and shipping the request without the job is how a roadmap fills with switches nobody uses.
+              type: string
+            customer_count:
+              description: Distinct customers who said it. Two is the floor; one customer is a quote and belongs in heard_once.
+              type: integer
+              minimum: 2
+            revenue:
+              description: What the customers behind this theme are worth, and how that was worked out.
+              type: object
+              additionalProperties: false
+              required: [basis]
+              properties:
+                amount:
+                  description: Absent when there was no revenue figure to read. An absent amount is a fact; an estimated one is a number somebody will quote back.
+                  type: number
+                  minimum: 0
+                currency: {type: string}
+                basis:
+                  description: Where the figure came from — "sum of ARR for the 9 accounts, from the CRM" — or why there is none.
+                  type: string
+            quotes:
+              description: The customers' own words. At least two, from at least two different customers, or this is not a theme.
+              type: array
+              minItems: 2
+              items:
+                type: object
+                additionalProperties: false
+                required: [text, customer, source]
+                properties:
+                  text:
+                    description: Verbatim. Tidying a quote into the company's vocabulary is how a theme quietly becomes the company's opinion.
+                    type: string
+                  customer:
+                    description: Which customer said it. A pseudonym or an account id is fine; nothing is not.
+                    type: string
+                  source:
+                    description: The item it came from — "NPS response 2026-04-11", "ticket 8842", "interview with Ops lead, 3 Feb".
+                    type: string
+                  score:
+                    description: The survey score attached to it, where there was one.
+                    type: string
+            sources:
+              description: Every item this theme was built from, not only the ones quoted. At least one, and it should be at least as many as customer_count.
+              type: array
+              minItems: 1
+              items: {type: string}
+            trend:
+              description: What this theme did against the previous window, when there is one to compare to.
+              type: string
+              enum: [new, rising, steady, falling, resolved]
+            owner:
+              description: Who can actually act on it. This is what decides which themes are proposed to Product; the rest stay with the team named here.
+              type: string
+              enum: [product, support, onboarding, pricing, positioning, sales, unclear]
+            contradicts:
+              description: A claim this workspace holds — a persona, a positioning line, a churn reason — that these customers' words disagree with. Naming it is what earns an escalation.
+              type: array
+              items: {type: string}
+      heard_once:
+        description: >-
+          Said by exactly one customer. REQUIRED and possibly empty: these are the
+          things that become themes next quarter, and dropping them is how a
+          corpus gets read twice and remembered once. Kept as quotes, never
+          promoted to themes.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [text, customer, source]
+          properties:
+            text: {type: string}
+            customer: {type: string}
+            source: {type: string}
+      escalations:
+        description: >-
+          What a person has to decide. REQUIRED and possibly empty — an empty list
+          says the sample held and nothing contradicted a held claim, which is a
+          finding; a missing key says nobody checked.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [kind, detail]
+          properties:
+            kind:
+              type: string
+              enum: [sample_too_small, sample_self_selected, contradicts_held_claim, corpus_unreadable]
+            detail:
+              description: What is wrong and what it would take to fix it, in one line somebody can act on.
+              type: string
+            theme:
+              description: The theme this concerns, where it concerns one.
+              type: string
+
+instructions: |-
+  You are reading what {{company_name}}'s customers have said about {{product}}
+  over one window, and turning it into the themes the company will argue about
+  for a quarter. Take it seriously: everything below is downstream of whether you
+  counted honestly.
+
+  Quote people. Count them. Read the whole corpus before you name a single theme —
+  the first pass is what customers said, the second is which of those are the same
+  thing said differently. A survey comment, a ticket and a line in an interview
+  can be one theme; the same words about two different jobs are two.
+
+  Name each theme in the customers' vocabulary, not yours. If several of them said
+  it forgets what they told it, that is the name — not "session persistence". And
+  never restate a request as a feature. Write the job the customer is trying to do:
+  "export to CSV" is the request, "get last month's numbers into the board deck
+  without asking us" is the job, and the second one has three solutions the first
+  one hides.
+
+  Rank by how many distinct customers said it and by what those customers are
+  worth. Count customers, never comments — one customer filing forty tickets is one
+  customer, and the ranking that misses this is the one that puts the loudest
+  account at the top every month. Where you have a revenue figure to read, sum it
+  for the accounts behind each theme and say in `basis` exactly which accounts and
+  which field. Where you have none, set `ranked_by` to customer_count_only and
+  leave the amount out. Do not estimate a revenue number. An invented figure is
+  indistinguishable from a measured one and somebody will build a roadmap on it.
+
+  A theme needs two customers and two quotes from two different people. Anything
+  one customer said goes in `heard_once`, verbatim, with who said it — it is a
+  quote, not a theme, and it says so. That is not a demotion: next window it may
+  have five people behind it, and the only reason you will know is that you kept it.
+
+  Say where the corpus came from and who is missing from it. Feedback is
+  self-selected until you check: the people who answer an NPS email and the people
+  who file tickets are two different populations, and neither is your customer
+  base. Fill `selection` with how these customers came to be heard.
+
+  Escalate rather than rank when the sample cannot bear it — a handful of customers,
+  or one channel that only angry people use. Escalate too when a theme contradicts
+  something this workspace holds with confidence: a persona, a positioning line, a
+  coded churn reason. Both go in `escalations` with the detail; do not quietly
+  soften the theme so it fits what is already believed.
+
+  Mark each theme's `owner` — who can actually act on it. Themes owned by product
+  are the ones that go to Product: after your structured output is written, propose
+  each one on the pipeline key it concerns, with its quotes and counts attached, as
+  a proposal on that key rather than a write over the team that owns it. Support,
+  onboarding and pricing themes stay here.
+
+  Return the themes as your structured output. Then say in two lines: how many
+  customers you heard from out of how many there are, and what the top theme is.

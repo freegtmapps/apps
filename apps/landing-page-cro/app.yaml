@@ -1,0 +1,259 @@
+# Landing page CRO — the page at the end of every channel.
+#
+# WHY IT IS ONE APP AND NOT TWO. Drafting a page and auditing one look like
+# different jobs, and they are the same job done in the two directions: the
+# draft carries a line of the message hierarchy down onto the page, and the
+# audit reads the funnel numbers back up to find the line the page dropped. Split
+# them and the person writing the new hero has no idea which step the old one
+# lost people at.
+#
+# TYPE IS `analysis`, WHICH IS THE HALF THAT DECIDES. The copy is drafted here,
+# but copy is not what this app returns: what it returns is an account of each
+# page — the promise it carries, where it loses people, and the tests that would
+# settle the argument. That is analysis, and `analysis` is one of the three types
+# the contract requires an `output` from, which is the right requirement for a
+# thing whose whole value is a structured verdict somebody else acts on.
+#
+# ONE OUTPUT TARGET, AND THE DRAFTS DO NOT GO THROUGH IT.
+# `demand.landing_pages` is where the structured account lands. The page drafts
+# and test plans themselves are STAGED for a person with stage_draft — the job
+# card says in as many words "this job does not publish", so nothing here goes
+# live, and an approval queue is not a context key.
+#
+# NO `skills:`. The vendored inventory was read end to end for this one. There is
+# a positioning skill and a copy-de-slopping skill, and neither is landing-page
+# conversion work: one produces a message and stops above the page, the other is
+# a proofreading pass over prose somebody already wrote. Nothing vendored knows
+# how to size a test or write a stopping rule. Naming a near-miss would be
+# borrowing somebody's authority for a method they did not write.
+#
+# NO `emits:`. Everything this app has to say — including that a page's promise
+# contradicts the campaign feeding it — lands in `escalations` inside the output.
+# A signal beside it would be a second label for a fact already written down, and
+# an app declaring signals it cannot raise was the defect swept out of 24 of
+# these manifests.
+name: Landing page CRO
+description: Drafts the page around the promise that got the click, and turns each change into a test with a stopping rule.
+category: content
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "audit our landing page"
+  - "draft the page for this campaign"
+  - "design a test for the pricing page"
+
+# Capabilities, never brands. `website` is how the pages this app is about get
+# read at all — a CRO app with no way to see the page is a model describing a
+# page from its title. `web` is optional because a page that lives outside the
+# connected site can still be fetched, and a workspace that declines it loses the
+# stray pages rather than the app.
+tools: [website]
+
+requires:
+  optional:
+    tools: [web]
+
+# `read` to see the pages and the numbers, `stage` because every page change and
+# every test that spends traffic waits for a person. NO `write_external`: this
+# app has never published anything and the card is explicit that it must not.
+may:
+  - read
+  - stage
+
+# The two things this app runs on — the message hierarchy and the funnel metrics
+# — are pipeline context written by Positioning and by the funnel analyst. They
+# are dotted keys in a different table with a different writer and cannot appear
+# here. What is declared below is what the runtime can fill or ask for, and
+# `weekly_traffic` is here because the escalation the card names ("traffic is too
+# small for any test to reach significance") is unanswerable without it.
+context:
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+  - key: page_urls
+    scope: app
+    ask: "Which pages should I work on? Paste the URLs your ads, posts and emails actually land on."
+    type: list
+  - key: primary_action
+    scope: app
+    ask: "What is the one thing you want somebody to do on these pages — book a call, start a trial, request a quote?"
+    type: text
+  - key: weekly_traffic
+    scope: app
+    ask: "Roughly how many people land on these pages in a week? A range is fine — it decides which tests can ever finish."
+    type: text
+
+output:
+  name: landing_pages
+  target: demand.landing_pages
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [pages, tests, escalations]
+    properties:
+      pages:
+        description: One entry per page worked on. At least one — an account of no pages is not an account.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [url, promise, message_hierarchy_line, one_action, losses]
+          properties:
+            url: {type: string}
+            promise:
+              description: The single promise above the fold, in the words the ad or post used.
+              type: string
+              minLength: 1
+            message_hierarchy_line:
+              description: >-
+                The line of positioning.message_hierarchy this page carries, quoted. Required,
+                because the card's done_when is that every draft traces to the hierarchy — a page
+                that cannot name its line is a page somebody wrote from scratch.
+              type: string
+              minLength: 1
+            one_action:
+              description: The one thing to do on this page. One. A second is a leak, not a choice.
+              type: string
+              minLength: 1
+            draft:
+              description: >-
+                The drafted page, section by section, in the order a visitor meets it. Absent when
+                this run only audited an existing page.
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [section, copy]
+                properties:
+                  section: {type: string}
+                  copy: {type: string}
+            losses:
+              description: >-
+                What loses people, worst first. Empty only when the page genuinely has nothing
+                against it, which is rare enough to be worth stating out loud.
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [problem, evidence]
+                properties:
+                  problem: {type: string}
+                  evidence:
+                    description: >-
+                      The number or the thing on the page it is read from — a step in
+                      demand.funnel_metrics with its date, or what is actually written on the
+                      page. Required: an ordered list of losses with no evidence behind it is a
+                      preference with a ranking on it.
+                    type: string
+                    minLength: 1
+      tests:
+        description: >-
+          One entry per proposed change. Every change is a test; a change with no test behind it
+          belongs in `losses` until somebody can say what it would prove.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [page, change, hypothesis, metric, sample_size_per_variant, stopping_rule]
+          properties:
+            page: {type: string}
+            change:
+              description: The ONE thing being changed. Two changes are two tests.
+              type: string
+              minLength: 1
+            hypothesis:
+              description: What you expect to move, in which direction, and why.
+              type: string
+              minLength: 1
+            metric:
+              description: The single number that settles it.
+              type: string
+              minLength: 1
+            sample_size_per_variant:
+              description: >-
+                How many visitors per variant before this can be read. A number, computed from the
+                baseline rate and the effect worth having — never a guess dressed as one.
+              type: integer
+              minimum: 1
+            stopping_rule:
+              description: >-
+                When it stops, decided before it starts. Required, because a test without one is
+                stopped when the number looks good.
+              type: string
+              minLength: 1
+            weeks_to_finish:
+              description: Sample size divided by the traffic this page actually gets. This is where "never" shows up.
+              type: number
+            result:
+              description: Present only for tests that have run. Absent means it has not been read yet.
+              type: object
+              additionalProperties: false
+              required: [outcome, read_on]
+              properties:
+                outcome:
+                  description: >-
+                    `no_change` is a first-class outcome and not a failure to report — the card
+                    says a test that changed nothing is a result, so the schema gives it a name
+                    rather than leaving it to be quietly dropped.
+                  enum: [win, loss, no_change, stopped_early]
+                read_on: {type: string}
+                note: {type: string}
+      escalations:
+        description: >-
+          What a person has to decide. The two the card names: a page whose traffic cannot reach
+          significance for any test worth running, and a page whose promise contradicts the
+          campaign feeding it. Empty when there is nothing outstanding.
+        type: array
+        items: {type: string}
+
+instructions: |-
+  Every channel ends at a page. Your job is to make that page say the same thing
+  the ad, the post or the email said, take out what stops people acting on it,
+  and turn each argument about the page into a test with a number at the end.
+
+  Start by reading the page and the promise that brought somebody to it. The
+  headline repeats that promise in the same words — not a cleverer version of
+  them. If the campaign says "cut your close time in half" and the page says
+  "modern revenue infrastructure", the visitor thinks they clicked the wrong
+  link, and no amount of button colour fixes that. Quote the line of the message
+  hierarchy each page carries; if you cannot find one it belongs to, say so
+  rather than picking the nearest.
+
+  One page, one action. Everything else on the page exists to make that one
+  action easier: a second call to action is not more choice, it is a fork where
+  half the traffic goes nowhere. Cut fields off forms until only what somebody
+  will genuinely be contacted about is left, and say what happens after they
+  press the button.
+
+  When you audit, order the losses by where the funnel actually drops people, not
+  by what is easiest to fix, and put the number beside each one with the date it
+  was measured. If the funnel metrics do not cover a page, say the page is
+  unmeasured — do not estimate a conversion rate. An invented baseline sizes
+  every test underneath it wrongly.
+
+  Design each change as a test: one variable, a hypothesis that names the
+  direction, the metric that settles it, the sample size per variant, and the
+  rule for when it stops — written down before it starts. Then divide the sample
+  size by the traffic the page really gets. If the honest answer is fourteen
+  weeks, say fourteen weeks; if the answer is that this page will never reach
+  significance, that is an escalation and the right move is a bigger change
+  judged on judgment rather than a small one dressed as evidence.
+
+  Read results out straight. A test that changed nothing is a result, and it is
+  the one most worth writing down, because it is the argument that stops coming
+  back. Never stop a test because it is ahead.
+
+  You do not publish. Stage every page draft and every test plan with
+  stage_draft and let a person decide. Return the pages, the tests and the
+  escalations as your structured output, and say in one line what you drafted,
+  what you audited, and what you are waiting on.

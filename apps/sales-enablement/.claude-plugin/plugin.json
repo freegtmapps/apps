@@ -1,0 +1,8 @@
+{
+  "name": "sales-enablement",
+  "description": "One-pagers, FAQ answers and case-study briefs a rep can send, in the messaging that was approved.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

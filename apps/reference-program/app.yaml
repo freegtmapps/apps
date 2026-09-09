@@ -1,0 +1,280 @@
+# The bench of customers who will take a call — and the rationing that keeps it alive.
+#
+# A live reference closes deals no case study closes, and the supply is finite.
+# The failure this app exists to prevent is not "we have no references"; it is
+# the same three logos being asked until they stop answering, which is a churn
+# risk created by the sales team.
+#
+# ONE OUTPUT, ONE PLACE. `expansion.references` is the only context key the
+# Reference Program card produces, so it is this app's target. Everything else
+# the person doing that job records — a note on an account, a staged ask sent to
+# an advocate — goes through the pipeline and records tools as they work, not as
+# structured output. An app declares one validated object going to one place.
+#
+# NO `skills:`. The vendored inventory has nothing about running a reference
+# programme; the nearest bodies (`procurement-navigation`,
+# `positioning-messaging-designer`) mention a reference call in passing while
+# doing a different job for a different artefact. A near-miss skill is a method
+# the app cannot follow, dressed as authority, so this app ships none.
+#
+# NO `emits:`, deliberately. The two things this app has to shout about — a
+# segment Sales sells into with no reference at all, and an advocate who agreed
+# and then declined — are IN the output: the first is a row in `gaps`, the
+# second is a reference at `status: declined`. A signal beside them would be a
+# second label for a fact the target already holds, and `emits` without
+# `may: [emit]` is a promise the app structurally cannot keep.
+#
+# THE APPROVAL IS THE POINT. The card requires approval for every request that
+# puts a customer in front of a prospect. That is why `stage` is here and `send`
+# is not grantable at all: every ask to an advocate, and every offer of an
+# advocate to a deal, is staged for a person.
+name: Reference program
+description: A bench of customers who agreed to take a call — tiered, rationed, and honest about the segments with none.
+category: sell
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "build the reference bench"
+  - "who can take a reference call for this deal?"
+  - "which segments have no reference?"
+
+# `read` to see the accounts and the case studies; `stage` because every ask —
+# to an advocate, or to a rep who wants one — is put in front of a person before
+# it goes anywhere. No `write_lead`: the card's scope over records is read.
+may:
+  - read
+  - stage
+
+# Hand-written, because it is a judgement rather than a fact about the files.
+# With a CRM bound, health and last-touch come from the account record and
+# usage is checkable; without one, the bench is built from what the case studies
+# and the pipeline context already say, and the app says which dates it could
+# not verify. It degrades; it does not stop.
+requires:
+  optional:
+    tools: [crm]
+
+context:
+  # Workspace scope is a closed set, and this is the one member the app needs:
+  # a recruiting ask goes out in the company's name.
+  - key: company_name
+    scope: workspace
+    ask: "What's the company called?"
+    type: text
+
+  # App-scoped, because the dotted pipeline keys the job reads — icp.segments,
+  # expansion.case_studies, retention.health_score_model — arrive through the
+  # context the agent runs with and are not this app's to declare. What is left
+  # is the thing nothing upstream knows: which segments Sales is actually
+  # selling into this quarter. Without that list "every open segment has a
+  # reference or a named gap" has nothing to be true against.
+  - key: open_segments
+    scope: app
+    ask: "Which segments is Sales selling into right now? A bench is only complete against a list."
+    type: list
+
+  # The house default, used only where an advocate never named their own limit.
+  # It is asked rather than assumed because "how often is it fair to ask a
+  # customer" is a company's judgement about its own customers.
+  - key: default_limit
+    scope: app
+    ask: "When an advocate hasn't named a limit, how many reference calls a year do you treat as fair?"
+    type: text
+
+output:
+  name: references
+  target: expansion.references
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [references, coverage, gaps]
+    properties:
+      references:
+        description: >-
+          The bench. One row per advocate, and every row carries the four things
+          the job is done by: a tier, a segment, the limit they agreed to and
+          when they were last used.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [account, segment, tier, commitments, agreed_limit, last_used, confirmed_on, status, evidence]
+          properties:
+            account:
+              description: The customer. A company, not a wish.
+              type: string
+            contact:
+              description: The person who agreed. A reference is a human being, and they leave.
+              type: string
+            segment:
+              description: The segment they can credibly speak for — the one a prospect would recognise themselves in.
+              type: string
+            use_case:
+              description: What they actually use it for. Two customers in one segment doing different jobs are not interchangeable.
+              type: string
+            tier:
+              description: >-
+                What they have agreed to do, as a number, so the bench sorts.
+                0 = nothing, and someone who said no stays here rather than
+                being deleted. 1 = their logo. 2 = a written quote or a named
+                case study. 3 = a live call with a prospect. 4 = public — a
+                talk, a webinar, a podcast.
+              type: integer
+              minimum: 0
+              maximum: 4
+            commitments:
+              description: >-
+                Exactly what they said yes to, itemised. Empty only at tier 0 —
+                a tier above zero with no commitment is goodwill written down as
+                if it were an agreement.
+              type: array
+              uniqueItems: true
+              items: {enum: [logo, quote, case_study, call, public_talk]}
+            agreed_limit:
+              description: The rationing rule for this person, and where it came from.
+              type: object
+              additionalProperties: false
+              required: [max_asks, per, stated_by]
+              properties:
+                max_asks: {type: integer, minimum: 0}
+                per: {enum: [quarter, half_year, year]}
+                stated_by:
+                  description: >-
+                    `advocate` when they named the number themselves; `default`
+                    when it is the house limit standing in. The distinction is
+                    the whole difference between honouring a limit and assuming
+                    one.
+                  enum: [advocate, default]
+            uses_in_period:
+              description: How many times they have already been asked inside the current period.
+              type: integer
+              minimum: 0
+            last_used:
+              description: >-
+                ISO date of the last time this advocate was put in front of a
+                prospect, or the literal `never`. Required, because a bench
+                without dates cannot be rationed — and `never` is a real answer.
+              type: string
+              pattern: "^(never|[0-9]{4}-[0-9]{2}-[0-9]{2})$"
+            confirmed_on:
+              description: >-
+                ISO date the commitment was confirmed by the advocate, or the
+                literal `unconfirmed`. An unconfirmed row may never be offered
+                to a prospect and sits at tier 0 until somebody asks.
+              type: string
+              pattern: "^(unconfirmed|[0-9]{4}-[0-9]{2}-[0-9]{2})$"
+            status:
+              description: >-
+                `available` — inside their limit and confirmed. `resting` — at
+                their limit; do not ask again until `available_again`.
+                `retired` — off the bench for good. `declined` — asked and said
+                no, which is a row that stays.
+              enum: [available, resting, retired, declined]
+            available_again:
+              description: ISO date a resting advocate comes back. Set whenever status is resting.
+              type: string
+            evidence:
+              description: >-
+                Where the agreement is recorded — the case study, the thread,
+                the call. At least one: a row whose only basis is that the
+                account looks healthy is a guess about a customer's willingness
+                to be spent.
+              type: array
+              minItems: 1
+              items: {type: string}
+            notes:
+              description: Anything a rep must know before asking — an M&A freeze, a champion mid-transition, a limit that is really a hard no.
+              type: string
+      coverage:
+        description: Segments that have somebody. One row per covered segment.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [segment, references]
+          properties:
+            segment: {type: string}
+            references:
+              description: The accounts on the bench for this segment. At least one, or it belongs in gaps instead.
+              type: array
+              minItems: 1
+              items: {type: string}
+            note: {type: string}
+      gaps:
+        description: >-
+          Segments with nobody. Every open segment appears here or in coverage,
+          never in neither — an unlisted segment reads as covered, and a rep
+          finds out in front of a prospect.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [segment, why]
+          properties:
+            segment: {type: string}
+            why:
+              description: Why there is nobody — no customer in the segment, none healthy enough to ask, everyone asked and resting, nobody asked yet.
+              type: string
+            candidates:
+              description: Accounts worth asking, best first. Empty is an honest answer.
+              type: array
+              items: {type: string}
+            next_step:
+              description: The specific ask that would close this gap, if there is one.
+              type: string
+
+instructions: |-
+  You are keeping the bench of customers who will speak for this company, and
+  protecting them from being spent.
+
+  Start from the customers who already told their story — the case studies —
+  and from the healthiest accounts. Health is a filter, never a commitment: an
+  account with a great score has not agreed to anything and does not go on the
+  bench until somebody asked and they said yes.
+
+  Ask for something specific. "Would you be a reference?" gets a warm yes that
+  means nothing in March. "Would you take one 30-minute call a quarter with a
+  prospect in your industry?" gets an answer you can ration. Every ask you write
+  is staged with stage_draft for a person to send — you never send it, and you
+  never put an advocate in front of a prospect without that approval.
+
+  Tier by what they agreed to, not by how much you like them. Logo, quote or
+  case study, live call, public talk — each is a different amount of somebody
+  else's time, and the tier is only ever as high as the commitment they
+  confirmed. If it is not confirmed, the row is unconfirmed and tier 0.
+
+  A customer who says no stays on the bench at tier zero. Do not delete them.
+  Next year they are a different company with a different champion, and a
+  deleted row means somebody asks them again next quarter as if nothing
+  happened.
+
+  Honour the limit. Before you mark anyone available, compare what they have
+  already been asked this period against the limit they agreed to. Someone at
+  their limit is resting, with the date they come back — not available with a
+  note hoping nobody reads it. Where an advocate never named a limit, use the
+  house default and record that it was the default, so the next person can tell
+  an agreement from an assumption.
+
+  Then go segment by segment through the open segments. Each one either has a
+  named reference or is a gap with a reason and, where there is one, the
+  specific account worth asking. Do not spread a single advocate across three
+  segments to make the coverage look complete; a reference speaks for the
+  segment a prospect would recognise themselves in, and nothing else.
+
+  Never write a date you do not have. If you cannot see when somebody was last
+  used, `never` is wrong and so is a plausible date — say in your summary that
+  the last-used dates are unverified and name the accounts, because rationing
+  built on invented dates is worse than no rationing at all.
+
+  Return the bench as your structured output. Then say in one line: how many
+  advocates are available right now, which open segments have nobody, and any
+  advocate who had agreed before and has now declined. Those last two are what
+  a person needs to act on today.

@@ -1,0 +1,8 @@
+{
+  "name": "pilot-design",
+  "description": "Scopes a pilot that can fail: one question, numeric criteria, a named judge, an end date.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

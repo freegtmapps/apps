@@ -1,0 +1,8 @@
+{
+  "name": "paid-acquisition",
+  "description": "Paid campaigns with one audience, one message, a budget the constraints allow, and a kill rule.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

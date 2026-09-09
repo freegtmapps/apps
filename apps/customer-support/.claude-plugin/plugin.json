@@ -1,0 +1,8 @@
+{
+  "name": "customer-support",
+  "description": "Triage the ticket, answer it from the knowledge base with the article cited, escalate what the base cannot answer.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

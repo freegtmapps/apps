@@ -1,0 +1,8 @@
+{
+  "name": "unit-economics",
+  "description": "CAC, payback, gross margin and lifetime value per segment and channel, with every input named.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

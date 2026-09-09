@@ -1,0 +1,429 @@
+# The plan for the rest of a company that has already said yes once.
+#
+# WHERE THE OUTPUT LANDS, AND WHY IT IS NOT `expansion.account_plans`.
+#
+# This app was commissioned with `output.target: expansion.account_plans`. The
+# job card it serves — gtmsrv/agents/expansion/land-and-expand-planner.yaml —
+# declares `produces.context: [records]` and `scope: {records: write}`, its
+# done_when is written per account ("EACH large account has a map, a named
+# sponsor, and a sequenced plan"), and TEAMS.md row 4 of Team 7 says the output
+# is "account plans on records". No file in this tree mentions an
+# `expansion.account_plans` key. `output.target ⊆ scope.context.writes` is the
+# loader's ONE cross-document rule (agent.schema.yaml, E_WRITES_EXCEED_SCOPE)
+# and `records` does not cover an `expansion.*` key, so the commissioned target
+# would refuse the pairing at load.
+#
+# It is also the wrong shape for the work. A land-and-expand plan is about ONE
+# customer's org: which of their teams the product touches, who inside sponsors
+# the next one, in what order the rest are reached. `<lead>` resolves to exactly
+# one record per run, and a section-level `expansion.*` field written by a
+# per-record app is one account's plan overwriting the last one's.
+#
+# So the target is `records.<lead>.account_plan`. If an
+# `expansion.account_plans` key is later added to the context map AND to the
+# card's produces list, this is a one-line change — but it belongs in both files
+# or in neither.
+#
+# THE CARD'S OTHER OUTPUTS ARE NOT STRUCTURED OUTPUT. Anything the agent notes on
+# the account's timeline mid-run goes through the records and pipeline tools,
+# bounded by its own scope. An app declares one validated object going to one
+# place; a running commentary is not that.
+#
+# WHAT THE done_when IS MADE OF, in the schema rather than in the prose: a map
+# with at least one team beside the landed one, at least one stakeholder outside
+# the landed team, a sponsor who carries what they need in hand, a rollout of at
+# least one sequenced step whose proof is named and marked in_hand or not, and a
+# next action with an owner. The card's escalate_when is an enum with two values
+# and it is required the moment the plan admits it is blocked.
+name: Account planning
+description: Map a landed account, name the sponsor who can open the next team, and sequence the rollout.
+category: sell
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "plan the expansion into this account"
+  - "who opens the next team at this customer?"
+  - "build the land-and-expand plan"
+
+# NO `skills:`, and it is not an omission.
+#
+# TEAMS.md names account-map, stakeholder-expansion and multi-team-rollout for
+# this row. None of the three exists — the vendored inventory is
+# vendor/skills/swan-gtm/gtm-skills and vendor/skills/NEON-Rutger/
+# B2B-revops-skills — and an app naming a skill with no file fails to load.
+#
+# The near misses were read and refused. `account-org-mapping` is the closest and
+# it is still wrong twice over: it maps a NAMED COMPANY FROM PUBLIC SOURCES for a
+# sell, partner or recruit objective, which is the pre-sale motion this app runs
+# after, and its body routes to `references/hierarchy-inference.md` and
+# `references/worked-example.md`, neither of which ships in the vendored
+# directory. Vendoring a body without the pages it routes to is a model told to
+# open something that is not there. `multi-threading-coach` and
+# `mutual-action-plan-builder` both run on a LIVE DEAL through a buying
+# committee — a coalition to close one contract, not a rollout across a customer
+# who is already paying. `account-intelligence` requires a Lusha connection this
+# app does not hold. `buying-group` and `persona-mapping-framework` describe the
+# personas a segment buys through, which is `icp.personas` — a thing this app
+# READS, not the method it follows.
+#
+# A method this app cannot follow, credited to an author who did not write it for
+# this job, is worse than the founder's own framing below.
+
+# NOTHING IS REQUIRED, and both optionals are real.
+#
+# `crm` carries the other teams, sites and contacts already recorded against the
+# parent company, and the renewal date that decides how much runway the rollout
+# has. `product` is how "which teams the product already touches" becomes a fact
+# instead of an impression — whose seats, which workspaces, since when.
+#
+# Neither is at the top level, because the app degrades honestly without them:
+# the landed team, the correspondence and the health readings are on the record
+# already, written by the signal detector and the health scorer. An app that
+# refused to run without product analytics would refuse for every workspace whose
+# account of a customer lives in a CRM and a mailbox.
+#
+# No `web` and no `linkedin`, on purpose. The card says plan from the customer's
+# org; the org is what the sponsor and the record know, and a public search for
+# an org chart is where an invented reporting line comes from.
+requires:
+  optional:
+    tools: [crm, product]
+
+# `read` and `write_lead`, and nothing else.
+#
+# NO `stage`: this app writes a plan, it does not write to the customer. The
+# outreach that the plan's steps call for belongs to the upsell strategist and to
+# whoever owns the account, and each of those messages goes to approval in its
+# own app.
+#
+# NO `emit`, and therefore no `emits:`. Everything this app has to say lands in
+# `records.<lead>.account_plan` — the map, the sponsor, the sequence, the
+# escalation. A signal would be a second label for a fact already written where
+# the Lead reads it.
+may:
+  - read
+  - write_lead
+
+# What must be said before this runs.
+#
+# The card's `needs.context` — icp.personas, expansion.expansion_signals,
+# retention.health_score_model — is NOT here. Those are dotted pipeline keys with
+# a different writer, read through the pipeline tool at run time; a context key is
+# `^[a-z][a-z0-9_]*$` and could not name them if it wanted to.
+context:
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what did this account buy?"
+    type: text
+  # The three app keys are the ones a plan is wrong without, and none of them is
+  # knowable from the record.
+  - key: expansion_units
+    scope: app
+    ask: "When a second team inside a customer starts using you, what do they actually buy — more seats, another product, a bigger tier, a separate contract?"
+    type: text
+  - key: proof_assets
+    scope: app
+    ask: "What can you put in a sponsor's hands today — a usage report, a written result from the landed team, a reference call, a security pack? List what you actually have."
+    type: list
+  - key: commercial_path
+    scope: app
+    ask: "Commercially, what has to happen for another team to start — room on the existing contract, an amendment, a new order form, a fresh procurement run?"
+    type: text
+
+output:
+  name: account_plan
+  target: records.<lead>.account_plan
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [account_map, stakeholders, sponsor, rollout, next_action]
+    properties:
+      account_map:
+        description: >-
+          The customer's organisation as it actually is, not the part of it we happen to talk
+          to. This is the half of the job that gets skipped, and the plan underneath it is then
+          a plan for the one team we already know.
+        type: object
+        additionalProperties: false
+        required: [landed_team, teams]
+        properties:
+          landed_team:
+            description: The team that said yes, and what they got out of it — the whole plan is levered off this.
+            type: object
+            additionalProperties: false
+            required: [name, what_they_use, result_so_far]
+            properties:
+              name: {type: string, minLength: 1}
+              site:
+                description: Where they sit, when the account has more than one office or region.
+                type: string
+              what_they_use:
+                description: Which part of the product, and who inside the team touches it.
+                type: string
+                minLength: 1
+              result_so_far:
+                description: >-
+                  What this team can say the product did for them, in their own numbers or their
+                  own words. "They are happy" is not it. This is what the sponsor carries.
+                type: string
+                minLength: 1
+          teams:
+            description: >-
+              The rest of the organisation. At least one — an account whose map is only the
+              landed team is the escalation, not a plan.
+            type: array
+            minItems: 1
+            items:
+              type: object
+              additionalProperties: false
+              required: [name, function, product_touch]
+              properties:
+                name: {type: string, minLength: 1}
+                function:
+                  description: What they do, in the customer's words rather than in our category's.
+                  type: string
+                site: {type: string}
+                systems:
+                  description: What they run today for this job — including the spreadsheet and the incumbent vendor.
+                  type: array
+                  items: {type: string}
+                product_touch:
+                  description: >-
+                    `uses_it` — they are already in the product. `adjacent` — they sit next to
+                    someone who is, or the data crosses their desk. `none` — no contact.
+                  type: string
+                  enum: [uses_it, adjacent, none]
+                evidence:
+                  description: How this is known — a seat list, a CRM record, something the champion said and when.
+                  type: string
+          unknowns:
+            description: >-
+              What could not be established, and what was looked at. Absence in what we can see is
+              not proof a team does not exist; a plan that quietly maps only what was easy to find
+              is the one that misses the division doing this job in another country.
+            type: array
+            items: {type: string}
+      stakeholders:
+        description: >-
+          People OUTSIDE the landed team, one entry each. At least one: the card escalates when
+          nobody outside can be identified, so an empty list is not a shorter plan, it is a
+          different outcome.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [name_or_role, team, persona, relationship, what_they_care_about]
+          properties:
+            name_or_role:
+              description: A name where there is one, the role where there is not. Never a made-up name.
+              type: string
+              minLength: 1
+            team: {type: string, minLength: 1}
+            persona:
+              description: Which of this workspace's personas they match, from icp.personas. Say `unmatched` when none of them fits.
+              type: string
+              minLength: 1
+            relationship:
+              description: What we actually have with them today. Most of them will be `unknown`, and saying so is the point.
+              type: string
+              enum: [known_to_us, met_once, known_to_the_sponsor, unknown]
+            what_they_care_about:
+              description: >-
+                The outcome they are measured on, in their language. Not what we would like to
+                sell them.
+              type: string
+              minLength: 1
+      sponsor:
+        description: >-
+          The one person inside the account who can open the next team. Required: a plan with a
+          map and no sponsor is a map.
+        type: object
+        additionalProperties: false
+        required: [name_or_role, team, why_them, what_they_need, the_ask]
+        properties:
+          name_or_role: {type: string, minLength: 1}
+          team: {type: string, minLength: 1}
+          why_them:
+            description: What gives them the standing to introduce another team — budget, remit, reputation, or a stake in it working.
+            type: string
+            minLength: 1
+          what_they_need:
+            description: >-
+              What has to be in their hands before they will do it. At least one, and each is
+              something that exists or has a way of coming to exist — not "confidence".
+            type: array
+            minItems: 1
+            items: {type: string, minLength: 1}
+          the_ask:
+            description: The specific thing to ask them for, in one sentence you could say out loud.
+            type: string
+            minLength: 1
+      rollout:
+        description: >-
+          The sequence, in the order it happens. At least one step. Every step names the team it
+          reaches and the proof it stands on, because a step resting on proof the account has not
+          produced is not a step — it is the step after the one that produces it.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [order, team, outcome, proof, first_action]
+          properties:
+            order: {type: integer, minimum: 1}
+            team:
+              description: Which team this step reaches. `landed` where the step is the landed team producing something.
+              type: string
+              minLength: 1
+            outcome:
+              description: What is true at the end of this step, from the customer's side. Not "demo delivered".
+              type: string
+              minLength: 1
+            proof:
+              description: What this step stands on, and whether it exists yet.
+              type: object
+              additionalProperties: false
+              required: [what, status, how_it_gets_produced]
+              properties:
+                what:
+                  description: The thing that has to be true or in hand — a result, a reference, a security review, a signed amendment.
+                  type: string
+                  minLength: 1
+                status:
+                  type: string
+                  enum: [in_hand, must_be_produced_first]
+                how_it_gets_produced:
+                  description: >-
+                    Where it lives when it is in hand; who produces it and in which earlier step
+                    when it is not. Never blank — a proof with no provenance is the sentence that
+                    makes a plan sound finished.
+                  type: string
+                  minLength: 1
+            through_the_sponsor:
+              description: >-
+                How the sponsor is involved in reaching this team — an introduction, a forward, a
+                mention in their own meeting. Never route round them.
+              type: string
+            first_action:
+              description: The first concrete thing somebody does in this step.
+              type: string
+              minLength: 1
+      next_action:
+        description: >-
+          The card's done_when, made specific: the first step has to be one that could start this
+          week. Say who does what, and say plainly when something is still in the way.
+        type: object
+        additionalProperties: false
+        required: [action, owner, unblocked]
+        properties:
+          action: {type: string, minLength: 1}
+          owner:
+            description: Who does it — a person on our side, or the sponsor.
+            type: string
+            minLength: 1
+          unblocked:
+            description: >-
+              True when nothing outstanding stops this starting this week. False is an allowed and
+              useful answer, and it requires the escalation beside it.
+            type: boolean
+          blocked_by:
+            description: What is in the way, when it is not unblocked.
+            type: string
+      escalation:
+        description: >-
+          The two conditions the card stops on, plus anything that leaves the first step blocked.
+          The Lead reads this off the record.
+        type: object
+        additionalProperties: false
+        required: [reason, note]
+        properties:
+          reason:
+            type: string
+            enum: [landed_team_is_the_whole_account, no_stakeholder_outside_landed_team, first_step_blocked]
+          note:
+            description: What the Lead needs in order to route it — including what was searched before concluding it.
+            type: string
+            minLength: 1
+    allOf:
+      # done_when, structurally. A plan that admits its first step cannot start is
+      # not finished, and prose asking for the escalation is prose a model can
+      # skip on a run that went long.
+      - if:
+          properties: {next_action: {properties: {unblocked: {const: false}}, required: [unblocked]}}
+          required: [next_action]
+        then:
+          required: [escalation]
+      - if:
+          properties: {next_action: {properties: {unblocked: {const: false}}, required: [unblocked]}}
+          required: [next_action]
+        then:
+          properties:
+            next_action:
+              required: [blocked_by]
+
+instructions: |-
+  A team inside this account bought {{product}} and it is working for them. The
+  rest of their company has not been asked. Your job is the map of that company
+  and the plan for reaching it.
+
+  A big account is not one customer. Start from their organisation, not from our
+  roadmap: what teams exist, where they sit, what each of them runs today, and
+  which of them the product already touches. Read the record first — the
+  timeline, the seat list, the correspondence, whatever the signal detector has
+  already noticed about this account. Where the CRM or the product is connected,
+  go and look. Where you cannot establish something, put it in `unknowns` with
+  what you looked at. Never draw a team or a reporting line you have not got a
+  reason for; an invented org chart is the one artefact here that reads as
+  authoritative and cannot be checked.
+
+  NAME THE PEOPLE OUTSIDE THE LANDED TEAM. Roles where you do not have names, and
+  match each of them to one of this workspace's personas so whoever picks the
+  plan up knows which conversation they are walking into. Say honestly what
+  relationship we have with each — most will be `unknown`, and a list that
+  pretends otherwise costs somebody a cold call they thought was warm.
+
+  THE SPONSOR IS THE WHOLE MECHANISM. One person inside the account who can open
+  the next team, and the reason it is them. Then the part people skip: what they
+  need in your hands before they will do it. A sponsor does not introduce you to
+  a peer on the strength of your enthusiasm; they do it when the landed team has
+  a result they are willing to put their own name next to. Write what that is,
+  and write what we can actually hand over. The proof this workspace says it has
+  is the honest list; if what a step needs is not on it, then producing it is an
+  earlier step.
+
+  SEQUENCE, DO NOT LIST. Each step names the team it reaches, what is true for
+  the customer at the end of it, and the proof it stands on. A step that depends
+  on proof the account has not produced yet is not a step — write what has to be
+  true first, and put that earlier in the order. Mark every proof `in_hand` or
+  `must_be_produced_first` and say where it comes from either way.
+
+  Never route round the sponsor to reach another team. Going over their head or
+  behind their back inside a company that is already paying you costs the landed
+  team as well as the new one. Where a step reaches somebody new, say how the
+  sponsor is in it.
+
+  Hold the plan against what actually has to happen commercially for another team
+  to start, and against what a second team buys when they do — this workspace has
+  said both, and neither is knowable from the record. A step that ignores a
+  procurement run the customer has to open is a step scheduled for a week that
+  will not happen.
+
+  The first step has to be one that could start this week. If it cannot, say so:
+  set `unblocked` false, name what is in the way, and fill in the escalation.
+  Escalate as well when the team that bought is the whole company — there is
+  nothing to expand into and this account belongs to the upsell path instead —
+  and when you genuinely cannot identify anybody outside the landed team, saying
+  what you searched before concluding it.
+
+  Record the sponsor and the next action on the record with update_lead so
+  whoever talks to this customer next is working from the plan, and return the
+  plan as your structured output.

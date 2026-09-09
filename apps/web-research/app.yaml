@@ -1,0 +1,158 @@
+# The shared bench. One question, one method, no conclusion.
+#
+# Six teams need the same thing at different moments — somebody to go and read
+# the web properly — and the reason it is one app rather than a research step
+# inside each of them is comparability. A finding that arrives from Positioning
+# and a finding that arrives from Retention were gathered the same way, graded
+# on the same scale, and can be put beside each other. Six private research
+# habits cannot.
+#
+# THERE IS NO `output:` BLOCK, AND THAT IS THE DESIGN.
+#
+# platform.researcher declares `produces: {}` in its own card, with its own
+# comment: "the findings go to brainsrv and the doc-ids to the caller, and a
+# platform agent owns no context section to write." An `output.target` here
+# would therefore be a destination the agent running this app has no scope for,
+# and the loader's one rule — `output.target ⊆ agent.scope.context.writes`,
+# E_WRITES_EXCEED_SCOPE, agentfile/writes.go — would refuse the pairing at
+# compose. Not a technicality: a bench that wrote into `market.*` or `company.*`
+# would be answering a question on behalf of the team that asked it, and the
+# whole point of this app is that the caller draws the conclusion.
+#
+# `type:` follows from that. `research` would make `output` required
+# (contracts/app.schema.yaml, delta 2), so the honest label for what lands on
+# the timeline is `findings`: graded extracts and the doc-ids they were stored
+# under. The type field labels, it does not file — `category` does the filing.
+#
+# WHAT THIS COSTS, SAID OUT LOUD: with no output schema, the card's done_when
+# cannot be enforced structurally the way `competitor-research` enforces
+# "at least one source" with `minItems: 1`. Every extract carrying its source
+# and its grade is prose discipline here, in the instructions, and it is the
+# first thing a reviewer of this app should check by reading a run.
+name: Web research
+description: Runs a research question properly — reads the pages, grades the sources, hands back extracts not conclusions.
+category: find-and-research
+type: findings
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "research this question for me"
+  - "find me sources on this"
+  - "what does the web actually say about it?"
+
+# `web` and nothing else.
+#
+# The card's `tools: [web, brain]` names two, and only one of them is a manifest
+# capability: brain is a platform tool the resolver binds for every agent
+# (internal/tracetest — `brain` comes from the resolver, not from a bundle), and
+# the capability vocabulary here is deliberately closed. `enrichment` was
+# considered and refused: a bench answering an arbitrary question is not doing
+# firmographics, and a capability declared but unused is a step suppressed for
+# exactly the workspaces that declined the connection.
+tools: [web]
+
+# `read` alone.
+#
+# NO `emit`, and therefore no `emits:` — everything this app has to say is the
+# extract and its grade, and a signal would be a second, lossier copy of a
+# finding that already exists as a document. The card's own `sinks: [signal]` is
+# the AGENT's channel back to whoever called it, not a kind this app raises.
+#
+# NO `stage`: nothing here is drafted for a human to approve. NO `write_lead`:
+# a research question is not about a record.
+may:
+  - read
+
+# TWO WORKSPACE KEYS, AND NO APP KEY AT ALL.
+#
+# The question itself is not context. It arrives from the agent that called this
+# app, changes every run, and storing it would mean the next caller inherits the
+# last caller's question — a stale key is worse than an absent one.
+#
+# Both keys below are workspace-scoped, which is what makes them safe here: this
+# app runs `unattended` on behalf of another agent, so an app-scoped key with
+# nobody in the room is a question that hangs. company_name and industry are
+# already answered by `Founder intake` in any workspace that has run one, so
+# they fill from the profile rather than by asking.
+#
+# What they are FOR is disambiguation, and it is the most common way a research
+# run silently answers the wrong question: two companies share a name, a term
+# means one thing in logistics and another in healthcare. Knowing whose bench
+# this is also tells the grader which pages are the workspace's own — a
+# workspace's own marketing site is a vendor source about itself, not a primary
+# source about its market.
+context:
+  - key: company_name
+    scope: workspace
+    ask: "What's the company called? I use it to tell you apart from anyone with a similar name — and to know which pages are yours."
+    type: text
+  - key: industry
+    scope: workspace
+    ask: "What industry do you sell into? It decides which sense of an ambiguous term I search for."
+    type: text
+
+instructions: |-
+  An agent has asked you a question. Answer it the way somebody who will be held
+  to the answer would: by reading, not by remembering.
+
+  START BY WRITING DOWN WHAT WOULD ANSWER IT. One or two lines, before you
+  search anything: the question restated in your own words, and what a
+  satisfying answer looks like — a number with a methodology, a policy page, a
+  dated announcement, three independent people saying the same thing. If you
+  cannot say what would answer the question, the question is not answerable yet
+  and the right move is to say which part of it is unclear and stop.
+
+  Then search, and then OPEN THE PAGES. A search result is a claim about a page,
+  written by a machine that has not been asked your question. Half the sentences
+  you would have quoted from a snippet do not exist on the page, and the other
+  half say something different two paragraphs down. Read the page itself, quote
+  from what you read, and if a page will not open, that is a fact you record —
+  never a gap you fill from memory of what such a page usually says.
+
+  GRADE EVERY SOURCE, and keep the grade attached to the extract for the rest of
+  its life:
+    - primary — the party itself, on the record: a filing, a docs page, a
+      changelog, a court document, a dataset with a methodology.
+    - secondary — a reporter or analyst who did their own work and says whose.
+    - vendor — a company's claim about its own product or market. It is real
+      evidence of what they claim and no evidence at all of what is true.
+    - anonymous — a forum post, a review, a comment. Evidence that somebody said
+      it; strong in volume, weak alone.
+  A grade is about the SOURCE OF THE FACT, not the site it appeared on: a press
+  release republished by a newspaper is vendor, and its being on a masthead does
+  not promote it.
+
+  Every extract carries three things or it is not finished: the quote or the
+  figure, the URL it came from, and the date on the page. An undated item is a
+  guess with a link. Where a page has no date, say so rather than inferring one.
+
+  WATCH FOR THE ECHO. Five articles that all cite one report are one source with
+  four repeaters, and independence is the property that makes agreement mean
+  anything. Trace each claim back until you reach somebody who did the work, and
+  say plainly when everything you found traces to a single origin — that is the
+  card's escalation, not a caveat at the bottom.
+
+  Store your findings in the brain and hand the doc-ids back to the agent that
+  asked. That handoff is the deliverable: the extracts live where anybody can
+  retrieve them, and the caller gets the addresses.
+
+  HAND BACK SOURCES AND EXTRACTS, NOT CONCLUSIONS. You do not know why the
+  question was asked, what the workspace already believes, or what decision is
+  waiting on it — a conclusion drawn here arrives stripped of the context that
+  would make it right or wrong, and it will be repeated as if it had that
+  context. Where you can see the shape of an answer, say what the sources
+  support and how strongly, and leave the verdict to the agent that asked.
+
+  REFUSING IS A RESULT. If nothing public answers the question, say so, list
+  what you read and what came back empty, and name the one thing that would
+  answer it if somebody could get it. That is a finished run. A plausible
+  paragraph assembled from adjacent facts is not, and it is worse than the
+  refusal because nothing downstream can tell them apart.
+
+  Close with two lines: what you found, and what you could not reach.

@@ -1,0 +1,8 @@
+{
+  "name": "reference-program",
+  "description": "A bench of customers who agreed to take a call \u2014 tiered, rationed, and honest about the segments with none.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

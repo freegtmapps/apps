@@ -1,0 +1,237 @@
+# The tool for Adjacency Explorer (gtmsrv/agents/expansion/adjacency-explorer.yaml).
+#
+# WHAT IT IS FOR: the customer list has drifted from the ICP slide, and the drift
+# is the finding. This app reads the accounts and case studies that already
+# exist, names the segments, verticals and geographies the product has started
+# winning by accident, and prices each one — what it would demand of product,
+# pricing and message, and the reason it might fail.
+#
+# NOT `find-lookalikes`. That app ranks similar ACCOUNTS onto leads: one seed
+# customer in, a target list out. This writes a SEGMENT-level artefact — a
+# ranked set of markets with entry costs attached — and the card's own
+# resolution note says the two were compared and are not the same job.
+#
+# ONE OUTPUT TARGET, and the card produces three keys. `expansion.adjacent_segments`
+# is the artefact this app validates and lands. The card's other two produced
+# keys — `icp` and `positioning` — are PROPOSALS the agent writes through the
+# pipeline tool mid-run, free-form and bounded by its own scope, exactly as the
+# card's fifth responsibility asks: "as a proposal, never as an edit". An app
+# declares one validated object going to one place, so they are deliberately
+# not declared here.
+#
+# NO `skills:`, and this was checked rather than assumed. The vendored inventory
+# was read in full. `won-deal-icp-finder` is the near neighbour — it derives a
+# proven ICP from closed-won deals — but its body routes to
+# `references/deal-data-extraction.md`, `references/archetype-clustering.md` and
+# `scripts/analyze.py`, and the vendored directory contains SKILL.md and nothing
+# else: naming it ships a model instructions to open four files that are not
+# there. It also assumes a CRM deal ledger this app does not require, and it
+# re-derives the CURRENT ICP rather than the adjacent one. `icp-lookalike-expansion`
+# and `lookalike-candidate-sourcing` are per-person searches; `market-finder` and
+# `tam-builder` enumerate one named market you already chose, which is the step
+# AFTER this one. A near-miss skill is worse than none, so there are none.
+#
+# NO `emits:`. Everything this app has to say — including the escalation, that
+# the beachhead is no longer what Positioning says — lands in the output object
+# as `icp_divergence.verdict`. A signal beside it would be a second label for
+# one fact, and the card's agent is the thing holding the sink.
+name: New segments
+description: "The segments, verticals and geographies your customers already dragged you into — ranked, with the cost of entry."
+category: find-and-research
+type: research
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "where should we expand next?"
+  - "find our adjacent segments"
+  - "which markets are we winning by accident?"
+
+# `web` and nothing else. An adjacency is a claim about a market that is not
+# yours yet, and the only way to check one is to go and read: who already sells
+# there, what a buyer in that vertical is regulated into, whether the geography
+# has a channel. The customers themselves come from the workspace's own records
+# and case studies through the platform, not from a bound vendor — which is why
+# no CRM is named here and the app runs for a workspace that has none.
+tools: [web]
+
+may:
+  - read
+
+context:
+  # Workspace-scoped, and both name real WorkspaceValues fields. The declared
+  # ICP is half of the comparison this app exists to make — without it there is
+  # nothing to be divergent FROM — and the regions you sell into today are what
+  # makes a geography adjacent rather than simply foreign.
+  - key: icp
+    scope: workspace
+    ask: "Who does the company say it sells to? The ICP as written down, even if you suspect it's stale."
+    type: text
+  - key: regions
+    scope: workspace
+    ask: "Which regions do you sell into today?"
+    type: list
+
+  # App-scoped: private to this app, because they are about this analysis rather
+  # than about the workspace. The dotted keys the card reads — expansion.case_studies,
+  # market, records — are pipeline context with a different writer and never
+  # appear here.
+  - key: customer_evidence
+    scope: app
+    ask: "Which customers should I read? Name them, or say 'use what's in the workspace' and I'll take the accounts and case studies already there."
+    type: list
+  - key: cannot_change
+    scope: app
+    ask: "What can't move in the next two quarters — the product, the price, the languages or compliance you support?"
+    type: list
+
+output:
+  name: adjacent_segments
+  target: expansion.adjacent_segments
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [icp_divergence, candidates, pursue_first]
+    properties:
+      icp_divergence:
+        description: >-
+          The declared ICP against the one the customer list shows. This is the
+          first responsibility on the card and it is required, because a run that
+          skipped it would be naming adjacencies to a profile nobody checked.
+        type: object
+        additionalProperties: false
+        required: [declared, observed, verdict]
+        properties:
+          declared:
+            description: The ICP as the workspace states it, in the workspace's own words.
+            type: string
+          observed:
+            description: Who is actually paying, read off the customer list rather than off the slide.
+            type: string
+          verdict:
+            description: >-
+              `beachhead_moved` is the card's escalation — the observed base has
+              diverged so far that the beachhead is no longer what Positioning
+              says. It is a value here rather than a signal so that the finding
+              and its evidence stay in one object.
+            enum: [holds, drifting, beachhead_moved]
+          note: {type: string}
+      candidates:
+        description: >-
+          The adjacencies, ranked. Ordered by `rank`, and one entry is a complete
+          answer — a short list that survived scrutiny beats a long one that did
+          not.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, kind, rank, customers, evidence_strength, demands, why_it_might_fail]
+          properties:
+            name:
+              description: The segment in the words a person there would recognise — "mid-market EU logistics", not "logistics".
+              type: string
+              minLength: 1
+            kind:
+              enum: [segment, vertical, geography]
+            rank:
+              description: Position against the others, 1 is first. Every candidate carries one; the card's done_when is a rank, not a pile.
+              type: integer
+              minimum: 1
+            customers:
+              description: >-
+                The named customers this segment was inferred from. At least one,
+                always — a candidate with none was imagined, not observed, and
+                that is the artefact that reads as research and cannot be checked.
+              type: array
+              minItems: 1
+              items: {type: string}
+            evidence_strength:
+              description: >-
+                `hypothesis` when fewer than three distinct customers stand behind
+                it, `pattern` when more. Two accidental customers is a hypothesis
+                and must be labelled as one, not ranked as a market.
+              enum: [hypothesis, pattern]
+            demands:
+              description: What entering deliberately would cost. All three are required — "no change" is an answer, silence is not.
+              type: object
+              additionalProperties: false
+              required: [product, pricing, message]
+              properties:
+                product: {type: string, minLength: 1}
+                pricing: {type: string, minLength: 1}
+                message: {type: string, minLength: 1}
+            why_it_might_fail:
+              description: The strongest case against entering, written as if by somebody who does not want to go.
+              type: string
+              minLength: 1
+            sources:
+              description: Pages read to check the market outside this workspace's own customers.
+              type: array
+              items: {type: string}
+      pursue_first:
+        description: >-
+          The one adjacency to enter now. Required, because a list of five is a
+          way of choosing none. When nothing on the list is worth entering yet,
+          `candidate` is empty and `why` says what would have to be true first.
+        type: object
+        additionalProperties: false
+        required: [candidate, why, first_test]
+        properties:
+          candidate:
+            description: The `name` of one candidate above, or empty when the honest answer is "none of these yet".
+            type: string
+          why: {type: string, minLength: 1}
+          first_test:
+            description: The cheapest thing that would prove or kill it — a test, not a plan.
+            type: string
+            minLength: 1
+
+instructions: |-
+  You are looking for where {{company_name}} sells next, and the answer is
+  already in the customer list. Companies win in places they never targeted;
+  nobody writes it down, because each one arrived as a one-off deal.
+
+  Start with the drift. Read the customers and case studies this workspace has —
+  who they are, what size, which industry, which country, what they bought you
+  for — and set that against the ICP as declared. Say plainly where the two
+  diverge. If what is actually paying is no longer recognisable as the ICP on
+  the page, that is the finding, and it goes in as `beachhead_moved` with the
+  customers that show it: raise it to the lead and to Positioning as a proposal,
+  never as an edit to their work.
+
+  Then cluster. Group the accounts you have into candidate segments, verticals
+  and geographies. Evidence before ambition: every candidate names the customers
+  it came from, and a segment standing on two accidental customers is a
+  hypothesis, so label it one. Do not fill a thin cluster out with plausible
+  companies you have not seen buy.
+
+  For each candidate, price the entry as loudly as the prize. What would the
+  product have to do that it does not do — a compliance regime, a language, an
+  integration nobody has asked for yet? What would pricing have to become when
+  the buyer is smaller, or procurement is longer? What in the message stops
+  working when the pain is not the one {{product}} was written for? Check the
+  outside world rather than reasoning from the inside: read who already sells
+  there and what a buyer there is required to have, and keep the pages. Then
+  write the reason it might fail, and write it as somebody who does not want to
+  go — the thing that kills an expansion is almost never the thing that was
+  hard to find.
+
+  Respect what cannot move. An adjacency that needs the price to double or the
+  product to grow a module the team has said it will not build this year is not
+  a candidate; it is a note for next year, and it should say so.
+
+  Rank them against each other, and then choose one. A list of five is a way of
+  choosing none — name the single adjacency to enter now, why it beats the ones
+  above and below it, and the cheapest test that would kill it inside a quarter.
+  If the honest answer is that none of them is ready, say that and say what would
+  have to be true.
+
+  Return the whole thing as your structured output. In one line, say how many
+  candidates you found, which one you would enter, and whether the customer base
+  still matches the ICP as written.

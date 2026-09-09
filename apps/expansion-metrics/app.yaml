@@ -1,0 +1,295 @@
+# One NRR number hides four different businesses. This app pulls them apart.
+#
+# THE OUTPUT TARGET IS THE CARD'S, NOT THE ROW'S SHORTHAND.
+# The NRR Analyst card (gtmsrv/agents/expansion/nrr-analyst.yaml) declares
+# `produces.context: [revenue.forecast]`, and its own header says why: TEAMS.md
+# Team 7 row 9 returns "expansion pipeline into revenue.forecast", so this job
+# writes a key Revenue owns and the write lands there as a proposal. Since
+# `produces.context` is canonical for `scope.context.writes`, and a writes entry
+# covers a target that is the same key or a PREFIX of it, the target below is
+# inside that scope and passes the pairing check (E_WRITES_EXCEED_SCOPE).
+#
+# It is `revenue.forecast.expansion` and not `revenue.forecast` because this app
+# does not produce a forecast. It produces the expansion component of one, and an
+# app whose validated object landed on the whole field would overwrite the
+# Forecaster's work with a document about one of its inputs. The nested key is
+# what "expansion pipeline INTO revenue.forecast" actually means.
+#
+# The brief that commissioned this app said the card produces `expansion.nrr` and
+# to target that. The card in the tree says otherwise, in a comment written on
+# purpose, so the card wins here — see the report. If `expansion.nrr` is ever the
+# intended home, it is a one-line change HERE AND IN THE CARD TOGETHER, because
+# the two ends are checked against each other at compose.
+#
+# NO `skills:`. The named methods — nrr-decomposition, expansion-pipeline — do not
+# exist in either vendored library. The one real candidate is `revops-metrics`
+# (NEON-Rutger), which carries the NRR identity and a four-type expansion matrix,
+# and it is still the wrong skill for this app: it teaches WHAT a company should
+# measure and how to benchmark itself, on a body that is mostly funnel volume,
+# CAC/LTV and Rule of 40. This app computes one company's own numbers from its own
+# billing data, and its standing instruction is never to fill a gap with a
+# plausible figure — beside which a table of benchmark ranges is the exact prose
+# that makes an invented number sound checked. It also already ships inside
+# `diagnose-the-revenue-system`, which is the diagnosis this app is not.
+#
+# NO `emits:`. Everything this run has to say is in the validated object —
+# including the accounts left out for missing data and the accounts where billing
+# and the record disagree, which is what the card escalates on. A signal here
+# would be a second label for a field somebody already has to read.
+name: Expansion metrics
+description: "Breaks NRR into expansion, contraction, churn and flat renewal, and sizes the expansion pipeline behind it."
+category: find-and-research
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "what is our NRR really made of?"
+  - "break down net revenue retention by segment"
+  - "how big is the expansion pipeline?"
+
+# Read and nothing else. This app changes no record and drafts no message; it
+# reads what accounts pay and what the expansion side has already found, and
+# returns one object. `write_lead` would put update_lead in front of a model whose
+# whole discipline is not to touch the numbers it is reading.
+may:
+  - read
+
+# OPTIONAL, not required, and the distinction is the design. Most workspaces keep
+# what an account pays in the CRM, and with it bound this app reads contract values
+# straight from the source. Without it the app still runs — it works from the
+# records it can read and from `revenue.revenue_metrics`, which the Metrics Reporter
+# already wrote — and names every account it could not price rather than pricing it
+# anyway. Declaring `tools: [crm]` at the top level would make an app that degrades
+# honestly into one that refuses to bind.
+requires:
+  optional:
+    tools: [crm]
+
+# App-scoped, all four, because none of them is a `domain.WorkspaceValues` field —
+# the workspace scope is a closed set (company_name, crm, icp, industry, product,
+# regions, sender_name, sender_voice) and a fifth name invented here would be asked
+# for and then dropped.
+#
+# The DOTTED keys this job reads — revenue.revenue_metrics, expansion.expansion_signals,
+# expansion.upsell_paths, revenue.tiers — are pipeline context with a different
+# writer and never appear here. These four are the conventions a model cannot
+# derive from the data and would otherwise pick for you, quietly, differently each
+# month.
+context:
+  - key: retention_period
+    scope: app
+    ask: "Over what window do you quote NRR — the month, the quarter, or trailing twelve months?"
+    type: enum
+    options: [monthly, quarterly, trailing_twelve_months, annual]
+
+  - key: cohort_definition
+    scope: app
+    ask: "How should accounts be grouped into cohorts — by the month they started paying, the quarter, or something else you already use?"
+    type: text
+
+  - key: segments
+    scope: app
+    ask: "Which segments should I break this down by? Tiers, company size, region — whatever you actually run the business by."
+    type: list
+
+  - key: billing_source
+    scope: app
+    ask: "Which system holds what an account actually pays — the one you would believe if the CRM disagreed with it?"
+    type: text
+    infer_from: [connections]
+
+output:
+  name: expansion_forecast
+  target: revenue.forecast.expansion
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [period, currency, nrr, cohorts, segments, expansion_pipeline, excluded, disagreements]
+    properties:
+      period:
+        description: The window every figure below is measured over. Stated once, structurally, so no number in this object is undated.
+        type: object
+        additionalProperties: false
+        required: [start, end, basis]
+        properties:
+          start: {type: string, description: "ISO date the window opens."}
+          end: {type: string, description: "ISO date the window closes."}
+          basis:
+            description: What was quoted. Must match the workspace's declared retention_period.
+            enum: [monthly, quarterly, trailing_twelve_months, annual]
+
+      currency:
+        description: ISO 4217. Revenue with no currency is a number two people read differently.
+        type: string
+
+      nrr:
+        description: >-
+          The whole book, pulled into its four parts. Beginning ARR plus expansion, minus
+          contraction, minus churn, over beginning ARR — with flat renewal named rather than
+          implied, because the accounts that renewed unchanged are the business the headline
+          hides best.
+        type: object
+        additionalProperties: false
+        required: [beginning_arr, expansion, contraction, churn, flat_renewal, nrr_pct, grr_pct, accounts]
+        properties:
+          beginning_arr: {type: number}
+          expansion: {description: "Revenue added by accounts that grew.", type: number}
+          contraction: {description: "Revenue lost by accounts that shrank and stayed.", type: number}
+          churn: {description: "Revenue lost by accounts that left.", type: number}
+          flat_renewal: {description: "Revenue from accounts that renewed unchanged.", type: number}
+          nrr_pct: {type: number}
+          grr_pct: {type: number}
+          accounts:
+            description: How many accounts sit in each part. A percentage moved by one account is not a trend.
+            type: object
+            additionalProperties: false
+            required: [grew, shrank, left, flat]
+            properties:
+              grew: {type: integer}
+              shrank: {type: integer}
+              left: {type: integer}
+              flat: {type: integer}
+
+      cohorts:
+        description: >-
+          At least one. An NRR figure without a cohort is a number nobody can check, so the
+          decomposition is required to arrive grouped rather than as a single headline with a
+          cohort view attached if there was time.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [cohort, window, beginning_arr, nrr_pct, accounts]
+          properties:
+            cohort: {description: "The label in the workspace's own terms — '2025-Q1 starts'.", type: string}
+            window: {description: "The period this cohort's NRR is measured over, which is not always the run's period.", type: string}
+            beginning_arr: {type: number}
+            nrr_pct: {type: number}
+            accounts: {type: integer}
+
+      segments:
+        description: Which parts of the book carry the expansion and which quietly drag it down.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [segment, nrr_pct, expansion, contraction, churn, direction]
+          properties:
+            segment: {type: string}
+            nrr_pct: {type: number}
+            expansion: {type: number}
+            contraction: {type: number}
+            churn: {type: number}
+            direction:
+              description: Whether this segment lifts the company number or holds it down. Said plainly, once, per segment.
+              enum: [carries, drags, neutral]
+            note: {description: "One line on why, when the number alone would mislead.", type: string}
+
+      expansion_pipeline:
+        description: >-
+          The expansion that has not closed yet, one row per account. Value, stage and expected
+          date are all required: this object is proposed into the forecast, and a pipeline row
+          without a date and a number is not something anybody can forecast with.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [account, value, stage, expected_date, evidence]
+          properties:
+            account: {type: string}
+            value: {description: "Annualised value of the expansion, in the stated currency.", type: number}
+            stage:
+              description: How far along it actually is, not how likely it feels.
+              enum: [signal, qualified, proposed, in_negotiation, verbal]
+            expected_date: {description: "ISO date it is expected to land.", type: string}
+            path: {description: "Which upsell or cross-sell path this follows, where one is named in expansion.upsell_paths.", type: string}
+            evidence:
+              description: >-
+                The signals and paths this row was built from. At least one — a pipeline row
+                with no evidence behind it was imagined, and it is about to be added to somebody's
+                forecast.
+              type: array
+              minItems: 1
+              items: {type: string}
+
+      excluded:
+        description: >-
+          Every account left out of the numbers above, and what was missing. Required, so that
+          leaving an account out is an act with a record rather than a silence — the alternative
+          is estimating over the gap, which this app does not do.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [account, missing]
+          properties:
+            account: {type: string}
+            missing: {description: "What was not there — no start date, no contract value, no billing history.", type: string}
+
+      disagreements:
+        description: >-
+          Accounts where billing and the record do not agree on what is paid. Reported, never
+          reconciled: the card escalates on exactly this, and an app that picked a side would
+          make the escalation impossible to notice.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [account, billing_says, record_says]
+          properties:
+            account: {type: string}
+            billing_says: {type: number}
+            record_says: {type: number}
+
+instructions: |-
+  One NRR number hides four different businesses: the accounts that grew, the ones
+  that shrank, the ones that left, and the ones that renewed flat. Your job is to
+  pull them apart, and then to put a size and a date on the expansion that has not
+  closed yet.
+
+  Show the decomposition, not the headline. "NRR is 112%" is a fact nobody can act
+  on; "112% — and 9% of the 12 came from four enterprise accounts adding seats,
+  while mid-market contracted for the third month running" is the same run, done
+  properly. Lead with the four parts and the counts behind them. A percentage moved
+  by one account is not a trend, and you should say so when it is what happened.
+
+  State the period and the cohort every time. An NRR figure without both is a
+  number nobody can check, and it will be repeated in a board deck by somebody who
+  could not check it either. Use the window the workspace quotes NRR over, and the
+  cohort grouping it already uses — do not invent a tidier one because it makes a
+  better chart.
+
+  Never fill a gap in billing data with an estimate. If an account has no start
+  date, no contract value, or a history too short to place in a cohort, leave it
+  out of the arithmetic and name it in `excluded` with what was missing. An
+  estimated revenue figure is worse than a missing one, because nothing downstream
+  can tell the two apart — and the number you invent here arrives in a forecast
+  three steps later wearing the same confidence as the ones you counted.
+
+  Where billing and the record disagree about what an account pays, record both
+  and pick neither. That disagreement is the finding. Put it in `disagreements`
+  and say so in your closing line; it is what this job escalates on, and an app
+  that quietly averaged the two would hide the one problem worth raising.
+
+  For the pipeline, work from what the expansion side has already found — the open
+  signals and the upsell paths — and size each one as an account, a value, a stage
+  and a date. Stage is how far along it actually is, not how likely it feels: a
+  usage threshold that tripped last week is `signal`, not `proposed`. Every row
+  carries the evidence it came from. If a signal is too thin to price, it is not a
+  pipeline row; it is a signal, and it stays one.
+
+  This object is proposed into the revenue forecast, so write it for somebody who
+  forecasts with it rather than around it. Say in one closing line what the four
+  parts were, which segment carries and which drags, what the expansion pipeline
+  totals, and how many accounts you had to leave out and why. If there is not
+  enough history to compute a cohort at all, say that plainly instead of computing
+  one from two months of data.

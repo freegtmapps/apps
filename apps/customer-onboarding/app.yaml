@@ -1,0 +1,359 @@
+# The walk from signature to the activation event, on a clock somebody can see.
+#
+# WHY IT IS ITS OWN APP. `activation-metrics` decides WHAT counts as activated —
+# one observable event, measurable from system data. This app is the only thing
+# that turns that definition into a path a person walks: kickoff, one workflow
+# live, the milestone that proves value, and a stall check on each of them. The
+# two are next to each other in the retention motion and they are not the same
+# document: a definition is a measurement, and a sequence is a commitment with
+# dates on it. One app doing both would re-decide what activation means every
+# time somebody wanted next week's plan.
+#
+# ONE SKILL, AND IT IS A REAL ONE. TEAMS.md names `onboarding-sequence`,
+# `kickoff-template` and `checklist-design` for this row; none of the three is a
+# directory under vendor/skills, and naming one would be a method the app cannot
+# follow. What IS vendored — NEON-Rutger's `onboarding-activation` — is this job
+# described from the same angle the card takes: activation is an event and not a
+# phase, the kickoff confirms rather than collects, the arc is milestone gates,
+# and the three stall signals have named responses. The card's own instruction
+# ("the everything-onboarding activates nothing") is that skill's sentence. It is
+# vendored at 7a108f1 with the reference page its body routes to, copied byte for
+# byte, frontmatter and all.
+#
+# ONE OUTPUT TARGET, and it is `retention.onboarding_plan` — the key the card
+# and retention.lead both name as this agent's own (`owns:
+# [retention.onboarding_plan]`). The card's other product is drafts: the kickoff
+# message, the sequence copy and the checklist, staged for approval because a new
+# customer sees them. Those are not structured output and are not declarable
+# here — they go through stage_draft, and anything written onto a customer record
+# is written by the agent through the pipeline tool, bounded by its own scope.
+#
+# THE DONE_WHEN IS IN THE SCHEMA, not in the prose. The card is finished when
+# EVERY persona has a DATED sequence from kickoff to the activation event with a
+# STALL CHECK ON EACH MILESTONE — so `personas` needs at least one entry, every
+# persona needs a `kickoff`, a non-empty `milestones` list and a `graduation`,
+# every milestone carries a `day` (a number, not "early") and a required
+# `stall_check` with its own response, and the last milestone of every persona is
+# the activation event by construction: `activation` names which milestone it is.
+# A sequence whose milestones have no stall checks does not validate here, which
+# is the only way to stop it being written.
+#
+# AND THE ESCALATE_WHEN IS TOO. `cannot_meet_target` is required and may be
+# empty: a persona whose fastest honest sequence lands past the time-to-value
+# target is listed there with the reason, rather than compressed on paper into a
+# plan nobody can run.
+name: Customer onboarding
+description: The path from signature to activation — a dated sequence per persona, with a stall check on each milestone.
+category: keep-in-sync
+type: plan
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "design our customer onboarding"
+  - "what should the first 30 days after signing look like?"
+  - "new customers sign and then stall — fix the onboarding"
+
+skills:
+  - onboarding-activation
+
+# NO `tools:`. The activation definition, the time-to-value target, the personas
+# and the customer records all arrive with the run; the card gives this job
+# pipeline, brain and approvals and no vendor connection. Declaring `product` or
+# `crm` here would fail to bind for every workspace that never connected one, in
+# order to fetch what the app already has.
+
+# `read` and `stage`, and nothing beyond them.
+#
+# NO `emit`, and therefore no `emits:`. Everything this app has to say — the
+# sequence, the dates, the stall checks, and the personas whose target cannot be
+# met — lands in the one validated object. A signal beside it would be a second
+# label for a fact already written, and `may` is enforced by projection alone, so
+# an `emits:` list without `emit` would declare signals the app structurally
+# cannot raise.
+#
+# NO `write_lead`: a plan is not a fact about a customer. It is staged, and
+# anything the customer will actually see waits for a person.
+may:
+  - read
+  - stage
+
+context:
+  # Workspace-scoped, and a real WorkspaceValues field: what the customer is
+  # being onboarded ONTO. The shape of the product decides whether "one workflow
+  # live" is a week or a quarter, and an app that asked for it every run would be
+  # asking a question three other apps already have the answer to.
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+
+  # App-scoped: the three limits a model cannot infer and will otherwise invent
+  # generously — always a hands-on implementation, always with a call, always
+  # with the customer's data ready on day one.
+  #
+  # The dotted pipeline keys the card reads — retention.activation_definition,
+  # retention.time_to_value_target, icp.personas — are NOT declared here. They
+  # are a different table with a different writer and they arrive with the run.
+  - key: onboarding_model
+    scope: app
+    ask: "Who does the work of getting a new customer live — they do it themselves, someone walks them through it, or it is a scoped implementation project?"
+    type: enum
+    options: [self_serve, guided, implementation_project]
+  - key: onboarding_prerequisites
+    scope: app
+    ask: "What does a new customer have to give you or do before anything can go live — data, an integration, access, a security review?"
+    type: list
+  - key: onboarding_channels
+    scope: app
+    ask: "Where does onboarding actually happen for you — email, in-app, a shared channel, calls? Name only the ones you can run every week."
+    type: list
+
+output:
+  name: onboarding_plan
+  target: retention.onboarding_plan
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [activation_event, target_days, personas, cannot_meet_target]
+    properties:
+      activation_event:
+        description: >-
+          The one event every sequence here drives to, in the words of the
+          activation definition this plan was built from. Not a phase and not a
+          vendor milestone: go-live, trained and configured are things we did.
+          Required — with nothing to build toward there is no plan to write.
+        type: string
+      target_days:
+        description: >-
+          The time-to-value target, in days from signature. A NUMBER, because it
+          is the thing every sequence below is checked against, and "quickly" is
+          not a target anybody can miss.
+        type: number
+      personas:
+        description: >-
+          One sequence per persona, because the path an admin walks is not the
+          path an executive sponsor walks. At least one — the card is not done
+          until every persona has one.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [persona, kickoff, milestones, activation, graduation]
+          properties:
+            persona:
+              description: Who this sequence is for, named as the personas are named.
+              type: string
+            first_workflow:
+              description: >-
+                The single workflow this persona gets live first — the one that
+                carried the buying case. Empty only where it is genuinely decided
+                per account; a broad rollout named here activates nothing.
+              type: string
+            kickoff:
+              description: The first meeting or message, which confirms rather than collects.
+              type: object
+              additionalProperties: false
+              required: [day, channel, confirms, open_question]
+              properties:
+                day:
+                  description: Days from signature. Usually small, and never blank.
+                  type: number
+                channel:
+                  description: >-
+                    Where it happens — one of the channels this workspace can
+                    actually run every week.
+                  type: string
+                confirms:
+                  description: >-
+                    What we already know and read back to them: why they bought,
+                    the impact they quantified, the date they are working to, who
+                    is spending political capital on this. At least one, because
+                    a kickoff that confirms nothing is an interview sales already
+                    ran.
+                  type: array
+                  minItems: 1
+                  items: {type: string}
+                open_question:
+                  description: >-
+                    The one thing we do NOT know and have to ask — what has
+                    changed since they signed.
+                  type: string
+            milestones:
+              description: >-
+                The dated gates between kickoff and the activation event. At
+                least one, each with a day, a proof and a stall check.
+              type: array
+              minItems: 1
+              items:
+                type: object
+                additionalProperties: false
+                required: [name, day, proof, owner, stall_check]
+                properties:
+                  name:
+                    description: What is true when this gate is passed, in a customer outcome rather than a task we completed.
+                    type: string
+                  day:
+                    description: Days from signature. A number — a milestone without a date is a hope.
+                    type: number
+                  proof:
+                    description: >-
+                      How we know it happened, read from system data. If it takes
+                      a meeting to find out, this is the wrong proof.
+                    type: string
+                  owner:
+                    description: Which side has to move for this gate to pass.
+                    enum: [us, customer, both]
+                  stall_check:
+                    description: >-
+                      What tells us this gate is stuck, when we look, and what we
+                      do about it. Required on every milestone: a stall nobody
+                      checks for is found at renewal.
+                    type: object
+                    additionalProperties: false
+                    required: [signal, check_after_days, response]
+                    properties:
+                      signal:
+                        description: >-
+                          The observable — access blocked, attendance decaying,
+                          live but idle. What we watch, not how we feel about it.
+                        type: string
+                      check_after_days:
+                        description: How long after the milestone's day this counts as stalled.
+                        type: number
+                      response:
+                        description: >-
+                          What is actually done, by whom, when it fires. Named,
+                          not "follow up" — the sponsor escalation with the cost
+                          of delay against their own date, the champion
+                          conversation, the shrink-and-retrain.
+                        type: string
+            activation:
+              description: >-
+                Which milestone IS the activation event, and how long the whole
+                sequence takes to reach it. This is what makes the sequence a
+                path to activation rather than a list of dates.
+              type: object
+              additionalProperties: false
+              required: [milestone, day]
+              properties:
+                milestone:
+                  description: The name of the milestone above where the activation event happens.
+                  type: string
+                day:
+                  description: Days from signature to activation for this persona. Compared against target_days.
+                  type: number
+            graduation:
+              description: >-
+                How onboarding ENDS, said out loud. An account that fades out of
+                onboarding without a baseline makes every later value
+                conversation start from archaeology.
+              type: object
+              additionalProperties: false
+              required: [baseline, handover_to]
+              properties:
+                baseline:
+                  description: >-
+                    The before-and-after numbers agreed with the customer at the
+                    end, and where each is read from.
+                  type: string
+                handover_to:
+                  description: Who owns the account in steady state, and when they are introduced.
+                  type: string
+      checklist:
+        description: >-
+          The internal list somebody works from, in order. Optional here because
+          the customer-facing version is staged as a draft rather than written
+          into the plan.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [item, owner]
+          properties:
+            item: {type: string}
+            owner: {enum: [us, customer, both]}
+            day: {type: number}
+      prerequisites_at_risk:
+        description: >-
+          The things a customer has to hand over before anything can go live that
+          routinely arrive late — data, access, an integration, a security review.
+          Named so the sequence starts asking for them on day one instead of
+          discovering them in week three.
+        type: array
+        items: {type: string}
+      cannot_meet_target:
+        description: >-
+          Personas whose fastest honest sequence lands past target_days, with the
+          reason. Empty when every one of them fits. Never resolved by moving a
+          date on paper — this is the list a person has to answer before the plan
+          is run.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [persona, fastest_days, why]
+          properties:
+            persona: {type: string}
+            fastest_days: {type: number}
+            why: {type: string}
+
+instructions: |-
+  You are designing the path a new customer walks from signature to the moment
+  they get the thing they bought. That gap is the least instrumented part of a
+  customer's life and it is where accounts quietly die, so the point of this plan
+  is that the gap gets walked on a clock instead of hoped through.
+
+  Start from the activation definition and the time-to-value target, and drive to
+  that event and no other. If there is no activation definition on file, say so
+  and stop. There is nothing to build toward yet, and the Activation Designer is
+  the one who fixes it — a plan invented around a plausible-sounding milestone is
+  worse than no plan, because everyone will work to it.
+
+  One sequence per persona. The path an admin walks is not the path a sponsor
+  walks, and a single sequence addressed to "the customer" is addressed to
+  nobody.
+
+  One workflow live beats a broad rollout — the everything-onboarding activates
+  nothing. Shrink each sequence to the single workflow that carried the buying
+  case and get it producing on the customer's own data. Second workflows and
+  wider teams come after the activation event, not before it.
+
+  Write the kickoff so it confirms what they already told us. Read back why they
+  bought, the impact they put a number on, the date they are working to, and who
+  is spending political capital on this working. Never re-interview them on what
+  sales already knows. The one thing you do ask is what has changed since they
+  signed.
+
+  Date every milestone, and say for each one how you would know it happened from
+  system data. If it takes a meeting to find out whether a gate was passed, the
+  proof is wrong. Fit the dates to how onboarding actually runs here — a
+  self-serve model does not get a three-call kickoff, and an implementation
+  project does not activate in a fortnight.
+
+  Put a stall check on every milestone: what you watch, when you look, and what
+  is actually done when it fires. Access blocked for a week goes to the sponsor
+  with the cost of delay against their own date, not a polite nudge to a blocked
+  admin. Attendance decaying gets the champion conversation. Live but idle gets
+  shrunk and retrained on the one workflow — never a new feature for an account
+  that has not used the first one.
+
+  End onboarding on purpose. Every sequence graduates: the activation event
+  verified, the before-and-after numbers agreed and written down, and the person
+  who owns the account next introduced by name.
+
+  Where a persona cannot reach the activation event inside the target with any
+  sequence you could honestly run, put it in cannot_meet_target with the reason
+  and the fastest you could do. Do not compress a date on paper to make the plan
+  look like it fits.
+
+  Return the plan as your structured output. The kickoff message, the sequence
+  copy and the checklist a customer sees go out through stage_draft — nothing
+  reaches a new customer until a person has approved it.

@@ -1,0 +1,306 @@
+# The app for revenue.pricing-strategist — the job whose whole point is that the
+# price was guessed in the first month and nobody has gone back to it.
+#
+# ONE OUTPUT TARGET, AND IT IS `revenue.pricing_model`.
+# The card produces two context keys: `revenue.pricing_model` and
+# `company.pricing_hypothesis`. An app declares ONE validated object going to one
+# place, so the pricing model is the target and the hypothesis is not: the
+# hypothesis is the founder's prior, revised in passing as the analysis lands,
+# and the agent writes it through the pipeline tool bounded by its own
+# scope.context.writes. A manifest claiming both would be declaring a destination
+# for an object it does not produce.
+#
+# `revenue.pricing_model` is also the name four other cards read it by —
+# sales.motion-designer, sales.deal-desk, sales.business-case-builder and
+# revenue.packager all list it in `needs.context`. It is not a private name this
+# app chose.
+#
+# NO `skills:`, and that is the finding rather than an omission.
+# TEAMS.md names `pricing-strategy` and `value-metric-selection` for this row.
+# Neither exists in the vendored inventory, and nothing there does this work:
+# the nearest hits are `competitor-positioning` (a marketing messaging briefing
+# with its own snapshot state, about how rivals TALK, not what we CHARGE) and
+# `sales-methodology` (deal qualification). Naming either would be a method this
+# app cannot follow, in the voice of an author who never wrote about pricing.
+name: Pricing strategy
+description: What to charge, on what unit, and the evidence for the number — priced on value, never on cost.
+category: sell
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "what should we charge?"
+  - "set our pricing"
+  - "what should our price scale on?"
+
+# `web` is how a competitor's published price is read off their own page on a
+# date you can quote. It is the one capability this app genuinely reaches for,
+# and a deployment binding none of it fails at bind rather than running and
+# recalling a price from training data.
+tools: [web]
+
+# CRM is where won and lost deals live when this workspace keeps them there.
+# Optional and not required, because the same evidence arrives through
+# `sales.win_loss_log` when the win/loss analyst has written it, and a workspace
+# that says no once through set_reach should stop being asked.
+requires:
+  optional:
+    tools: [crm]
+
+# `read` and `stage`, and nothing else.
+#
+# NO `write_lead`: nothing here is about a lead. NO `emit` and therefore no
+# `emits:` — everything this app has to say lands in `revenue.pricing_model`,
+# and a signal beside it would be a second label for the same fact.
+#
+# `stage` is the card's approval clause in permission form: "any change to the
+# price, the unit or the model — the founder decides, the analysis does not". A
+# recommendation is staged, never applied, and the escalations the card names —
+# won and lost deals disagreeing, an ICP too broad for one price — are staged
+# questions rather than a number picked to paper over them.
+may:
+  - read
+  - stage
+
+# NO DOTS. `context[].key` is `^[a-z][a-z0-9_]*$`; the dotted pipeline keys this
+# job reads (company.pricing_hypothesis, market.competitor_profiles,
+# sales.win_loss_log) are a different table with a different writer and never
+# appear here.
+#
+# The workspace scope is a closed set of real WorkspaceValues fields, so both
+# workspace keys below name one. The two app keys are the things no research can
+# recover and no model should guess: what this company charges today, and what
+# the price is not free to ignore.
+context:
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+  - key: icp
+    scope: workspace
+    ask: "Who is this priced for — the customer the number has to fit?"
+    type: text
+  - key: current_price
+    scope: app
+    ask: "What do you charge today, and how is it counted? Say 'nothing yet' if you have not set a price."
+    type: text
+  - key: pricing_constraints
+    scope: app
+    ask: "Anything the price has to live with — a contract you cannot reprice, a channel that takes a cut, a floor you have promised somebody?"
+    type: text
+
+# The card's done_when, encoded structurally wherever it could be:
+#   "the model, the value metric and the number are written"      → all three required
+#   "with the evidence for each"                                  → evidence minItems 1 on each
+#   "and the objection each will draw"                            → objections minItems 1, tagged by what it is about
+#   "quote published prices with the date they were read"         → read_on required on every benchmark
+#   "say plainly where a competitor hides theirs"                  → disclosure is an enum, not a blank field
+#   "recommend one price, not a range"                            → one amount, and additionalProperties: false
+#                                                                    leaves nowhere to put a second number
+#   "state what would make you move it"                           → would_change_this minItems 1
+#   escalate_when                                                 → `unresolved` is required, so silence has
+#                                                                    to be stated rather than merely absent
+output:
+  name: pricing_model
+  target: revenue.pricing_model
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [model, value_metric, price, benchmarks, willingness_to_pay, objections, would_change_this, unresolved]
+    properties:
+      model:
+        description: How the money is charged — subscription, usage, hybrid, per-outcome. The shape, not the number.
+        type: object
+        additionalProperties: false
+        required: [shape, rationale, evidence]
+        properties:
+          shape: {type: string}
+          rationale:
+            description: Why this shape and not the obvious alternative, in terms of how this buyer buys.
+            type: string
+          evidence:
+            description: What this rests on. At least one — a model with no evidence is a preference.
+            type: array
+            minItems: 1
+            items: {type: string}
+      value_metric:
+        description: The unit the price scales on. It has to be something the buyer already counts before you charge for it.
+        type: object
+        additionalProperties: false
+        required: [unit, what_the_buyer_calls_it, why_it_tracks_value, evidence]
+        properties:
+          unit: {type: string}
+          what_the_buyer_calls_it:
+            description: Their word for it, not yours. A metric a buyer cannot name is one they cannot forecast.
+            type: string
+          why_it_tracks_value:
+            description: Why more of this unit means more value received, not just more usage.
+            type: string
+          rejected:
+            description: Metrics considered and dropped, and why each one punishes the customer or is easy to game.
+            type: array
+            items:
+              type: object
+              additionalProperties: false
+              required: [unit, why_not]
+              properties:
+                unit: {type: string}
+                why_not: {type: string}
+          evidence:
+            type: array
+            minItems: 1
+            items: {type: string}
+      price:
+        description: ONE recommended number. Not a range — the range is the analysis refusing to decide.
+        type: object
+        additionalProperties: false
+        required: [amount, currency, per, evidence]
+        properties:
+          amount: {type: number}
+          currency:
+            description: ISO code, e.g. USD.
+            type: string
+          per:
+            description: What the amount buys, in the value metric — "per active project per month".
+            type: string
+          entry_point:
+            description: The smallest commitment somebody can start at, when the model has one.
+            type: string
+          evidence:
+            description: What puts the number here rather than 30% either side of it.
+            type: array
+            minItems: 1
+            items: {type: string}
+      benchmarks:
+        description: >-
+          What the alternatives charge. A price read off a page carries the date it was read;
+          a price that is not published is recorded as hidden, because hiding it is a fact about
+          how they sell rather than a gap in the research.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, disclosure, read_on, source]
+          properties:
+            name: {type: string}
+            disclosure: {enum: [published, on_request, hidden, no_such_page]}
+            price:
+              description: Their number and unit, quoted as they state it. Empty unless disclosure is `published`.
+              type: string
+            read_on:
+              description: The date the page was read. A quoted price with no date is unfalsifiable a month later.
+              type: string
+              format: date
+            source:
+              description: The page it was read from.
+              type: string
+            note:
+              description: What the packaging does to the comparison — a seat price against a usage price is not a like-for-like.
+              type: string
+      willingness_to_pay:
+        description: >-
+          What won and lost deals say about the number. Empty ONLY when there are no deals to read yet —
+          an empty array here is a statement that this price is untested, and it should be read that way.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [outcome, what_it_says]
+          properties:
+            account: {type: string}
+            outcome: {enum: [won, lost, no_decision]}
+            price_discussed: {type: string}
+            reason:
+              description: What they actually said about price, in their words, not the CRM's closed-lost picklist.
+              type: string
+            what_it_says:
+              description: What this one deal is evidence of. A price that never loses a deal is too low.
+              type: string
+      objections:
+        description: The objection each part of this will draw, and the answer. At least one — a price nobody argues with was not read closely.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [about, objection, answer]
+          properties:
+            about: {enum: [model, value_metric, price]}
+            objection:
+              description: In the buyer's or the founder's voice, whichever will raise it.
+              type: string
+            answer: {type: string}
+      would_change_this:
+        description: What would move the recommendation, named in advance so the next run is a check rather than a rewrite.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [signal, direction]
+          properties:
+            signal:
+              description: The observation that would do it — "three consecutive losses citing price at this tier".
+              type: string
+            direction: {enum: [raise, lower, change_the_metric, change_the_model]}
+      unresolved:
+        description: >-
+          What this analysis could not settle — won and lost deals disagreeing about the price,
+          an ICP too broad for one price to fit, a competitor whose page could not be reached.
+          Required, and empty means genuinely nothing, not nothing checked.
+        type: array
+        items: {type: string}
+
+instructions: |-
+  You are setting what this company charges, and on what unit. It is the fastest
+  lever they have and the one they pull least — most likely the current price was
+  set once, early, by somebody guessing.
+
+  Value first, cost never. What it costs to serve a customer sets a floor nobody
+  should price at; it says nothing about what the thing is worth. Price on what
+  the buyer gets and on what they already pay for the alternative, including the
+  alternative of doing it by hand.
+
+  Start with the value metric, because the number is easy once the unit is right.
+  The right unit is something the buyer already counts before you ever charge for
+  it, that grows as they get more out of the product, and that they can forecast
+  well enough to sign for. Seats are the default and are usually the wrong answer:
+  they charge for access when the value came from use, and they make the buyer
+  ration the thing you want them spreading. Say which units you rejected and why.
+
+  Benchmark by reading, not by remembering. Open the competitor's own pricing
+  page, quote what it says, and record the date you read it. If they do not
+  publish a price, say so plainly and record it as hidden — hiding a price is a
+  fact about how they sell, usually that everything is negotiated and the number
+  depends on who is asking. Never write a competitor's price from recollection;
+  a plausible number in this document will be repeated in a sales call.
+
+  Test the number against deals that actually happened. A price that never loses
+  a deal is too low — if nobody has ever pushed back, you left money on the table
+  and the evidence for that is the absence of the argument. Read what people said
+  in the deals that were lost on price, not the picklist value somebody chose in
+  the CRM. Where there are no deals yet, say the price is untested rather than
+  dressing up the reasoning.
+
+  Recommend one price, not a range. A range is the analysis declining to decide
+  and handing the decision back with extra steps. Then say exactly what would
+  make you move it, in advance and specifically enough that somebody could notice
+  it happening.
+
+  You do not set the price. The founder decides any change to the number, the
+  unit or the model — write the recommendation, stage it for their decision with
+  the evidence attached, and say which single piece of evidence would change your
+  mind first. If the won and lost deals contradict each other about price, or the
+  ICP is too broad for one price to fit both halves of it, stage that as the
+  question it is instead of averaging your way past it; a price fitted to two
+  buyers fits neither.
+
+  Return the model, the metric, the number, the benchmarks and the objections as
+  your structured output, and say in one line what you could not reach.

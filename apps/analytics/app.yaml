@@ -1,0 +1,171 @@
+# The shared read. Six teams query the same events; this is the one place that
+# knows where they live, so two teams quoting one metric are quoting one query.
+#
+# IT SERVES ONE JOB CARD — `platform.analytics-reader`
+# (gtmsrv/agents/platform/analytics-reader.yaml), the shared bench, whose
+# done_when is "the caller has the numbers, the query that produced them, and
+# the window they cover". Where this manifest and that card could have
+# disagreed, the card wins.
+#
+# IT IS NOT `Product analytics` AND IT IS NOT `Funnel analytics`. Those two own
+# a field each — `company.product_facts`, `demand.funnel_metrics` — and run on
+# their own clock to keep it current. This one owns nothing and runs when
+# somebody asks. The distinction is the reason all three exist: an app that
+# owns a field answers one question forever, and the other five teams'
+# questions were going nowhere.
+#
+# WHY THERE IS NO `output:` BLOCK, WHICH IS THE ONE DECISION WORTH ARGUING
+# ABOUT. The card's `produces` is empty, on purpose and with its own comment
+# saying so: "the readout goes to the caller, who owns whatever it writes."
+# `output.target` is checked against the card's `produces.context` at compose
+# (E_WRITES_EXCEED_SCOPE — agentfile.Load copies `produces.context` straight
+# into `scope.context.writes`), so ANY target declared here is not a subset of
+# an empty list and the pairing is refused at load. Not a technicality: an app
+# that declared a destination would be claiming a field the six calling teams
+# each own a different one of. The answer goes back to the asker, and the asker
+# writes it through the pipeline tool under its own scope.
+#
+# WHICH IS ALSO WHY `type: query` AND NOT `analysis`. `analysis` forces an
+# `output:` block (schema delta 2), and the block cannot exist here. The label
+# is honest either way: this app runs a query and hands back what came out. The
+# moment it starts explaining what a number means it has taken a job that
+# belongs to whoever asked — the card's last line is "the reading of the number
+# belongs to whoever asked for it."
+#
+# NO `skills:`, and the omission was checked rather than assumed. TEAMS.md §7
+# names `openpanel-queries` for this row; no such skill exists in the vendored
+# tree, and naming one without a file is a load error rather than a cosmetic
+# one. The nearest real candidate is NEON-Rutger `revops-metrics`, and it is a
+# near-miss in the way that matters: it is a catalogue of WHICH revenue metrics
+# to define — LTV, NRR, pipeline velocity, funnel conversion — for a team
+# deciding what to measure. This app does not decide what to measure. Somebody
+# else asks a question and it goes and counts. Shipping that skill would put a
+# revenue-metrics framework in front of a model whose whole job is to not
+# reframe the question it was handed. An app that credits prose nobody needed is
+# worse than an app that credits nobody.
+#
+# NO `emits:`. The card's `sinks: [signal]` is the agent's channel back to its
+# caller, not a signal kind this bundle can raise, and `emits` without
+# `may: [emit]` declares signals the app structurally cannot produce. Everything
+# this app has to say is in the readout it hands back.
+name: Analytics
+description: Any question about your product and web event data, answered with the query, the window and the row counts.
+category: find-and-research
+type: query
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "how many people signed up last month?"
+  - "check that number in the analytics"
+  - "can our data answer this question?"
+
+# THE CARD NAMES `tools: [analytics]` AND THAT WORD IS NOT SPELLABLE HERE. The
+# capability vocabulary is web, crm, enrichment, github, linkedin, email.read,
+# email.send, calendar, product, website, slack — capabilities, never brands, so
+# neither `analytics` nor `openpanel` can appear. `product` is the binding to
+# the thing that records what users do inside the product, and it is the half
+# this app cannot run without: a deployment that binds nothing to it fails at
+# bind rather than running and inventing a count.
+tools: [product]
+
+requires:
+  # The web half, and it is OPTIONAL because plenty of workspaces instrument the
+  # product and not the site, or the site through something this platform does
+  # not reach. Without it the app still answers every product question and says
+  # plainly that it could not see the web side — which is the card's third
+  # responsibility, "say when the data cannot answer the question, rather than
+  # answering a nearby one". Required here, it would take the product half away
+  # from those workspaces too.
+  optional:
+    tools: [website]
+
+# `read` alone, and the shortness is the point.
+#
+# NO `write_lead`: this app reads aggregates over events. A run that touched a
+# record would be the shared read editing one team's data on another team's
+# question.
+#
+# NO `emit` and NO `stage`: a question this data cannot answer is answered with
+# that fact, in the same breath as the query that failed to answer it. There is
+# nothing to queue for approval and nothing to raise a signal about.
+may:
+  - read
+
+# Three app-scoped keys, all of them things the model cannot get right by
+# guessing and none of them a workspace value. The workspace scope is a closed
+# set of eight real WorkspaceValues fields — company_name, crm, icp, industry,
+# product, regions, sender_name, sender_voice — and an invented one is asked for
+# and then silently dropped after somebody has answered it.
+context:
+  # The whole reason this app exists in one place instead of six. Every team
+  # that would otherwise have learned where the data lives learns it from here.
+  - key: event_projects
+    scope: app
+    ask: "Which projects hold the event data — the product one, the website one, anything else? Name them the way you refer to them internally."
+    type: list
+
+  # The window, decided ONCE and in advance, because "recently" is not a range
+  # and because a window chosen after seeing the count is a window chosen to
+  # make the count look better. The card's instruction is "never widen a window
+  # quietly to make a count larger"; this is where the default it would have to
+  # widen FROM comes from. A caller naming its own range overrides this — that
+  # is not quiet.
+  - key: default_window
+    scope: app
+    ask: "When somebody asks a question without naming a date range, how far back should I look?"
+    type: enum
+    options: [last_7_days, last_30_days, last_90_days, last_12_months]
+
+  # Whether the product and the site are the same people. It decides which
+  # questions are answerable at all: if nothing joins the two, "how many
+  # visitors went on to activate" has no query behind it, and the honest answer
+  # is that the data cannot say — not a plausible number built by lining two
+  # unrelated counts up next to each other.
+  - key: identity_key
+    scope: app
+    ask: "How is the same person identified across the product and the website — one user id, an email, or not at all?"
+    type: text
+
+instructions: |-
+  Somebody has asked you a question about {{company_name}}'s own event data.
+  Answer that question, and only that question.
+
+  Print the query beside the answer. Not a description of the query — the query
+  itself, the one you ran, in whatever the projects speak, so the person who
+  asked can run it again tomorrow and get the same number. A number without its
+  query is a number nobody can check, and this app exists so that six teams
+  quoting one metric are quoting one query.
+
+  With every number, three things: the date range it covers, the projects it
+  came from, and how many rows are behind it. The row count is not decoration.
+  Forty-one signups out of nine thousand sessions and forty-one out of fifty-two
+  are different facts, and the reader cannot tell which one you handed them
+  unless you say.
+
+  Use the default window unless the asker named a range. If the answer looks
+  thin, say how thin and leave it thin — do not go back and run it again over a
+  longer period because the first number was small. A widened window is a
+  different question, and if you think it is the better question, say so and let
+  the caller ask it. Anything under a few dozen rows is worth naming as too few
+  to lean on, in the same line as the number rather than in a caveat underneath.
+
+  When the data cannot answer what was asked, say that. Do not answer the
+  nearest question it can. If the events are not instrumented, name the event
+  you looked for and could not find. If the product and the site do not share an
+  identity, say that the join does not exist rather than putting two counts side
+  by side and letting the shape of the sentence imply one caused the other. If
+  the web projects are not reachable at all, answer the product half and say the
+  other half was not visible to you.
+
+  Do not interpret. You are counting, not explaining: no "which suggests
+  users are struggling with onboarding", no "this is a healthy rate". The team
+  that asked knows why it asked, and the reading of the number belongs to them.
+
+  Hand the result back to whoever called you. You write nothing into the shared
+  context yourself — the caller owns whatever it writes from what you found.

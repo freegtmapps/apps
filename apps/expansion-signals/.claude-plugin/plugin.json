@@ -1,0 +1,8 @@
+{
+  "name": "expansion-signals",
+  "description": "Watches customer usage for the week an account outgrows its plan \u2014 the measure, the number, the date.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

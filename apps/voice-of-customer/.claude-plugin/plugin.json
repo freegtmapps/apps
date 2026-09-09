@@ -1,0 +1,8 @@
+{
+  "name": "voice-of-customer",
+  "description": "What customers actually say, clustered into ranked themes with the counts, quotes and sources behind each.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

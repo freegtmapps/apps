@@ -1,0 +1,258 @@
+# The tool for retention.support-agent — "Support Agent". Support is where a
+# customer finds out whether the promise holds, and the two things that make an
+# answer safe are the same two things this manifest is built around: THE ANSWER
+# CAME FROM SOMEWHERE WRITTEN DOWN, and WHAT THE WRITING DOES NOT COVER IS
+# ESCALATED RATHER THAN IMPROVISED.
+#
+# ONE OUTPUT TARGET, AND THE CARD'S OTHER PRODUCTS GO OTHER WAYS.
+# The card produces exactly one context key — `retention.support_kb_gaps` — and
+# that is this app's `output.target`. The card's other two products are not
+# structured output and could not be: ticket responses are STAGED for approval
+# through stage_draft (the approval path, not a context write), and the
+# disposition written back onto the customer's record goes through the records
+# tool mid-run, bounded by the agent's own scope. An app declares one validated
+# object going to one place; the rest is the agent's.
+#
+# THE FIELD IS THE PASS, NOT JUST THE LIST. `retention.support_kb_gaps` carries
+# the gaps AND the dispositions of the tickets that produced them, because a gap
+# list with no account of what was answered is a list nobody can date — the
+# Knowledge Base Writer reading it next cannot tell a base that answered
+# everything from a run that never happened. The card's done_when is the shape
+# of that object rather than a sentence in the prose: see `output`.
+#
+# NOTE ON THE ORCHESTRATION BRIEF: the brief that commissioned this app named
+# the target `retention.support` on one line. The job card and TEAMS.md §Team 6
+# both say `retention.support_kb_gaps`, and the loader checks
+# `output.target ⊆ agent.scope.context.writes` against the card — so the card
+# wins here and the target is the key the card actually produces.
+name: Customer support
+description: Triage the ticket, answer it from the knowledge base with the article cited, escalate what the base cannot answer.
+category: handle-replies
+type: triage
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "answer this support ticket"
+  - "triage the support inbox"
+  - "what do we tell this customer?"
+
+# NO `skills:`, AND THE ABSENCE IS THE HONEST ANSWER RATHER THAN AN OMISSION.
+# TEAMS.md names ticket-triage, kb-answer and escalation for this row; none of
+# the three exists as a vendored skill, and the two inventories were read before
+# concluding it (swan-gtm/gtm-skills, NEON-Rutger/B2B-revops-skills). The nearest
+# things by title are about somebody else's job: `auto-reply-is-not-a-reply`
+# classifies replies to OUTBOUND EMAIL — an out-of-office is not a reply — and a
+# support ticket is not an outbound reply at all; `onboarding-activation` is a
+# lifecycle design method, not a triage method. A near-miss skill is worse than
+# none, because it arrives in the prompt as authority for a method that does not
+# fit, so this app's method lives where a maintainer's own framing belongs:
+# `instructions`.
+
+may:
+  - read
+  - write_lead
+  - stage
+  - emit
+
+# `stage` IS THE POINT OF THE `may` LIST, not a formality. The card says only
+# answer types a person has already approved go back automatically; everything
+# else is staged. An app without `stage` never has stage_draft projected, and the
+# model that cannot stage a response is a model that either sends it or drops it.
+#
+# `write_lead` because the card holds `scope: {records: write}` and the
+# disposition belongs on the customer's record — the next person opening that
+# customer should see that they reported a defect on Tuesday.
+
+# ONE SIGNAL, AND IT IS THE ONLY ACCOUNT OF THE THING. Everything else this app
+# has to say lands in the output target, so it is not declared: a KB gap already
+# has a home a reader can subscribe to. An ESCALATION does not. A defect, an
+# outage or a data-loss report written into a context document is a fact filed
+# for later, and the card's escalate_when is not a filing instruction — it is
+# somebody needing to know now. The card's `sinks: [signal]` is the same
+# statement from the other side.
+#
+# ⚠ FOR WHOEVER WIRES THE ORCHESTRATOR: no play subscribes to `support.escalated`
+# today. It is declared because the app knows what it raises, and named here so
+# the gap gets closed on purpose rather than discovered by an outage that nobody
+# was woken for.
+emits:
+  - support.escalated
+
+# NO REQUIRED `tools:`. The knowledge base may be a public help centre, or it may
+# be references the workspace keeps in the brain; an app that demanded `web` would
+# refuse to run for the second kind. So `web` is optional — and the degradation is
+# exactly the behaviour the card already asks for: an article that cannot be
+# opened is not an answer from memory, it is an escalation. Say no once through
+# set_reach and it stops asking.
+requires:
+  optional:
+    tools: [web]
+
+context:
+  # Workspace-scoped keys must name a real WorkspaceValues field — company_name,
+  # crm, icp, industry, product, regions, sender_name, sender_voice. `product` is
+  # here because an answer about the wrong product is worse than no answer, and
+  # every other app in this workspace has already asked for it once.
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+
+  # App-scoped: the three setup facts nothing can infer and no other app holds.
+  # (The dotted pipeline keys the card reads — company.product_facts,
+  # retention.support_kb_gaps — are a different table with a different writer and
+  # never appear here.)
+  - key: knowledge_base
+    scope: app
+    ask: "Where are the written answers — a help centre, a docs site, or a doc you keep? Give me the link or tell me it's in your references."
+    type: text
+    infer_from: [connections]
+  - key: approved_answer_types
+    scope: app
+    ask: "Which kinds of answer may go back to a customer without you seeing them first? Say 'none' and I'll stage every one for you."
+    type: list
+  - key: escalation_route
+    scope: app
+    ask: "Where does a defect, an outage or a data-loss report go, and who is the person's name on it?"
+    type: text
+
+# THE CARD'S done_when, ENCODED AS SHAPE RATHER THAN AS PROSE: "every open ticket
+# has a severity, a class and either a sourced answer or a named escalation".
+#
+# A ticket lands in `answered` or in `escalated` and there is no third array, so
+# "either/or" is structural. `answered` REQUIRES sources with minItems 1 — the
+# object cannot be filled in without the article the answer came from, which is
+# the one rule this job has. `escalated` REQUIRES a reason and a named recipient,
+# because "escalated" with nobody's name on it is a ticket that stopped moving.
+# Both require severity and class. A gap requires the ticket that raised it: a KB
+# gap nobody asked for is an article idea, and this list is not for those.
+output:
+  name: support_kb_gaps
+  target: retention.support_kb_gaps
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [answered, escalated, gaps]
+    properties:
+      answered:
+        description: Tickets closed with an answer from the base. Every one carries the article it came from.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [ticket_id, severity, ticket_class, answer, sources, went_back]
+          properties:
+            ticket_id: {type: string}
+            severity: {type: string, enum: [urgent, high, normal, low]}
+            ticket_class: {type: string, enum: [question, defect, request]}
+            answer:
+              description: What was said back, in the words the customer will read.
+              type: string
+            sources:
+              description: The articles this answer came from. At least one — an answer with none was remembered, not sourced.
+              type: array
+              minItems: 1
+              items: {type: string}
+            went_back:
+              description: How the response left. `auto` only for an answer type this workspace pre-approved; `staged` for everything else.
+              type: string
+              enum: [auto, staged]
+      escalated:
+        description: Tickets the base could not close. A defect, an outage, a data loss, or a question with no written answer.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [ticket_id, severity, ticket_class, reason, escalated_to]
+          properties:
+            ticket_id: {type: string}
+            severity: {type: string, enum: [urgent, high, normal, low]}
+            ticket_class: {type: string, enum: [question, defect, request]}
+            reason:
+              description: Why this could not be answered here, in one line. "Reports data loss on export" — never "needs review".
+              type: string
+            escalated_to:
+              description: The person or queue it went to. An escalation with no name on it is a ticket that stopped moving.
+              type: string
+            what_was_searched:
+              description: What was looked for in the base before giving up. It is what tells the next reader whether the gap is real.
+              type: array
+              items: {type: string}
+      gaps:
+        description: >-
+          Every question the knowledge base could not answer. This is the next set of
+          articles and sometimes the next product fix, so it is written in the
+          customer's words rather than in the words of the article you wish existed.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [question, ticket_ids]
+          properties:
+            question:
+              description: What the customer actually asked, in their phrasing.
+              type: string
+            ticket_ids:
+              description: The tickets that asked it. At least one — a gap nobody raised is an article idea, not a gap.
+              type: array
+              minItems: 1
+              items: {type: string}
+            closest_article:
+              description: The nearest thing the base does have, and why it did not answer. Empty when there was nothing close.
+              type: string
+            looks_like_a_product_problem:
+              description: True when the base cannot answer this because the product does the wrong thing, not because nobody wrote it up.
+              type: boolean
+
+instructions: |-
+  You are answering support for {{product}}. Support is where a customer finds
+  out whether the promise holds, so answer fast, and answer from what is written
+  down.
+
+  Take a ticket at a time, and triage before you answer. Give every ticket a
+  severity, and say what kind of thing it is: a question, a defect, or a request.
+  The class decides the rest — a question can be answered from the base, a defect
+  and a request cannot be, and a model that starts drafting before it has decided
+  which one it is has already started improvising.
+
+  Then find the answer in the knowledge base and cite the article it came from.
+  An answer with no source is a guess with a confident tone, and support guesses
+  get quoted back at renewal. Read the article before you cite it. If you cannot
+  open it — the link is dead, the page is behind something you cannot reach — that
+  ticket is an escalation. It is never an answer from memory, however sure you
+  are: the whole value of this job is that a customer can trust what comes back.
+
+  Never promise a fix or a date. Not "we'll have that next release", not "that
+  should be resolved shortly". You do not own the roadmap and you cannot make the
+  promise, so escalate and say that a person will come back with the answer.
+
+  What goes back on its own and what waits for a person: stage every response
+  with stage_draft, unless it is one of the answer types this workspace has
+  already approved — those go back automatically. When in doubt, stage it. A
+  response that waited an hour for a human is a smaller failure than one that
+  went out wrong, and a workspace that told you "none" gets everything staged.
+
+  Escalate a defect, an outage, anything reporting data loss, and any question the
+  base does not cover. Send it where escalation_route says, with the customer's
+  own words and what you already searched, and emit support.escalated so somebody
+  is actually woken rather than left to find it later in a document. Record the
+  outcome on the customer's record too, so the next person who opens that customer
+  sees what happened here.
+
+  Every question the base could not answer is a gap, and the gap list is the real
+  second product of this job — it is the next set of articles and sometimes the
+  next product fix. Write the question the way the customer asked it, not the way
+  an article would title it. Where the base cannot answer because the product does
+  the wrong thing rather than because nobody wrote it up, say so: that one is not
+  an article, and passing it off as one buries a bug in a documentation backlog.
+
+  Return the pass as your structured output — what you answered, with sources;
+  what you escalated, with names; and every gap. Then say in one line how many
+  tickets you handled, how many are waiting on a person, and what you escalated.

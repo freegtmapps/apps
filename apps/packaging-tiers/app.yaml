@@ -1,0 +1,262 @@
+# Nothing in the catalogue draws a tier boundary, and every app downstream reads
+# one as if somebody had.
+#
+# `revenue.packager` (gtmsrv/agents/revenue/packager.yaml) is the card this app is
+# the tool for, and its first line says so: no app here builds tiers or fences a
+# feature. Meanwhile `expansion.upsell-strategist` reads `revenue.tiers` to work
+# out what an account has outgrown, `expansion.cross-sell-mapper` bundles against
+# it, and `revenue.metrics-reporter` reports by it. Three jobs consume a document
+# no job writes. This writes it.
+#
+# ONE OUTPUT TARGET, and the card produces two keys.
+#
+# `output.target` is `revenue.tiers`. The card also produces `revenue.packaging` —
+# "what each tier includes, excludes and costs" — and an app declares ONE
+# destination, so the includes, the excludes and the price travel inside each tier
+# of this object, where they belong (a tier without its price is not a tier), and
+# the agent writes the second key from the same validated object through the
+# pipeline tool, bounded by its own scope.context.writes. Two keys, one artefact,
+# one writer.
+#
+# THE ONE RULE THE CARD WILL NOT BEND is made structural rather than left in
+# prose: `never_fenced` is required and has a floor of one. The card says never
+# fence something the buyer needs in order to reach the value they were sold —
+# "a broken promise with a price on it". A schema that only asked for tiers would
+# accept a ladder that had done exactly that, and it would read beautifully.
+# Naming what stays in EVERY tier is the only form of that rule a validator can
+# hold, so it is required and cannot be an empty list.
+#
+# NO `skills:`, and both names on the TEAMS.md row were checked, not assumed.
+# Neither `packaging` nor `tiering` exists in either vendored inventory
+# (vendor/skills/swan-gtm/gtm-skills, vendor/skills/NEON-Rutger/B2B-revops-skills)
+# under any spelling. The nearest real bodies are `cold-offer-architect`, which
+# architects an offer for a stranger with zero trust — a cold-traffic deal, not a
+# tier ladder a customer climbs — and `positioning-messaging-designer`, which is
+# the step before this one and stops at the message. Composing either would be
+# credit for prose that does not do this job.
+name: Packaging tiers
+description: Cuts the product into tiers a buyer picks between — each with one persona, one named fence and a price.
+category: sell
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "build our pricing tiers"
+  - "what should good, better and best include?"
+  - "package the product"
+
+# NO `tools:`. Every input here is something a person already knows and says —
+# what the product does, who buys it, what it costs. `tools:` is fail-closed: a
+# capability named here is one a deployment must bind before the app runs at all,
+# and refusing to draw a tier boundary because nobody connected a CRM would be a
+# worse app than one that asks four questions.
+may:
+  - read
+
+# NO `emits:`. The ladder IS the output and it lands in `revenue.tiers`, which is
+# where Expansion and Revenue already look for it. A signal would be a second name
+# for a fact that already has one — and without `may: [emit]` beside it, a name
+# nothing can raise. What the card escalates travels in `escalate` below, in front
+# of the person who has to settle it.
+
+context:
+  # The raw material. Fencing is done ON capabilities and limits, so this is the
+  # one input without which the app has nothing to cut: a tier drawn from an
+  # imagined feature list is a roadmap with prices on it.
+  - key: product_facts
+    scope: app
+    ask: "What does the product actually do? List the capabilities, the limits and anything that costs you more when a customer uses more of it."
+    type: list
+
+  # `revenue.pricing_model` is the Pricing Strategist's output and this card reads
+  # it — but a dotted pipeline key is a different table with a different writer, so
+  # here it is the question a person answers when nobody has run pricing yet. That
+  # is the honest state: packaging without a price is a ladder with no rungs.
+  - key: pricing_model
+    scope: app
+    ask: "What does it cost today and on what unit — per seat, per usage, a flat annual fee, or nothing decided yet?"
+    type: text
+
+  # The promise. This is what makes the card's hard rule checkable rather than
+  # decorative: you cannot tell whether a fence breaks the promise unless somebody
+  # has said what the promise was.
+  - key: value_promise
+    scope: app
+    ask: "What does a customer get out of this — the outcome you sold them, in the words you sold it in?"
+    type: text
+
+  # Workspace-scoped and shared, so nobody is asked twice: the founder intake and
+  # `Define your ICP` already put both of these in the workspace profile.
+  - key: icp
+    scope: workspace
+    ask: "Who buys this — the person and the size of company, in a line or two?"
+    type: text
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+
+output:
+  name: tiers
+  target: revenue.tiers
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [tiers, steps, never_fenced, escalate]
+    properties:
+      tiers:
+        description: >-
+          The ladder, cheapest first. Two at the floor and four at the ceiling: the
+          card says three unless there is a reason for four, and a fifth tier is a
+          feature checklist that has stopped being a choice. Two is allowed because
+          a company with one paid tier and a free one has a real ladder; one tier
+          is not packaging.
+        type: array
+        minItems: 2
+        maxItems: 4
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, persona, fence, price, includes, excludes]
+          properties:
+            name:
+              description: >-
+                The buyer's word for it, not the roadmap's. "Team" and "Business"
+                are names a buyer says; "Tier 2" and "Pro+ (Q3)" are internal.
+              type: string
+              minLength: 1
+            persona:
+              description: >-
+                The ONE person this tier is drawn for, named the way the ICP names
+                them. The card's done_when starts here: a tier for everybody was
+                drawn for nobody, which is why this is a string and not a list.
+              type: string
+              minLength: 1
+            fence:
+              description: >-
+                One deliberate boundary, and what kind of thing it is. One per
+                tier, singular — a tier held in by four fences at once is a feature
+                checklist, and nobody can tell you which one they are paying to
+                cross.
+              type: object
+              additionalProperties: false
+              required: [what, kind]
+              properties:
+                what:
+                  description: The boundary itself, concrete enough that a customer could tell you which side of it they are on.
+                  type: string
+                  minLength: 1
+                kind:
+                  description: What the fence is made of. Closed, because a fence that fits none of these is usually not a fence.
+                  enum: [capability, usage, seats, support, security, deployment]
+            price:
+              description: >-
+                The number and the unit it is charged on. "Ask us" is a real answer
+                for a top tier and says so plainly; an empty string is not — the
+                card's done_when requires a price on every tier.
+              type: string
+              minLength: 1
+            includes:
+              description: What this tier gets, in the buyer's terms. At least one thing, or it is not a tier anybody is buying.
+              type: array
+              minItems: 1
+              items: {type: string, minLength: 1}
+            excludes:
+              description: >-
+                What it does NOT get, which is where the fence becomes visible.
+                NO `minItems`: the top tier excludes nothing, and a floor here
+                would make a model invent a withholding to satisfy a schema.
+              type: array
+              items: {type: string, minLength: 1}
+      steps:
+        description: >-
+          One entry per step between adjacent tiers — a three-tier ladder has two.
+          This is the second half of the card's done_when: the step up needs a
+          reason a buyer would give out loud.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [from, to, said_out_loud, trigger]
+          properties:
+            from: {type: string, minLength: 1}
+            to: {type: string, minLength: 1}
+            said_out_loud:
+              description: >-
+                The sentence the buyer says when they upgrade, in their words.
+                "We ran out of seats and I am adding the finance team" is one.
+                "Unlocks advanced capabilities" is a website, not a person.
+              type: string
+              minLength: 1
+            trigger:
+              description: >-
+                What has actually happened in the account when they say it —
+                observable, so Expansion can watch for it rather than guess.
+              type: string
+              minLength: 1
+      never_fenced:
+        description: >-
+          What stays in EVERY tier, including the cheapest, because the buyer
+          cannot reach the value they were sold without it. AT LEAST ONE, and this
+          floor is the app's whole conscience: it is the card's rule about broken
+          promises in the one form a validator can hold.
+        type: array
+        minItems: 1
+        items: {type: string, minLength: 1}
+      escalate:
+        description: >-
+          What a person has to settle before this ships. Empty when nothing does.
+          The card escalates on exactly two things: two personas wanting the same
+          tier at different prices, and no fence holding without withdrawing
+          something the product already gives away.
+        type: array
+        items: {type: string, minLength: 1}
+
+instructions: |-
+  You are cutting {{product}} into tiers a buyer can choose between on their own.
+
+  Buyers do not compare prices, they compare packages. So start from the people,
+  not the feature list: for each persona in the ICP, find the boundary they will
+  not cross — the point where they stop needing more, or stop being able to pay
+  for it — and draw a tier at it. A tier that does not have one person it was
+  drawn for is a tier drawn for nobody.
+
+  One fence per tier, and say what it is. A fence is the single thing a buyer has
+  to cross to justify moving up: seats, a usage limit, a capability, the support
+  they get, a security or deployment requirement. If you find yourself naming four
+  boundaries for one tier, you have written a feature checklist — pick the one that
+  actually decides it and let the rest follow.
+
+  Three tiers unless you can say why there are four. Name them in the words the
+  buyer uses about themselves, never in the roadmap's.
+
+  Never fence something the buyer needs in order to reach the value they were sold.
+  Read the promise back — what they were told they would get — and list what stays
+  in every tier because of it. Withholding a piece of that is not a tier boundary,
+  it is a broken promise with a price on it, and it costs more in churn than the
+  upgrade ever brings in.
+
+  Put a price on every tier, on the unit the pricing model already uses. If pricing
+  has not been decided, say what each tier should cost relative to the others and
+  put that in `escalate` rather than inventing a number that will be quoted back at
+  you as if somebody had decided it.
+
+  For each step up, write the sentence the buyer says out loud when they take it,
+  and what has actually happened in their account when they say it. If you cannot
+  write that sentence without sounding like a pricing page, the step has no reason
+  and the two tiers are one.
+
+  Escalate rather than paper over: two personas wanting the same tier at different
+  prices is a real conflict about who this is for, and a fence that only holds by
+  taking away something customers already have is a price change to today's
+  customers. Both are a person's decision. Say which, in one line each.
+
+  Return the ladder as your structured output, and say in one line how many tiers
+  you drew and what you had to assume.

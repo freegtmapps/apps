@@ -1,0 +1,216 @@
+# The decision every other job on the sales team has already assumed.
+#
+# `sales.motion-designer` (gtmsrv/agents/sales/motion-designer.yaml) is the card
+# this app is the tool for, and its opening line is that nothing in the catalogue
+# selects a motion. Qualification, follow-up, the handoffs, the pipeline review —
+# each of them is written for a motion somebody picked, and today that somebody
+# picked it by habit. A $40 product sold by a human and a $40k one left to a
+# signup form are the same mistake made in opposite directions, and both are made
+# by never asking.
+#
+# ONE OUTPUT TARGET, and the card produces two keys.
+#
+# `output.target` is `sales.motion`: one validated object going to one place. The
+# card also produces `sales.stages_and_exit_criteria`, and an app cannot declare a
+# second destination — so the stages travel INSIDE this object, where they belong
+# (a motion without its stages is half an answer), and the agent writes the second
+# key through the pipeline tool from the same validated object, bounded by its own
+# scope.context.writes. Two keys, one artefact, one writer.
+#
+# NO `skills:`, and it was a close call worth writing down.
+#
+# `sales-methodology` is genuinely vendored — vendor/skills/NEON-Rutger — and
+# TEAMS.md names it for this row. It is still the wrong body here, for two
+# reasons. It answers "which qualification framework, and what does each stage
+# gate require in the CRM" — SPICED, MEDDIC, deal reviews, discount scripts, rep
+# ramp — which presupposes a sales-led motion and a pipeline of reps. This app has
+# to be able to conclude that there are no reps. Composing a body that assumes the
+# answer into the app whose whole job is to choose it is not a method, it is a
+# thumb on the scale. And the vendored copy ships SKILL.md alone while its body
+# routes to twelve `references/*.md` pages, so naming it here would also be a
+# model told to open eleven files that are not in this bundle.
+#
+# `motion-design`, the other name on the row, does not exist in either vendored
+# inventory under any spelling.
+name: Sales motion
+description: How this company sells — self-serve, sales-led or both — with stages a reviewer can check on a record.
+category: sell
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "how should we be selling this?"
+  - "pick our sales motion"
+  - "what are our stages and exit criteria?"
+
+# NO `tools:`. Everything this decision rests on is something a person says — the
+# price, the buyer, how people get to using the product today — and `tools:` is
+# fail-closed: a capability named here is one a deployment must bind before the
+# app will run at all. Refusing to choose a motion because nobody connected a CRM
+# would be a worse app than one that asks three questions.
+may:
+  - read
+
+# NO `emits:`. The motion IS the output, and it lands in `sales.motion` where
+# everything downstream reads it. A signal here would be a second name for a fact
+# that already has one — and without `may: [emit]` beside it, a name nothing can
+# raise.
+
+context:
+  # The price point. There is no workspace field for it — the workspace scope is
+  # a closed set (company_name, crm, icp, industry, product, regions,
+  # sender_name, sender_voice) and a ninth key invented here would be asked for
+  # and then dropped — so it is app-scoped, which is the honest state. It is also
+  # the input the card escalates for the absence of: no pricing model, no motion.
+  - key: pricing
+    scope: app
+    ask: "What does it cost, and how is it charged — per seat, per usage, a flat annual fee, or nothing yet?"
+    type: text
+
+  # How people reach the product NOW. The card says read how it is "already being
+  # adopted" — a product people are already signing up for on their own has
+  # answered part of this question before anybody was asked.
+  - key: adoption_today
+    scope: app
+    ask: "How do people start using it today — they sign up themselves, they talk to someone first, or nobody has yet?"
+    type: enum
+    options: [self_signup, talks_to_someone_first, both, nobody_yet]
+
+  # Workspace-scoped, and shared: the buyer and the product are read by thirty
+  # other apps, so nobody is asked twice and nothing is asked here that was
+  # answered in the founder intake.
+  - key: icp
+    scope: workspace
+    ask: "Who buys this — the person and the size of company, in a line or two?"
+    type: text
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+
+output:
+  name: sales_motion
+  target: sales.motion
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [motion, because, evidence, rejected, stages, escalate]
+    properties:
+      motion:
+        description: >-
+          One value. `undecided` is a real answer and the card asks for it in
+          preference to a hedge — a motion nobody can defend from the price and
+          the buyer is not improved by being written down confidently.
+        enum: [self_serve, sales_led, hybrid, undecided]
+      because:
+        description: Why this motion follows from the price, the buyer and how the product is adopted today.
+        type: string
+        minLength: 1
+      evidence:
+        description: >-
+          The facts this choice rests on, in the words they were given in — the
+          price point, who buys, how people start using it. AT LEAST ONE, and
+          that minimum is the whole point of the app: a motion chosen from none
+          of these was chosen from habit, which is the thing this exists to stop.
+        type: array
+        minItems: 1
+        items: {type: string, minLength: 1}
+      rejected:
+        description: >-
+          What the other motion was disqualified BY. The card is explicit that
+          naming what favours the choice is not enough; a reason that would read
+          just as well under the opposite answer is not a reason.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [motion, disqualified_by]
+          properties:
+            motion: {enum: [self_serve, sales_led, hybrid]}
+            disqualified_by:
+              description: The fact that rules it out, not the preference that argues against it.
+              type: string
+              minLength: 1
+      stages:
+        description: >-
+          The stages of the motion, in order. This is the second half of the
+          card's `produces` — the agent copies it to
+          `sales.stages_and_exit_criteria` through the pipeline tool.
+
+          NO `minItems`, deliberately. Every OTHER structural rule here is a floor
+          the model has to meet; this one would be a floor it could only meet by
+          inventing a pipeline for a motion it just said it could not pick. Empty
+          is correct when and only when `motion` is `undecided`, and the
+          instructions say so.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, exit_criterion, observable_on]
+          properties:
+            name: {type: string, minLength: 1}
+            exit_criterion:
+              description: >-
+                What has to be TRUE to leave this stage, written so a reviewer
+                could apply it to a real deal and get the same answer as the rep.
+              type: string
+              minLength: 1
+            observable_on:
+              description: >-
+                What a rep points AT — the field, the record, the artefact. This
+                is the card's done_when made structural: "a named economic buyer
+                on the opportunity", never "the deal feels real".
+              type: string
+              minLength: 1
+      escalate:
+        description: >-
+          What the human has to settle, empty when nothing does. The card
+          escalates on exactly two things: the price point and the buyer pointing
+          at different motions, and there being no pricing model to read.
+        type: array
+        items: {type: string, minLength: 1}
+
+instructions: |-
+  You are deciding how this company sells, and then naming the stages of it.
+
+  Pick ONE motion and say so. Read it off three things: what the product costs and
+  how it is charged, who actually buys it, and how people get to using it today. A
+  price a person would put on a card without asking anyone points at self-serve. A
+  price that needs a budget holder, a security review and a signature points at
+  sales-led. Both, in the same product, is hybrid — but only say hybrid when you
+  can name which deals go down which path, because "both" is otherwise the answer
+  people give when they have not chosen.
+
+  Then say what disqualifies the alternative. Not what you like less about it —
+  what rules it out. "Self-serve is disqualified: the buyer is a security team
+  and there is no path from a signup to a signed DPA" is a disqualification.
+  "Sales-led suits us better" is a preference wearing its clothes.
+
+  Name the stages, and write an exit criterion for each one. An exit criterion is
+  something a rep can point at on the record — an economic buyer named on the
+  opportunity, a security review with a date on it, a workspace with five active
+  users in it. Never a feeling about the deal. Test each one by asking whether you
+  and the rep, looking at the same record, would reach the same answer; if you
+  would not, it is not a criterion yet, it is a mood. Three to six stages is
+  usually right. Fewer than three is not a pipeline, and more than six is a form.
+
+  Say what you actually read this from, in the evidence. Quote the price and the
+  buyer as they were given to you. If you were given neither, you have no basis
+  for a motion at all, and that is the case below.
+
+  If the honest answer is that the motion is undecided, write undecided and leave
+  the stages empty. Do not hedge, and do not invent stages for a motion you could
+  not pick. Two things put you there and you should say which in escalate: the
+  price point and the buyer point at different motions — a $40 price with a
+  procurement-led buyer — or there is no pricing model to read yet. Both are for a
+  person to settle, not for you to average out.
+
+  Return the whole thing as your structured output. Say in one line which motion
+  you picked and what you would change your mind on.

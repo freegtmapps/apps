@@ -1,0 +1,303 @@
+# Money that was already won, leaking. This is the cheapest revenue in the
+# company to recover and the easiest to mistake for churn.
+#
+# WHAT THE APP IS FOR, in the card's own words: chase a failed payment with a
+# sequence a customer would not resent, and never let an expired card be counted
+# as somebody deciding to leave. Those are two jobs and the second one is the
+# expensive one — an involuntary churn filed as a decision teaches Retention the
+# wrong lesson about the product, permanently, and no later report can undo it.
+#
+# THE OUTPUT TARGET IS `records.<lead>.billing`, NOT `revenue.billing`.
+#
+# This was the one real decision in the file, so it is written down. The brief
+# that commissioned this app said to target `revenue.billing`. The job card does
+# not: gtmsrv/agents/revenue/billing-ops.yaml declares
+# `produces.context: [records.<lead>.*]` and `scope: {records: write}`, and
+# revenue/lead.yaml lists this member with NO `owns:` at all while every other
+# member of the team owns its `revenue.*` key by name. docs/TEAMS.md agrees —
+# the Billing Ops row returns "recovery drafts → approvals; involuntary churn
+# flags → Retention", and no `revenue.*` field.
+#
+# So `revenue.billing` is a key nobody owns and nobody wrote a table entry for,
+# and agent.schema.yaml derives `scope.context.writes` from `produces.context`:
+# an app targeting `revenue.billing` under this card fails E_WRITES_EXCEED_SCOPE
+# at compose. `records.<lead>.billing` is covered by `records.<lead>.*`, and by
+# `scope.records: write`, which context-table.md says a `records.*` target
+# additionally requires. It also describes the work honestly — a failed payment
+# belongs to an account, not to a section of the pipeline map.
+#
+# THE OTHER TWO THINGS THE CARD PRODUCES ARE NOT OUTPUT AND CANNOT BE.
+# The recovery drafts go through stage_draft, one per message, because approval
+# is the only send path. The involuntary-churn flag also travels as a SIGNAL,
+# below — and that is the one place a signal is not a second label for a fact
+# the output already carries, because the reader is Retention, another team, who
+# never reads this workspace's record for this account on this clock.
+#
+# NO `skills:`, AND IT WAS CHECKED RATHER THAN ASSUMED.
+# TEAMS.md names `billing-operations` and `dunning` for this row. Neither exists:
+# both vendored inventories were listed and every candidate mentioning invoices,
+# overdue or dunning was opened — `governed-crm-cleanup`, `pipeline-visibility`,
+# `move-gtm-diagnostic` — and all three mention billing in passing while
+# teaching something else. A near-miss skill here would be worse than none: a
+# CRM-hygiene method applied to somebody's money is a confident voice in the
+# wrong room.
+name: Billing operations
+description: Chase failed payments through an approved sequence, and tell an expired card apart from a customer leaving.
+category: watch-signals
+type: recovery
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "chase our failed payments"
+  - "did their card fail, or did they leave?"
+  - "run dunning for this account"
+
+# NO `tools:`, AND THE ABSENCE IS THE HONEST ANSWER RATHER THAN AN OVERSIGHT.
+#
+# The capability vocabulary is closed — web, crm, enrichment, github, linkedin,
+# email.read, email.send, calendar, product, website, slack — and it has no word
+# for a billing provider. The job card says so itself in its first two lines.
+# Declaring `crm` instead would bind this app to a system that holds a deal
+# stage and not a decline reason, and would make it unusable in a workspace that
+# has a billing provider and no CRM, which is most of them at this size.
+#
+# So the payment events arrive the way a person can always supply them: a paste
+# or an export, declared as context below and tried against a connection first.
+# `email.send` is deliberately absent too — nothing here sends. Every recovery
+# message is staged, and approval is the send path.
+
+may:
+  - read
+  - write_lead
+  - emit
+  - stage
+
+# ONE SIGNAL, AND IT IS THE ONLY ACCOUNT OF THE THING.
+#
+# `revenue.involuntary_churn` is what the card produces and what Retention's
+# churn work reads. The verdict also lands on the record, but Retention is a
+# different team on a different clock: without the signal, a card that expired
+# in March is read in June as a customer who chose to leave, and the churn
+# reason is coded wrong forever. `may: [emit]` is declared above, so this is a
+# signal the app can actually raise.
+emits:
+  - revenue.involuntary_churn
+
+context:
+  # Two workspace values, both real WorkspaceValues fields, both already asked
+  # by whoever got here first. A billing message that does not say who it is
+  # from is the one email people report as phishing.
+  - key: company_name
+    scope: workspace
+    ask: "What's the company called? It goes on the invoice and in the message."
+    type: text
+  - key: sender_name
+    scope: workspace
+    ask: "Who should these come from — the name a customer would recognise on a billing email?"
+    type: text
+
+  # The events themselves. `infer_from: [connections]` tries a connected billing
+  # provider first; where there is none, a pasted export is a complete answer
+  # and the run proceeds on it rather than on a guess about what failed.
+  - key: billing_events
+    scope: app
+    ask: "Paste the failed payments for this window — the export from your billing tool, or the invoice lines with the decline reason and the date."
+    type: sample
+    infer_from: [connections]
+
+  # The card's rule — retry, then a short message, then a person — is a policy
+  # this workspace owns, not one this app invents. Asked, because the difference
+  # between three days and fourteen is the difference between a nudge and
+  # harassment, and no model should pick it.
+  - key: dunning_schedule
+    scope: app
+    ask: "How long between the retry, the first message and the second? And how long before you stop chasing and call it lost?"
+    type: text
+
+  # A recovery message without a working link is a message that asks somebody to
+  # go and find the thing themselves. This is the single most load-bearing
+  # sentence in the draft, and it is not derivable.
+  - key: payment_update_link
+    scope: app
+    ask: "Where does a customer go to fix a card? Paste the link you want in these messages."
+    type: text
+
+  # "Then a person" needs a person.
+  - key: billing_contact
+    scope: app
+    ask: "When the messages haven't worked, who picks it up — name and email?"
+    type: text
+
+# The card's done_when, encoded structurally wherever it could be rather than
+# asked for in prose:
+#
+#   "recovered, inside an approved sequence, or flagged as involuntary churn
+#    with its reason"
+#
+#   → `status` is those three endings plus `escalated`, which is where the
+#     card's escalate_when has to land.
+#   → every staged message carries its `draft_id`. A message with no draft id
+#     was never put in front of anybody, and the schema will not accept one.
+#   → `involuntary_churn` requires a reason, at least one retry and at least one
+#     message staged. That is "retry before you write" and "never treat an
+#     expired card as a decision to leave" as validation rather than as advice:
+#     a churn flag raised before anyone was told cannot be emitted at all.
+#   → `evidence` is minItems 1. A verdict about somebody's money names the
+#     invoice or event it was read off.
+output:
+  name: billing
+  target: records.<lead>.billing
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [status, outstanding, failures, next_action, evidence]
+    properties:
+      status:
+        description: >-
+          Where this account's money stands at the end of the run. Four endings,
+          because the card's done_when has exactly four honest ones.
+        enum: [recovered, in_sequence, involuntary_churn, escalated]
+      outstanding:
+        description: What is still uncollected. Zero when recovered — say it rather than omitting it.
+        type: object
+        additionalProperties: false
+        required: [amount, currency, as_of]
+        properties:
+          amount: {type: number}
+          currency: {type: string}
+          as_of: {type: string}
+      failures:
+        description: Every failed payment in the window for this account, oldest first.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [invoice, failed_at, decline_reason]
+          properties:
+            invoice: {type: string}
+            amount: {type: number}
+            currency: {type: string}
+            failed_at: {type: string}
+            decline_reason:
+              description: >-
+                The provider's own words — "expired card", "insufficient funds",
+                "do not honour". Never your interpretation of them; the difference
+                between the first and the third is the whole judgement downstream.
+              type: string
+            retries:
+              description: Automatic retries already attempted before any message was written.
+              type: integer
+      messages:
+        description: >-
+          Recovery messages, one entry per message STAGED. `draft_id` is what
+          stage_draft returned; a message that cannot name one was not put in
+          front of a person, and nothing about somebody's money is sent unread.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [step, draft_id, staged_at]
+          properties:
+            step: {enum: [first_notice, second_notice, handover]}
+            draft_id: {type: string}
+            staged_at: {type: string}
+            says:
+              description: One line on what it tells them and what they have to do.
+              type: string
+      involuntary_churn:
+        description: >-
+          Present only when status is involuntary_churn. Its required fields are
+          the card's rule made structural — a payment that was retried, a
+          customer who was told, and a reason in the provider's words.
+        type: object
+        additionalProperties: false
+        required: [reason, first_failed_at, retries, messages_staged]
+        properties:
+          reason: {type: string}
+          first_failed_at: {type: string}
+          retries: {type: integer, minimum: 1}
+          messages_staged: {type: integer, minimum: 1}
+      systemic:
+        description: >-
+          Present when this does not look like this customer's card — a provider
+          outage, a broken plan change, a tax or currency error. Naming one stops
+          the sequence for this account rather than sending a message blaming a
+          customer for our bug.
+        type: object
+        additionalProperties: false
+        required: [suspected_cause, evidence]
+        properties:
+          suspected_cause: {type: string}
+          also_affects:
+            description: Other accounts showing the same failure, where you can see them.
+            type: array
+            items: {type: string}
+          evidence:
+            type: array
+            minItems: 1
+            items: {type: string}
+      next_action:
+        description: >-
+          What happens next and when, in one line. "Nothing — paid on the retry
+          on the 4th" is a complete answer; "monitor" is not.
+        type: string
+      evidence:
+        description: The invoices, payment events and record entries this was read off.
+        type: array
+        minItems: 1
+        items: {type: string}
+
+instructions: |-
+  You are collecting money {{company_name}} has already earned. Nobody here has
+  done anything wrong — a card expired, a bank declined, a billing address moved
+  — so write like it. Short, factual, no shame.
+
+  Start from the payment events, not from the record. Read every failure in the
+  window: the invoice, the amount, the date, and the decline reason IN THE
+  PROVIDER'S OWN WORDS. An expired card, insufficient funds and a hard decline
+  are three different situations with three different endings, and the whole job
+  turns on not flattening them into "payment failed".
+
+  Retry before you write. If the provider retries on its own schedule, that
+  counts and you say when the next one is; if it does not, the first move is
+  still another attempt, not an email. A customer who gets a message about a
+  payment that would have gone through tomorrow learns that we are careless with
+  their money.
+
+  Then the sequence, on the dunning schedule you were given and no faster. First a short
+  message: what failed, what it costs, what to do about it, and the payment update link
+  to do it with. Then, only after the first has had the time the schedule gives
+  it, a second — the same facts and the date the account stops working, never a
+  louder version of the first. Then a person: hand it to the billing contact
+  with everything they need in one place.
+
+  Every message is staged with stage_draft, from {{sender_name}}, and never sent
+  by you. Record the draft id it returns in the output. A write-off is staged
+  too — deciding on your own that money is not worth chasing is a decision about
+  the business, not about an invoice.
+
+  Stop the moment payment lands. Mark it recovered, say what fixed it, and do
+  not send the next message in a sequence that is over. This is the most common
+  way an operation like this loses a customer it had already kept.
+
+  Flag involuntary churn ONLY when the money was retried AND the customer was
+  actually told and did not act. Then set the status, give the reason in the
+  provider's words, and emit revenue.involuntary_churn so Retention sees a
+  payment failure rather than a decision. An expired card is not a decision to
+  leave. Nothing you write on the record should let anybody read it as one.
+
+  If the failures are not about this customer — a provider outage, a plan change
+  that broke, a tax or currency error, the same decline across several accounts
+  on the same day — stop the sequence, fill in `systemic`, set the status to
+  escalated and say so plainly. Send nobody a message blaming them for our bug.
+
+  Where you cannot see something, say so and leave the field out. An invented
+  invoice number in a message about somebody's money is worse than a missing one.

@@ -1,0 +1,250 @@
+# The record about the record.
+#
+# Every other app in this catalogue fills fields. This one fills none of them.
+# It reads the shared context that the teams have written and produces the one
+# thing none of the writers can produce for themselves: an honest account of who
+# filled each field, on what evidence, how sure that makes it, and which fields
+# are still empty. The named gap is the product — see the instructions, which say
+# so twice because the temptation to close a gap by filling it is the whole risk
+# of putting a reasoning model in front of an empty field.
+#
+# ONE OUTPUT TARGET: `gaps.all`. The Context Keeper card
+# (gtmsrv/agents/platform/context-keeper.yaml) produces the `gaps` section, and
+# `gaps.all` is the field this app's validated object lands in — the per-team gap
+# lists, the provenance records and the escalations arrive together, because they
+# are one reading of one state and splitting them would let a gap list be current
+# while the provenance behind it was not. Any OTHER gaps.* field the agent keeps —
+# a per-team slice somebody wants addressable on its own — is written through the
+# pipeline tool by the agent mid-run and bounded by its scope, not declared here:
+# an app declares ONE output target.
+#
+# NO `tools:`. The card's tool is `pipeline`, which is a platform tool every app
+# is given, not a bindable capability — `tools:` takes capabilities (web, crm,
+# enrichment, …) and naming a platform tool there would fail the load. This app
+# reaches nothing outside the workspace's own record, which is the point: it has
+# no way to fill a gap even if it wanted to.
+#
+# NO `emits:`. The card's agent has `sinks: [signal]` and raises what it must from
+# there. Everything this app has to say about a contested write or an unowned key
+# is in `escalations` inside the output object; a signal declared here would be a
+# second label for a fact already in the target, and `emits` without `may: [emit]`
+# would be a signal it structurally could not raise.
+#
+# NO `skills:`. The vendored inventory has nothing that does this work. The near
+# misses were checked and rejected on purpose: `data-quality` verifies contact and
+# account lists against a Lusha connection this app does not hold, and
+# `revops-data-governance` governs CRM objects and property sprawl — both are about
+# a CRM's records, and this app is about the workspace's own shared context map.
+# A method the app cannot follow is worse than no method at all.
+name: Context manager
+description: Who filled each field, how sure they were, and what is still empty — a gap list per team.
+category: keep-in-sync
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "what's missing from our context?"
+  - "show me the gaps blocking each team"
+  - "who filled this field and how sure are we?"
+
+# `read` and nothing else.
+#
+# No `write_lead`: this app is about the workspace's shared record, and there is
+# no lead in the run. No `stage`: a question staged for a human is how a gap gets
+# closed, and closing gaps is somebody else's job — this app names them.
+may:
+  - read
+
+profile: unattended
+capability: reasoning_heavy
+
+context:
+  # Two app-scoped keys, and both are things the model genuinely cannot get right
+  # by looking at the record. Nothing here belongs in the workspace scope: that is
+  # a closed set of company facts, and neither of these is one.
+  #
+  # The dotted pipeline keys this app reads — company.*, market.*, icp.* and the
+  # rest — are a different table with a different writer and never appear here.
+  - key: section_owners
+    scope: app
+    ask: "Which team owns which part of the record — company, market, icp, positioning, demand, sales, revenue, retention, expansion? Say 'work it out' and I'll infer it from who has been writing."
+    type: list
+  - key: release_bar
+    scope: app
+    ask: "What does a team need filled before it can ship its next thing? That's what makes a gap blocking rather than merely open."
+    type: text
+
+output:
+  name: gap_report
+  target: gaps.all
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [teams, fields, escalations]
+    properties:
+      teams:
+        description: >-
+          One entry per team that shares this record. At least one — a gap report
+          naming no team is a reading nobody can act on.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [team, blocking, open]
+          properties:
+            team: {type: string}
+            blocking:
+              description: >-
+                The empty and low-confidence fields standing between this team and
+                its next release, most blocking first. Empty is a real answer: it
+                says nothing in the record is holding this team up.
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [key, state, why_blocking]
+                properties:
+                  key:
+                    description: The dotted pipeline key, e.g. market.competitor_profiles.
+                    type: string
+                  state:
+                    description: Empty, filled but poorly evidenced, or filled twice with two answers.
+                    enum: [empty, low_confidence, contested]
+                  why_blocking:
+                    description: What this team cannot do until it is filled, in one line.
+                    type: string
+                  owning_team:
+                    description: Whose write is current on this key. Absent means nobody owns it — which is an escalation, not a gap.
+                    type: string
+            open:
+              description: Fields still missing that are not blocking this team's release. Worth naming, not worth waiting for.
+              type: array
+              items: {type: string}
+      fields:
+        description: >-
+          The provenance and confidence record, one entry per FILLED field in the
+          shared context. Empty fields are not in here — they are in a team's
+          `blocking` or `open` list, which is where a thing that does not exist
+          belongs.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [key, written_by, confidence, sources]
+          properties:
+            key: {type: string}
+            written_by:
+              description: The agent that wrote the current value.
+              type: string
+            run:
+              description: The run the write came from, where the record carries one.
+              type: string
+            written_at: {type: string}
+            confidence:
+              description: A claim about evidence, never about recency.
+              enum: [low, medium, high]
+            basis:
+              description: Why that confidence and not the one above it, in one line.
+              type: string
+            sources:
+              description: >-
+                What the value rests on — pages, exports, a named person who said
+                it. May be empty, and an empty list has a consequence below.
+              type: array
+              items: {type: string}
+            proposals:
+              description: >-
+                Writes from a team that does not own this key. They land beside the
+                current value rather than over it; each one carries who proposed it
+                and what it says.
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [proposed_by, value]
+                properties:
+                  proposed_by: {type: string}
+                  value: {type: string}
+                  confidence: {enum: [low, medium, high]}
+                  sources: {type: array, items: {type: string}}
+          allOf:
+            # The card's own rule, structural rather than hoped for: "a field nobody
+            # has sourced is low confidence however often it is repeated". Written as
+            # a constraint so a well-written basis line cannot talk its way past it.
+            - if:
+                required: [sources]
+                properties: {sources: {maxItems: 0}}
+              then:
+                properties: {confidence: {const: low}}
+      escalations:
+        description: >-
+          The two things this app must not decide by itself. Required, and an empty
+          list is the assertion that neither occurred in this reading.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [key, reason, detail]
+          properties:
+            key: {type: string}
+            reason:
+              description: >-
+                `unowned_key` — a filled key no team owns, so there is no rule for
+                whose write wins. `contested_write` — a proposal that contradicts
+                the current value at equal or higher confidence.
+              enum: [unowned_key, contested_write]
+            detail: {type: string}
+
+instructions: |-
+  You keep the record that everyone at {{company_name}} acts on honest. You are
+  reading the shared context — company, market, icp, positioning, demand, sales,
+  revenue, retention, expansion — and writing down what is actually known, by whom,
+  on what evidence, and what is not known at all.
+
+  Provenance before opinion. For every field that has a value, find who wrote it,
+  in which run, and what they were looking at when they did. Where the record does
+  not say, the answer is that the record does not say — write the field down with
+  no source and low confidence rather than reconstructing a plausible history for
+  it.
+
+  Never fill a field to close a gap. The named gap is the product. You will read a
+  key that is obviously derivable from two others, or one where the answer is sitting
+  in a competitor profile three sections away, and the correct output is still the
+  gap. Somebody with the authority to be wrong about that field fills it; you say
+  it is empty.
+
+  Confidence is a claim about evidence, not about how recent the write is. A number
+  rewritten five times by five agents with no source behind any of them is low
+  confidence, and a field somebody sourced once from a signed contract is high. Say
+  in the basis line what the evidence is, so the score can be argued with.
+
+  Score again when a later write disagrees with an earlier one. Two answers to one
+  question means neither is high confidence until you can say which evidence is
+  better; if you cannot, the field is contested and it goes in the blocking list of
+  every team that depends on it.
+
+  Hold the write rule. The owning team's write is the current value. Anyone else's
+  write on the same key lands as a proposal beside it — it does not replace anything,
+  and it does not disappear either. Record both.
+
+  Order each team's blocking list by what actually stops that team's next release,
+  using the release bar you were given. A team's gap list is not an inventory of
+  every empty field in the record; it is the short list of things a Lead should go
+  and ask for this week, most urgent first. Everything else missing goes in `open`.
+
+  Escalate two things and decide neither yourself: a filled key that no team owns —
+  because there is no rule for whose write wins on it — and a proposal that
+  contradicts a current value at equal or higher confidence. Put both in
+  `escalations` with enough detail that whoever picks it up does not have to redo
+  your reading.
+
+  Return the whole reading as your structured output, then say in one line how many
+  fields carry provenance, how many teams are blocked, and what you escalated.

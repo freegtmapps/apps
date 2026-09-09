@@ -1,0 +1,8 @@
+{
+  "name": "experimentation",
+  "description": "Write the hypothesis, size the test before it runs, and read the result out as won, lost or inconclusive.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

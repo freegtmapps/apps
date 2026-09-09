@@ -1,0 +1,8 @@
+{
+  "name": "account-planning",
+  "description": "Map a landed account, name the sponsor who can open the next team, and sequence the rollout.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

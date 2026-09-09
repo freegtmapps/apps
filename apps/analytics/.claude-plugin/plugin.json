@@ -1,0 +1,8 @@
+{
+  "name": "analytics",
+  "description": "Any question about your product and web event data, answered with the query, the window and the row counts.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

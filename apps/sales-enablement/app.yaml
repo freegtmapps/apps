@@ -1,0 +1,350 @@
+# The collateral a rep hands over, written once from the messaging that was
+# already approved.
+#
+# WHY IT IS NOT `Case study` AND NOT `Battlecard`. `Case study` writes ONE
+# customer story, at length, for the Expansion row; this app briefs the stories
+# the sales conversation actually needs and then goes and writes the one-pager
+# and the FAQ around them. `Battlecard` is a claim about one named competitor in
+# a deal that is live now. This is the segment-level page a buyer forwards to
+# somebody who has never met us — which is a different reader, a different
+# clock, and a different document.
+#
+# WHERE THE WORDS COME FROM, and it is mostly not from this app. The positioning,
+# the proof points, the customer stories and the objection map are written by the
+# teams that were in the room, and they arrive as pipeline context. This app
+# turns them into pages. It is why there is no `tools: [web]` and no research
+# step: a claim this app went and found on the internet is one nobody approved.
+#
+# ONE OUTPUT TARGET. The card produces exactly one context key —
+# `sales.enablement` — so there is nothing to split, and everything the run has
+# to say lands inside the validated object: the pages, the FAQ, the briefs, the
+# collateral to retire, and the escalations. Anything the agent decides to write
+# elsewhere mid-run goes through the pipeline tool under its own scope and is
+# deliberately not declarable here.
+#
+# THE ESCALATION IS A FIELD, NOT A SIGNAL. The card escalates when a piece would
+# need a claim the positioning does not support, or when two live pages
+# contradict each other. Both are carried in `blocked`, counted and re-read next
+# month. A signal beside them would be a second label for a row already written.
+#
+# NO `skills:`, AND IT WAS CHECKED RATHER THAN ASSUMED. The catalogue's two
+# aspirational names for this row are `enablement-writing`, which does not exist
+# on either shelf, and `call-scorecards`, which is real and is a method for
+# grading a rep's calls — the wrong altitude and the wrong artefact for a
+# segment-level page. The near misses were read and refused for cause:
+# `b2b-case-study-production` is `Case study`'s method and produces the story
+# this app only briefs; `positioning-messaging-designer` decides the message this
+# app is forbidden to re-decide; `anti-ai-slop-writing` is a copy-editing pass
+# over prose, not the job. Beyond fit, every vendored body that routes to
+# `references/…` ships without those pages in this tree, and a body pointing at a
+# page that is not there is a model told to open something that does not exist.
+name: Sales enablement
+description: "One-pagers, FAQ answers and case-study briefs a rep can send, in the messaging that was approved."
+category: sell
+type: collateral
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "write the one-pager for our mid-market segment"
+  - "update the FAQ from this week's objections"
+  - "what collateral is missing?"
+
+# READ AND STAGE. The card is explicit that a person approves collateral before
+# it is used with a buyer, so nothing here goes out: the pages are staged and
+# somebody decides. No `write_lead` — this is a document about what we say, never
+# a fact about a person — and no `emit`, which is why there is no `emits:` list
+# to go with it.
+may:
+  - read
+  - stage
+
+# Hand-written because it is not derivable: what the app degrades gracefully
+# without. `website` is how a page that is still in circulation gets read before
+# it is retired for contradicting current positioning. Optional rather than
+# required, because a workspace that answers `live_collateral` has told the app
+# the same thing — and an app that refused to run without the site would refuse
+# on the one input it does not need to write anything.
+requires:
+  optional:
+    tools: [website]
+
+# WORKSPACE SCOPE IS A CLOSED SET — company_name, crm, icp, industry, product,
+# regions, sender_name, sender_voice — so `product` is the only key here that can
+# be shared, and the other two are private to this app.
+#
+# `segments` is the load-bearing one: the card's done_when is that EVERY SEGMENT
+# has a current one-pager, and a done_when nobody can enumerate is not one. The
+# ICP says who we sell to; which of them get their own page is a decision this
+# team makes and a model cannot infer.
+context:
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+  - key: segments
+    scope: app
+    ask: "Which segments should get their own one-pager? Name them the way your team says them out loud."
+    type: list
+  - key: live_collateral
+    scope: app
+    ask: "What is in circulation today — the decks, pages and PDFs reps are already sending? Where do they live?"
+    type: text
+
+output:
+  name: enablement
+  target: sales.enablement
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [one_pagers, faq, case_study_briefs, retire, blocked]
+    properties:
+
+      one_pagers:
+        description: One per segment named in `segments`. A segment with no page belongs in `blocked` with the reason, not missing from both.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [segment, headline, buyer_problem, body, messaging_sources]
+          properties:
+            segment:
+              description: Who this page is for, in the words the team uses for them.
+              type: string
+            headline:
+              description: The line at the top, in the approved messaging rather than a fresh idea about it.
+              type: string
+            buyer_problem:
+              description: The problem this reader personally absorbs, in their vocabulary — the first hundred words a forwarded page is judged on.
+              type: string
+            body:
+              description: The page itself, finished. This app writes collateral; a plan for a page is not one.
+              type: string
+              minLength: 1
+            proof:
+              description: >-
+                The facts the page stands on. Every number names the customer it
+                came from — that is the item's required shape, not a note in the
+                prose — so a figure whose customer nobody can name cannot be
+                written into a page at all.
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [claim, customer, source]
+                properties:
+                  claim:
+                    description: What the page asserts, in the words it asserts it.
+                    type: string
+                  figure:
+                    description: The number, where there is one. Never rounded up and never "roughly" — an invented figure poisons every honest one beside it.
+                    type: string
+                  customer:
+                    description: Whose result this is. A disguise is fine where they will not be named; "a customer" is not.
+                    type: string
+                    minLength: 1
+                  source:
+                    description: Where the number was measured — the QBR, the invoice, the review call. Someone must be able to go and check it.
+                    type: string
+                    minLength: 1
+            messaging_sources:
+              description: >-
+                Which approved messaging this page is built from, per claim it
+                makes. At least one, because the card's done_when is that every
+                piece is TRACEABLE to approved messaging — a page with no source
+                was improvised, which is the exact thing this job exists to stop.
+              type: array
+              minItems: 1
+              items: {type: string}
+            supersedes:
+              description: The live piece this replaces, where there is one. Naming it here is what makes the retirement happen instead of leaving both in circulation.
+              type: string
+
+      faq:
+        description: The questions being asked, answered once. Ordered most-asked first.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [question, answer, asked_where, times_asked, messaging_sources]
+          properties:
+            question:
+              description: The question in the buyer's words, not the tidy version of it.
+              type: string
+            answer:
+              description: The answer a rep can send as written, to somebody who has never met us.
+              type: string
+              minLength: 1
+            asked_where:
+              description: Where this question actually arrived. The FAQ answers what is being asked; a question sourced from nowhere is a question we invented.
+              enum: [objection_map, call, reply, battlecard]
+            times_asked:
+              description: >-
+                How many times it was really asked. At least one, by shape: an
+                entry nobody has ever asked is a page we wrote for ourselves.
+              type: integer
+              minimum: 1
+            proof:
+              description: The named fact the answer rests on, where the answer needs one. Same rule as a page — a number names its customer.
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [claim, customer, source]
+                properties:
+                  claim: {type: string}
+                  figure: {type: string}
+                  customer: {type: string, minLength: 1}
+                  source: {type: string, minLength: 1}
+            messaging_sources:
+              description: The approved messaging this answer is consistent with. At least one, for the same reason a page needs one.
+              type: array
+              minItems: 1
+              items: {type: string}
+
+      case_study_briefs:
+        description: >-
+          What to go and write, and why the sales conversation needs it — not the
+          story itself, which `Case study` writes from real customer outcomes.
+          Empty is a legitimate answer where the stories that exist already cover
+          the conversations being had.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [customer, question_it_answers, outcome, numbers]
+          properties:
+            customer:
+              description: Whose story this is. A durable-attribute disguise where they will not be named — size band, vertical, situation — specific enough that a peer recognises themselves.
+              type: string
+            question_it_answers:
+              description: The buyer question or objection this story is for. A story that answers nothing gets read by nobody.
+              type: string
+            outcome:
+              description: What changed for them operationally — who stopped doing what, which meeting got shorter.
+              type: string
+            numbers:
+              description: >-
+                The one or two anchor figures, each with where it was measured.
+                Empty means they have not been collected yet — say so in the run
+                rather than supplying a plausible figure, because a made-up
+                number cannot be told apart from a missing one downstream.
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [figure, source]
+                properties:
+                  figure: {type: string}
+                  what_it_measures: {type: string}
+                  source:
+                    description: Where the figure came from and who can confirm it.
+                    type: string
+                    minLength: 1
+            who_to_interview:
+              description: Who has to be asked before this can be written — the delivery lead, the AE, the customer themselves.
+              type: array
+              items: {type: string}
+
+      retire:
+        description: >-
+          Collateral to take out of circulation because it contradicts current
+          positioning. The card's responsibility is retiring it rather than
+          leaving both live, so this list exists on every run and empty means
+          somebody looked.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [piece, contradicts]
+          properties:
+            piece:
+              description: The piece, named the way a rep would find it.
+              type: string
+            where:
+              description: Where it is still reachable — the site, the shared drive, a sequence attachment.
+              type: string
+            contradicts:
+              description: What in the current positioning it disagrees with, quoted on both sides where you can.
+              type: string
+            replaced_by:
+              description: The new page that covers this ground, where one was written this run.
+              type: string
+
+      blocked:
+        description: >-
+          What could not be written, and why. This is the card's escalation, and
+          it is a row rather than a sentence in a Final so it can be counted next
+          month. A piece written anyway with the gap papered over does not belong
+          here — or anywhere.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [piece, reason, what_it_would_need]
+          properties:
+            piece:
+              description: The page, answer or brief that was not written — named by its segment or by the question it would have answered.
+              type: string
+            reason:
+              description: >-
+                `claim_not_supported` — writing it needs something the positioning
+                does not say. `contradicts_live_page` — two live pieces disagree
+                and a person has to choose. `no_proof_available` — the claim is
+                fine but no named customer or measured number stands behind it.
+                `no_approved_messaging` — nothing approved covers this segment yet.
+              enum: [claim_not_supported, contradicts_live_page, no_proof_available, no_approved_messaging]
+            what_it_would_need:
+              description: The one thing that unblocks it, addressed to whoever owns it.
+              type: string
+
+instructions: |-
+  You write the pages a rep sends and a buyer forwards. Everything you need was
+  already decided by somebody else: the positioning, the proof points, the
+  customer stories, the objection map. Your job is to turn them into collateral,
+  not to have a better idea about the message.
+
+  Approved messaging, verbatim where it exists. If the positioning has a sentence
+  for this, that sentence goes on the page — a rewrite that reads better is still
+  a second version of what we say, and two versions is the problem this job was
+  created to end.
+
+  Every number in a piece of collateral names the customer it came from and where
+  it was measured. No exceptions, and no "many customers see". If you cannot name
+  the customer, the number does not go on the page; the piece goes in `blocked`
+  with `no_proof_available` and you say what would unblock it.
+
+  Write for a buyer forwarding it to somebody who never met us. That reader has
+  no context, no call notes, and no patience: open on the problem they personally
+  absorb, in their own vocabulary, and make the first hundred words do the
+  recognising. Spell out acronyms. Assume nothing about what the sender said.
+
+  Cover every segment. A segment with no page is not silence — it is a row in
+  `blocked` saying which one and why. The FAQ answers questions that were really
+  asked: take them from the objection map and from what came back on calls and in
+  replies, most-asked first, and say how many times. A question nobody asked is a
+  page we wrote for ourselves.
+
+  Brief the case studies, do not write them. Say which buyer question each story
+  answers, whose story it is, what changed, the one or two figures and who can
+  confirm them, and who has to be interviewed. The story itself is somebody
+  else's app and it starts from your brief.
+
+  Look at what is already in circulation and retire what disagrees with current
+  positioning. Two live pages saying different things is worse than one page
+  nobody has updated, because a rep will send whichever they find first.
+
+  Escalate rather than improvise. If a piece would need a claim the positioning
+  does not support, or if two live pages contradict each other and it is not
+  yours to decide which wins, it goes in `blocked` and a person gets it.
+
+  Stage everything for approval with stage_draft. Nothing here is used with a
+  buyer until somebody says so. Return the whole set as your structured output
+  and say in one line how many segments are covered, how many questions are
+  answered, and what is blocked.

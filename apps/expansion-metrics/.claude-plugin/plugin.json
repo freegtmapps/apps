@@ -1,0 +1,8 @@
+{
+  "name": "expansion-metrics",
+  "description": "Breaks NRR into expansion, contraction, churn and flat renewal, and sizes the expansion pipeline behind it.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

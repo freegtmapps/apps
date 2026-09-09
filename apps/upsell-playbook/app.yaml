@@ -1,0 +1,310 @@
+# The tool for `expansion.upsell-strategist` — the card that turns an expansion
+# signal into the route from the tier a customer has to the one they need.
+#
+# WHERE IT SITS. `Packaging tiers` writes `revenue.tiers`, and its own header
+# names this card as one of three jobs that read the ladder nobody else builds.
+# `expansion.signal-detector` writes `expansion.expansion_signals`. This app
+# stands on both: the ladder says what the next rung is, the signal says which
+# account is standing on the one below it. It builds neither and invents neither.
+#
+# ONE OUTPUT TARGET, and the target is `expansion.upsell_paths`.
+#
+# The commissioning note for this app named the key `expansion.upsell`. The card
+# does not: `gtmsrv/agents/expansion/upsell-strategist.yaml` produces
+# `expansion.upsell_paths`, `expansion/lead.yaml` says
+# `{agent: expansion.upsell-strategist, owns: [expansion.upsell_paths]}`,
+# `nrr-analyst.yaml` reads `expansion.upsell_paths`, and TEAMS.md row 2 of Team 7
+# writes it the same way. Four documents against one abbreviation, so the target
+# is the key the card actually produces. `expansion.upsell` is written nowhere and
+# read by nobody; a target that named it would land this app's output in a field
+# the next three cards do not open.
+#
+# The card's second product — "drafts: tier-migration outreach per account,
+# staged for the account owner" — is NOT a second output target. An app declares
+# one destination. The drafts go through stage_draft, one per account, and every
+# one of them waits for the person who owns that account; the card's `approval:
+# every message to a customer` is the whole reason `may` carries `stage` and
+# nothing that sends.
+#
+# NO `emits:`, and no `may: [emit]` to go with one. Everything this app has to
+# say lands in `expansion.upsell_paths`, which is where the NRR analyst and the
+# expansion lead already look. The card's `sinks: [signal]` is an agent-side
+# routing fact about where the AGENT's outputs go, not a licence for the app to
+# name a signal kind it structurally cannot raise.
+#
+# NO `skills:`. Both names on the TEAMS.md row — `upsell-path-design` and
+# `tier-migration-messaging` — were looked for in both vendored inventories under
+# every spelling and neither exists; nor does `upsell-strategy`. The three near
+# misses were read before being refused. `roi-business-case` builds a finance case
+# for ONE live deal heading into procurement — this writes the tier ladder's paths
+# and the messaging for a segment, and a per-deal method does not do that job.
+# `signal-anchored-message` writes outbound for ONE contact off ONE trigger, which
+# is the drafting step and not the path design, and its inputs are a cold lead's
+# public facts rather than a customer's own usage. `qbr-ebr-builder` builds a
+# customer-facing business review — a meeting instrument, and its own BOUNDARY
+# note hands expansion motions off to skills we do not have. Naming any of them
+# would be a method this app cannot follow, in the voice of an author who never
+# wrote it for this.
+name: Upsell playbook
+description: The route from the tier a customer has outgrown to the one they need, and the message that says so.
+category: sell
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "build our upsell paths"
+  - "which customers have outgrown their tier?"
+  - "write the tier-upgrade message"
+
+# NO `tools:`. Every input is already in front of the agent that runs this — the
+# ladder and the signals come through the pipeline, the accounts through records.
+# `tools:` is fail-closed: naming `crm` or `product` here would mean a workspace
+# that pastes its usage numbers by hand could not run the app at all, and that
+# workspace is exactly the one this app is useful to.
+
+may:
+  - read
+  - stage
+
+context:
+  # How the account's own usage is actually seen. This is the input the whole
+  # method stands on — the card says quote the usage back, and an app that cannot
+  # say where usage comes from writes messages grounded in a feature list. The
+  # last option is a real answer, not a failure: a founder who reads the numbers
+  # off a billing dashboard once a month has the evidence, just not a connection.
+  - key: usage_source
+    scope: app
+    ask: "Where can you see what an account actually uses — product analytics, the CRM, the billing system, or will you tell me?"
+    type: enum
+    options: [product_analytics, crm, billing, i_will_tell_you]
+
+  # `revenue.tiers` is what the card reads and a dotted pipeline key is a
+  # different table with a different writer, so this is the question a person
+  # answers when nobody has run `Packaging tiers` yet. That is the honest state:
+  # upsell paths without a ladder are a route to somewhere that does not exist.
+  - key: tiers_today
+    scope: app
+    ask: "What do you sell today, cheapest first — the tiers, what each one costs and what holds a customer inside it?"
+    type: list
+
+  # Workspace-scoped and shared, so nobody is asked twice: the founder intake
+  # already put this in the workspace profile.
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+
+output:
+  name: upsell_paths
+  target: expansion.upsell_paths
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [paths, accounts, no_path, packaging_feedback]
+    properties:
+      paths:
+        description: >-
+          One entry per step up the ladder — a three-tier ladder has two. This is
+          the first half of the card's done_when: every tier with a named next
+          step, its trigger and its message.
+
+          NO `minItems`. A workspace with one tier has no step to sell, and a
+          floor here would make a model invent a rung that does not exist to
+          satisfy a validator. That emptiness is real and it belongs in
+          `packaging_feedback`, in front of Revenue.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [from_tier, to_tier, trigger, value, objection, messaging]
+          properties:
+            from_tier:
+              description: The tier they are on, named as `revenue.tiers` names it.
+              type: string
+              minLength: 1
+            to_tier:
+              description: The tier this step goes to, named as `revenue.tiers` names it.
+              type: string
+              minLength: 1
+            trigger:
+              description: >-
+                What has actually happened in the account when this step opens —
+                observable, so it can be watched for rather than guessed. "Third
+                month over the seat limit" is a trigger; "shows growth intent"
+                is a mood.
+              type: string
+              minLength: 1
+            value:
+              description: >-
+                What the next tier adds, said as what stops hurting rather than
+                as what unlocks. The card's whole thesis: customers move up
+                because staying still started to cost them something.
+              type: string
+              minLength: 1
+            objection:
+              description: >-
+                The one thing they say back at this step, and the answer to it.
+                A step with no objection has not been thought about.
+              type: string
+              minLength: 1
+            messaging:
+              description: >-
+                The tier-migration message, one per persona who has a say in this
+                step. AT LEAST ONE — a path nobody can be told about is not a
+                path — and never one message addressed to everybody, because the
+                admin who is out of seats and the VP who signs are not feeling
+                the same thing.
+              type: array
+              minItems: 1
+              items:
+                type: object
+                additionalProperties: false
+                required: [persona, opening, message, grounded_in]
+                properties:
+                  persona:
+                    description: The person this is written to, named the way the ICP names them.
+                    type: string
+                    minLength: 1
+                  opening:
+                    description: >-
+                      The first line, on its own, because the card's one hard rule
+                      about it is about the first line: NEVER open with the price
+                      change. It opens on what they did or what it is costing
+                      them. Split out so a reader can check every opener in the
+                      playbook in one pass.
+                    type: string
+                    minLength: 1
+                  message:
+                    description: The rest of it, as it would be sent.
+                    type: string
+                    minLength: 1
+                  grounded_in:
+                    description: >-
+                      The usage fact this message quotes back — the thing the
+                      account already did. Required, because a message grounded
+                      in the feature list is the one thing the card forbids and
+                      it is invisible in prose.
+                    type: string
+                    minLength: 1
+      accounts:
+        description: >-
+          Every account carrying an expansion signal that HAS a path. The other
+          half of the card's done_when; its complement is `no_path`, and between
+          the two lists every signalled account is accounted for exactly once.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [account, signal, from_tier, to_tier, usage_evidence]
+          properties:
+            account: {type: string, minLength: 1}
+            signal:
+              description: The expansion signal this account is carrying, as `expansion.expansion_signals` recorded it.
+              type: string
+              minLength: 1
+            from_tier: {type: string, minLength: 1}
+            to_tier: {type: string, minLength: 1}
+            usage_evidence:
+              description: >-
+                What this account actually did, in figures or events, one per
+                line. AT LEAST ONE, and this floor is the app's conscience: an
+                account with no evidence does not get a path, it goes to
+                `no_path` with kind `no_usage_evidence`. It is the card's "quote
+                the account's own usage back to it" in the one form a validator
+                can hold.
+              type: array
+              minItems: 1
+              items: {type: string, minLength: 1}
+      no_path:
+        description: >-
+          Every account carrying a signal that gets NO path, with the reason said
+          out loud. The card's done_when accepts "a path or a stated reason it has
+          none", so this list is not an error log — it is half the answer, and an
+          empty one alongside signals nobody could serve would be the app quietly
+          skipping them.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [account, signal, kind, reason]
+          properties:
+            account: {type: string, minLength: 1}
+            signal: {type: string, minLength: 1}
+            kind:
+              description: >-
+                Why there is none. Closed, because the four the card names are
+                four different people's problems: `tier_missing` and
+                `packaging_gap` are Revenue's, `health` is the account owner's,
+                `downgrade_in_disguise` is this app refusing, and
+                `no_usage_evidence` is a gap in what anybody can see.
+              enum: [tier_missing, packaging_gap, health, downgrade_in_disguise, no_usage_evidence]
+            reason:
+              description: >-
+                The reason in a sentence a person can act on. For
+                `downgrade_in_disguise`, say what gets smaller and what gets more
+                expensive — the card wants that refusal audible, not silent.
+              type: string
+              minLength: 1
+      packaging_feedback:
+        description: >-
+          What Revenue has to answer before any of this can be sold — a tier the
+          signals imply and the ladder does not have, a need no tier addresses,
+          a rung with no step above it. The card's escalate_when lands here and
+          NOT in an outbound message: "If packaging has no answer for what this
+          account needs, that is feedback for Revenue, not a message to send."
+          Empty when the ladder answered everything.
+        type: array
+        items: {type: string, minLength: 1}
+
+instructions: |-
+  You are working out, for {{product}}, which customers have outgrown what they
+  are paying for — and what the route up actually is.
+
+  Start from the ladder, not from the accounts. For each tier, read the one above
+  it and answer three things: what has to have happened in an account for this
+  step to open, what stops hurting when they take it, and what they say back.
+  If you cannot name the trigger without describing a mood, the step has no
+  opening and you should say so rather than write one. If the value only reads as
+  a list of things that unlock, you are describing a pricing page — go back to
+  what the customer is currently doing the hard way.
+
+  Then take the accounts carrying a signal, one at a time. Find the tier the
+  usage has outgrown and the rung above it. Every account you give a path to must
+  come with what it actually did — the number of seats it went over, the export
+  it ran forty times, the month it doubled. If you cannot see that, the account
+  does not get a path; it goes in `no_path` and you say the evidence is not
+  there. An upsell argued from a feature list is the thing this job exists to
+  replace.
+
+  Write the message per persona, in their words. The admin who is out of seats
+  and the VP who signs for them are not feeling the same thing, so do not send
+  them the same paragraph. Never open with the price change — open on what they
+  did, or on what it is costing them to keep doing it that way. The price belongs
+  in the message; it does not belong in the first line.
+
+  Refuse out loud. If moving an account up means fewer limits for more money —
+  a downgrade wearing an upgrade's name — do not write the message. Put it in
+  `no_path` as `downgrade_in_disguise` and say exactly what shrinks and what
+  costs more. Nobody downstream can recover a refusal you kept to yourself.
+
+  Two things are not yours to solve. If the signal points at a tier the ladder
+  does not have, or at a need no tier addresses, that is packaging feedback for
+  Revenue — put it in `packaging_feedback` and in `no_path` as `tier_missing` or
+  `packaging_gap`. And if the account's health does not support outreach — an
+  open escalation, a support backlog, a renewal in doubt — the answer is `health`
+  and no draft, no matter how good the usage looks. Selling more to a customer
+  who is already unhappy is how you lose the account you had.
+
+  Stage every message, one draft per account, for the person who owns that
+  account. Nothing here reaches a customer without somebody deciding it should.
+
+  Return the playbook as your structured output, and say in one line how many
+  paths you wrote, how many signalled accounts have one, and what Revenue has to
+  settle.

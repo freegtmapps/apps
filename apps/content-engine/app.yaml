@@ -1,0 +1,239 @@
+# The tool for the Content Producer (gtmsrv/agents/demand/content-producer.yaml).
+#
+# ONE OUTPUT, AND IT IS THE CALENDAR. The card produces exactly one context key,
+# `demand.content_calendar`, and that is this app's target. The drafts it also
+# produces — the long-form pieces and their repurposed cuts — are NOT structured
+# output and deliberately have no target: they go to a person through stage_draft,
+# because the card says nothing this job writes publishes on its own. A manifest
+# claiming a destination for them would be claiming the approval queue is a
+# context field.
+#
+# THE CALENDAR IS WHERE THE done_when IS ENFORCED, structurally rather than in
+# prose. "A dated owner and format for each pillar" is three required fields per
+# entry — `owner`, `format`, `publish_date` — so a calendar with a blank owner
+# does not validate and never reaches Final. `sources` is minItems 1 for the same
+# reason: the card says a claim you cannot source comes out, and an entry that
+# names nothing it was written from was written from memory.
+#
+# `blocked` IS THE ESCALATION, not a note. escalate_when is "a pillar cannot be
+# written without a claim the positioning does not support" — so that pillar
+# lands in `blocked` with the claim named, in the same validated object as the
+# pieces that did get written. An escalation in the Final prose is one nobody
+# downstream can read.
+#
+# NO `skills:`. The method here — pillar to piece, one idea per piece, repurpose
+# by rewriting, voice pass before staging — is written below in the founder's own
+# words. The vendored mirror at freegtm-apps/vendor/skills does carry bodies about
+# adjacent work (anti-ai-slop-writing, linkedin-ghostwriting), but every one of
+# them ships as SKILL.md alone and routes in its own text to `references/*.md`
+# pages that are not in the mirror. Naming one would ship a model an instruction
+# to open a page that is not there, which is the failure the whole vendoring rule
+# exists to stop. Nothing is better than a body with a broken route.
+#
+# NO `emits:`. Everything this app has to say about the cycle lands in the
+# calendar, and `draft.staged` comes out of stage_draft from inside the tool. A
+# signal here would be a second label for a fact the output already carries.
+name: Content engine
+description: Turns ranked pillars into a dated content calendar, long-form drafts in your voice, and the cuts other channels need.
+category: content
+type: editorial
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "plan this quarter's content"
+  - "turn the pillars into a calendar"
+  - "draft the pillar piece"
+
+# `web` is not for finding something to write about — the pillars and the
+# positioning are the source of that. It is how a claim gets checked before it
+# ships, which is the one rule in this job with a consequence attached: a claim
+# you cannot source comes out.
+tools: [web]
+
+# `read` and `stage`, and the omissions are the design.
+#
+# NO `write_external`: nothing this app writes publishes itself. Staging IS the
+# publish path, and an app that could post would be a way around the approval the
+# card says every piece needs.
+#
+# NO `write_lead`: there is no lead in this work at all.
+may:
+  - read
+  - stage
+
+# The pillars, the positioning and the brand voice are NOT declared here. They
+# arrive as pipeline context — demand.content_pillars, positioning.*,
+# positioning.brand_voice — written by the SEO strategist and the positioning
+# work and read by the agent that runs this app. Those keys are dotted, they live
+# in a different table with a different writer, and declaring flattened copies of
+# them here would be a second place to keep an answer somebody else already gave.
+#
+# What is left is the three things nobody upstream knows: how often you publish,
+# what the other channels actually need, and who can be handed a piece. Every one
+# of them is app-scoped, because the workspace scope is a closed set and none of
+# these is a field in it.
+context:
+  - key: publishing_cadence
+    scope: app
+    ask: "How often does a new long-form piece go out?"
+    type: enum
+    options: [weekly, biweekly, monthly, quarterly]
+  - key: formats
+    scope: app
+    ask: "Which formats does each piece get cut into? Name the ones your channels actually use — newsletter, LinkedIn, docs page — not the ones you wish you ran."
+    type: list
+  - key: writers
+    scope: app
+    ask: "Who can be handed a piece to write? Names, so every slot on the calendar has an owner rather than a blank."
+    type: list
+
+output:
+  name: content_calendar
+  target: demand.content_calendar
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [cycle, entries, blocked]
+    properties:
+      cycle:
+        description: The window this calendar covers, in the words the team uses for it — "October", "Q4", "the next six weeks".
+        type: string
+        minLength: 1
+      entries:
+        description: >-
+          One per piece, in publish order. Every ranked pillar that is being
+          written this cycle has at least one.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [pillar, working_title, angle, format, owner, publish_date, status, repurpose_into, sources]
+          properties:
+            pillar:
+              description: The ranked pillar this piece comes from. A piece with no pillar is one nobody asked for.
+              type: string
+              minLength: 1
+            working_title:
+              description: What it is called while it is being written. It will change; the calendar still needs a handle.
+              type: string
+              minLength: 1
+            angle:
+              description: >-
+                The one idea, in a sentence. One per piece — two ideas is two
+                pieces, and a piece whose angle needs a paragraph does not have one.
+              type: string
+              minLength: 1
+            format:
+              description: What it is — long-form post, teardown, guide, case study. One of the formats this workspace actually publishes.
+              type: string
+              minLength: 1
+            owner:
+              description: >-
+                The person writing it, by name. "The team" is not an owner and the
+                calendar is not honest with one in this field.
+              type: string
+              minLength: 1
+            publish_date:
+              description: The date it goes out, ISO. Dated, not "sometime in October".
+              type: string
+              pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            status:
+              description: >-
+                Where the piece actually is. `staged` means a person has it in
+                front of them for approval; nothing here means published, because
+                this app never publishes.
+              type: string
+              enum: [planned, drafting, drafted, staged]
+            repurpose_into:
+              description: >-
+                The cuts this piece owes the other channels. Rewrites for each
+                format, not the same paragraphs pasted somewhere shorter.
+              type: array
+              minItems: 1
+              items: {type: string, minLength: 1}
+            sources:
+              description: >-
+                What the piece is written from — the pillar, the positioning
+                section, the page a number came off. At least one, because a piece
+                that names nothing was written from memory and its claims cannot be
+                checked by the person approving it.
+              type: array
+              minItems: 1
+              items: {type: string, minLength: 1}
+            voice_checked:
+              description: >-
+                True once the draft has been through the voice pass. A piece
+                staged without it is one the reviewer has to do that pass for.
+              type: boolean
+      blocked:
+        description: >-
+          Pillars that cannot be written as they stand. Empty only when nothing
+          was blocked — this is the escalation, and it belongs in the artefact
+          rather than in a sentence at the end of a run nobody re-reads.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [pillar, claim, why]
+          properties:
+            pillar: {type: string, minLength: 1}
+            claim:
+              description: The specific claim the piece needs and the positioning does not support.
+              type: string
+              minLength: 1
+            why:
+              description: What would unblock it — the proof, the customer, the number somebody has to go and get.
+              type: string
+              minLength: 1
+
+instructions: |-
+  You are turning this company's ranked content pillars into a calendar somebody
+  can work from, and then writing the pieces on it.
+
+  Start with the calendar. Every pillar being written this cycle gets a slot with
+  a date, a named owner and a format — a slot missing any of those is a plan
+  nobody can act on, and the calendar is the thing this job is judged by. Order
+  it the way the pillars are ranked, and spread it at the cadence this workspace
+  publishes at rather than the cadence that would look impressive.
+
+  Then write. Every piece comes from the pillar and the positioning. Never from a
+  competitor's article: reading what they wrote and rearranging it is how a
+  company ends up saying the same thing as everybody else, more carefully. One
+  idea per piece, one claim per section. Specifics over adjectives — a number, a
+  customer's own sentence, the thing that actually happened, in place of
+  "powerful" and "seamless".
+
+  A claim you cannot source comes out. Not softened, not hedged into "many teams
+  find" — out. If you can check it, check it and name where it came from in the
+  piece's sources. If the pillar cannot be written at all without a claim the
+  positioning does not support, do not write around it and do not invent the
+  support: put that pillar in `blocked`, name the exact claim, and say what would
+  unblock it. That is an escalation and somebody upstream has to answer it.
+
+  Repurposing means rewriting for the format. The newsletter cut is written for
+  somebody reading their email; the social cut opens on the thing that made the
+  piece worth writing. The same paragraphs pasted into a shorter box is not a
+  cut, and readers who follow you in two places notice immediately.
+
+  Run every draft through the company's voice before it goes anywhere. Read it
+  aloud in your head: if a sentence would embarrass the person whose name is on
+  it, or would read the same under any other logo, rewrite it. Strip the tells —
+  the "it's not X, it's Y" scaffolding, the rhetorical question you answer
+  yourself, the analogy standing in for the explanation, the closing "at the end
+  of the day".
+
+  Stage every piece with stage_draft, and stage the calendar too. Nothing here
+  publishes on its own and nothing is sent because it read well. Say in one line
+  what you scheduled, what you drafted, and what is blocked and waiting on a
+  person.
+
+  Return the calendar as your structured output. The drafts themselves go to
+  approvals — they are not part of the object.

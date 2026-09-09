@@ -16,6 +16,33 @@
       }
     },
     {
+      "name": "account-planning",
+      "source": "./apps/account-planning",
+      "description": "Map a landed account, name the sponsor who can open the next team, and sequence the rollout.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "activation-metrics",
+      "source": "./apps/activation-metrics",
+      "description": "The one event that means a customer got value, and how long it actually takes them to reach it.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "analytics",
+      "source": "./apps/analytics",
+      "description": "Any question about your product and web event data, answered with the query, the window and the row counts.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "battlecard",
       "source": "./apps/battlecard",
       "description": "Positioning, weaknesses and objection handling against a named competitor.",
@@ -25,9 +52,36 @@
       }
     },
     {
+      "name": "billing-operations",
+      "source": "./apps/billing-operations",
+      "description": "Chase failed payments through an approved sequence, and tell an expired card apart from a customer leaving.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "brand-and-competitor-mentions",
       "source": "./apps/brand-and-competitor-mentions",
       "description": "Mentions of you, your competitors and your category's pain language, classified and routed.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "brand-voice",
+      "source": "./apps/brand-voice",
+      "description": "How the company sounds \u2014 traits with examples, the words we never say, and the tagline.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "brand-voice-enforcer",
+      "source": "./apps/brand-voice-enforcer",
+      "description": "The last read before a draft goes out \u2014 voice, clarity, and the Hebrew-English crossing.",
       "version": "1.0.0",
       "author": {
         "name": "freegtm"
@@ -61,6 +115,15 @@
       }
     },
     {
+      "name": "buyer-personas",
+      "source": "./apps/buyer-personas",
+      "description": "The people inside your segment \u2014 what each hires the product for, what hurts, and what makes it urgent.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "case-study",
       "source": "./apps/case-study",
       "description": "A customer story built around their numbers, not adjectives.",
@@ -70,9 +133,45 @@
       }
     },
     {
+      "name": "channel-strategy",
+      "source": "./apps/channel-strategy",
+      "description": "The two channels you can actually fund, each with a CAC estimate you can argue with, and what you dropped.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "churn-analysis",
+      "source": "./apps/churn-analysis",
+      "description": "Codes every churn to one primary reason with its evidence, and states the cohort curve behind them.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "churn-prevention",
+      "source": "./apps/churn-prevention",
+      "description": "Triage a customer's health drop by cause, pick the save play it earns, draft the outreach.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "clean-the-crm-governed",
       "source": "./apps/clean-the-crm-governed",
       "description": "Cleanup with rules and a proposal, never a bulk delete.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "community-program",
+      "source": "./apps/community-program",
+      "description": "Whether this ICP would actually gather, where, around what ritual \u2014 and who runs it every week.",
       "version": "1.0.0",
       "author": {
         "name": "freegtm"
@@ -97,9 +196,72 @@
       }
     },
     {
+      "name": "content-engine",
+      "source": "./apps/content-engine",
+      "description": "Turns ranked pillars into a dated content calendar, long-form drafts in your voice, and the cuts other channels need.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "context-manager",
+      "source": "./apps/context-manager",
+      "description": "Who filled each field, how sure they were, and what is still empty \u2014 a gap list per team.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "cross-sell",
+      "source": "./apps/cross-sell",
+      "description": "Which second product each customer segment is already ready for, ranked by evidence, with the accounts it applies to.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "customer-marketing",
+      "source": "./apps/customer-marketing",
+      "description": "Turns what shipped into customer announcements built around the job, with lifecycle mail tied to activation.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "customer-onboarding",
+      "source": "./apps/customer-onboarding",
+      "description": "The path from signature to activation \u2014 a dated sequence per persona, with a stall check on each milestone.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "customer-support",
+      "source": "./apps/customer-support",
+      "description": "Triage the ticket, answer it from the knowledge base with the article cited, escalate what the base cannot answer.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "define-your-icp",
       "source": "./apps/define-your-icp",
       "description": "Who you sell to, built from won deals and real conversations \u2014 refined, not declared.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "demo-script",
+      "source": "./apps/demo-script",
+      "description": "The demo the buyer would have asked for \u2014 every beat opens on a pain they named and closes on proof.",
       "version": "1.0.0",
       "author": {
         "name": "freegtm"
@@ -124,9 +286,54 @@
       }
     },
     {
+      "name": "discount-policy",
+      "source": "./apps/discount-policy",
+      "description": "What a rep may discount unaided, who approves past that, and what the buyer gives back for each step.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "email-nurture",
+      "source": "./apps/email-nurture",
+      "description": "A sequence per lifecycle moment \u2014 signed up, went quiet, came back \u2014 each with an entry rule, a cadence and an exit.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "enrich-the-contact",
       "source": "./apps/enrich-the-contact",
       "description": "Find a deliverable address for one person, with the sources shown and the gaps named.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "expansion-metrics",
+      "source": "./apps/expansion-metrics",
+      "description": "Breaks NRR into expansion, contraction, churn and flat renewal, and sizes the expansion pipeline behind it.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "expansion-signals",
+      "source": "./apps/expansion-signals",
+      "description": "Watches customer usage for the week an account outgrows its plan \u2014 the measure, the number, the date.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "experimentation",
+      "source": "./apps/experimentation",
+      "description": "Write the hypothesis, size the test before it runs, and read the result out as won, lost or inconclusive.",
       "version": "1.0.0",
       "author": {
         "name": "freegtm"
@@ -178,6 +385,15 @@
       }
     },
     {
+      "name": "funnel-analytics",
+      "source": "./apps/funnel-analytics",
+      "description": "What each channel actually produced, where the funnel leaks, and what a qualified record costs.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "give-first-email",
       "source": "./apps/give-first-email",
       "description": "An email that offers something concrete \\u2014 a teardown, a benchmark, an estimate \\u2014 instead of asking for time.",
@@ -214,6 +430,15 @@
       }
     },
     {
+      "name": "health-score",
+      "source": "./apps/health-score",
+      "description": "Weighted usage signals, a score on every customer, and a drop raised before anyone cancels.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "hiring-radar",
       "source": "./apps/hiring-radar",
       "description": "Roles a company is hiring for, verified, as a buying signal.",
@@ -223,9 +448,36 @@
       }
     },
     {
+      "name": "intent-signals",
+      "source": "./apps/intent-signals",
+      "description": "Decide which observable events mean a buyer has the problem now \u2014 and which look-alikes are noise.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "interpret-the-signal",
       "source": "./apps/interpret-the-signal",
       "description": "Is this event relevant, urgent, noise \\u2014 and for whom, and what next.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "kb-and-docs",
+      "source": "./apps/kb-and-docs",
+      "description": "Turns the support team's gap list into help articles and FAQ entries, in the words customers used.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "landing-page-cro",
+      "source": "./apps/landing-page-cro",
+      "description": "Drafts the page around the promise that got the click, and turns each change into a test with a stopping rule.",
       "version": "1.0.0",
       "author": {
         "name": "freegtm"
@@ -277,6 +529,15 @@
       }
     },
     {
+      "name": "message-testing",
+      "source": "./apps/message-testing",
+      "description": "Put the messages in front of the market, score what happened, and re-rank the hierarchy on it.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "multichannel-campaign",
       "source": "./apps/multichannel-campaign",
       "description": "One campaign across email, LinkedIn and calls, with the sequencing and the A/B plan.",
@@ -286,9 +547,72 @@
       }
     },
     {
+      "name": "new-segments",
+      "source": "./apps/new-segments",
+      "description": "The segments, verticals and geographies your customers already dragged you into \u2014 ranked, with the cost of entry.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "newsletter-issue",
       "source": "./apps/newsletter-issue",
       "description": "This week's issue: format, subject lines, the one idea.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "objection-handling",
+      "source": "./apps/objection-handling",
+      "description": "Answer the objection this buyer actually raised, from the approved map \u2014 and report the ones it cannot answer.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "objection-map",
+      "source": "./apps/objection-map",
+      "description": "Every objection buyers raise, ranked by how often, each with one response: the reframe, the proof, what to concede.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "packaging-tiers",
+      "source": "./apps/packaging-tiers",
+      "description": "Cuts the product into tiers a buyer picks between \u2014 each with one persona, one named fence and a price.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "paid-acquisition",
+      "source": "./apps/paid-acquisition",
+      "description": "Paid campaigns with one audience, one message, a budget the constraints allow, and a kill rule.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "partner-program",
+      "source": "./apps/partner-program",
+      "description": "The companies already selling to your buyer who would rather send you traffic than compete for it.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "pilot-design",
+      "source": "./apps/pilot-design",
+      "description": "Scopes a pilot that can fail: one question, numeric criteria, a named judge, an end date.",
       "version": "1.0.0",
       "author": {
         "name": "freegtm"
@@ -322,6 +646,15 @@
       }
     },
     {
+      "name": "pricing-strategy",
+      "source": "./apps/pricing-strategy",
+      "description": "What to charge, on what unit, and the evidence for the number \u2014 priced on value, never on cost.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "problem-validation",
       "source": "./apps/problem-validation",
       "description": "Does the problem exist outside your own calls? Forums, reviews and search, with quotes and volumes.",
@@ -340,6 +673,24 @@
       }
     },
     {
+      "name": "product-launch",
+      "source": "./apps/product-launch",
+      "description": "A dated launch plan \u2014 the claim, the waitlist, the assets per destination, and the sequence.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "proof-points",
+      "source": "./apps/proof-points",
+      "description": "The customer's number, the customer's words, and the permission you were given to use both.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "qualify-the-deal",
       "source": "./apps/qualify-the-deal",
       "description": "MEDDPICC / gates audit on an open opportunity: what's missing and what to ask next.",
@@ -352,6 +703,33 @@
       "name": "reddit-and-community-presence",
       "source": "./apps/reddit-and-community-presence",
       "description": "Where to show up, how to comment without getting banned, and what to track.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "reference-program",
+      "source": "./apps/reference-program",
+      "description": "A bench of customers who agreed to take a call \u2014 tiered, rationed, and honest about the segments with none.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "referral-program",
+      "source": "./apps/referral-program",
+      "description": "The mechanic that makes an introduction easy, the incentive that doesn't buy it, and the ask itself.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "renewal-management",
+      "source": "./apps/renewal-management",
+      "description": "Every renewal in the window, with a dated plan and the value recapped in the customer's own numbers.",
       "version": "1.0.0",
       "author": {
         "name": "freegtm"
@@ -385,6 +763,15 @@
       }
     },
     {
+      "name": "revenue-metrics",
+      "source": "./apps/revenue-metrics",
+      "description": "MRR, ARR, NRR, GRR, ARPA and the cohorts beneath them, computed the same way every period.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "review-the-call",
       "source": "./apps/review-the-call",
       "description": "Score a call against a rubric and extract the objections that keep recurring.",
@@ -403,6 +790,33 @@
       }
     },
     {
+      "name": "revops-hygiene",
+      "source": "./apps/revops-hygiene",
+      "description": "Where demand, sales and revenue disagree about the same fact \u2014 with the count behind it and its owner.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "sales-enablement",
+      "source": "./apps/sales-enablement",
+      "description": "One-pagers, FAQ answers and case-study briefs a rep can send, in the messaging that was approved.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "sales-motion",
+      "source": "./apps/sales-motion",
+      "description": "How this company sells \u2014 self-serve, sales-led or both \u2014 with stages a reviewer can check on a record.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "score-against-your-icp",
       "source": "./apps/score-against-your-icp",
       "description": "Fit, tier and buying signals with the reasons shown \u2014 rules first, judgement second.",
@@ -415,6 +829,15 @@
       "name": "score-and-route-leads",
       "source": "./apps/score-and-route-leads",
       "description": "Score, assign the right owner, and hit the speed-to-lead SLA.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "seo-strategy",
+      "source": "./apps/seo-strategy",
+      "description": "The searches your buyer actually runs, clustered into pillars you have a right to win.",
       "version": "1.0.0",
       "author": {
         "name": "freegtm"
@@ -466,6 +889,42 @@
       }
     },
     {
+      "name": "unit-economics",
+      "source": "./apps/unit-economics",
+      "description": "CAC, payback, gross margin and lifetime value per segment and channel, with every input named.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "upsell-playbook",
+      "source": "./apps/upsell-playbook",
+      "description": "The route from the tier a customer has outgrown to the one they need, and the message that says so.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "voice-of-customer",
+      "source": "./apps/voice-of-customer",
+      "description": "What customers actually say, clustered into ranked themes with the counts, quotes and sources behind each.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "web-research",
+      "source": "./apps/web-research",
+      "description": "Runs a research question properly \u2014 reads the pages, grades the sources, hands back extracts not conclusions.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "website-visitor-radar",
       "source": "./apps/website-visitor-radar",
       "description": "Turn identified website activity into qualified follow-up.",
@@ -478,6 +937,15 @@
       "name": "why-now",
       "source": "./apps/why-now",
       "description": "The shift that makes this the moment \u2014 named, dated, sourced \u2014 or an honest no.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "win-back-campaign",
+      "source": "./apps/win-back-campaign",
+      "description": "Finds the churn segments whose reason you have since fixed, and writes the sequence that names what changed.",
       "version": "1.0.0",
       "author": {
         "name": "freegtm"

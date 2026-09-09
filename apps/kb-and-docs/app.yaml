@@ -1,0 +1,239 @@
+# The writing end of support. `Customer support` answers tickets and keeps the
+# list of questions it could not answer; this app turns that list into the
+# articles those tickets should not have needed.
+#
+# Two apps because the clocks are different. A ticket is an event and gets
+# answered in minutes; an article is a document and gets written once a week
+# against the whole list, in the order of how many tickets each gap cost. One
+# app doing both would write an article every time somebody asked a question.
+#
+# ONE OUTPUT TARGET, AND THE DRAFTS ARE NOT IT. The validated object lands in
+# `retention.knowledge_base`: the standing account of what is documented, what
+# is answered in the FAQ, and what was deliberately left undocumented and why.
+# The articles themselves go to a person through stage_draft — they are drafts
+# awaiting approval, not context — and the draft id comes back into the output
+# so the record says which article was actually put in front of somebody. An
+# app declares one destination; everything else it does, it does through tools.
+#
+# NO `skills:`. TEAMS.md names help-article-writing and faq-generation for this
+# row and neither exists: the vendored inventory has nothing about support
+# documentation. The nearest candidate, `anti-ai-slop-writing`, routes its body
+# to references/zero-instance-patterns.md and references/clustering-and-
+# formatting.md, and the vendored directory ships neither page — copying it here
+# would be a model told to open something that is not there, in the voice of a
+# skill whose whole purpose was to stop it. Naming nothing is the honest state.
+#
+# THE DONE CONDITION IS IN THE SCHEMA, not in the prose. Every gap ends up in
+# exactly one of three arrays — an article, a FAQ entry, or a stated reason it
+# should not be documented — and an article cannot validate without the customer
+# wording it was written from and the product facts it rests on.
+name: KB and docs
+description: Turns the support team's gap list into help articles and FAQ entries, in the words customers used.
+category: content
+type: docs
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "write the help articles for this week's gaps"
+  - "close the knowledge base gaps"
+  - "turn these support questions into a FAQ"
+
+# `read` and `stage`, and nothing else.
+#
+# NO `write_lead`: this app is about the product and the questions asked of it,
+# and there is no lead in the run at all. NO `emit`, and therefore no `emits:` —
+# everything this app has to say lands in its output target, and a gap that can
+# only be closed by changing the product is already named there as an
+# escalation. A signal beside it would be a second label for the same fact.
+may:
+  - read
+  - stage
+
+# Hand-written because it is a judgement rather than a fact about the files: the
+# app writes perfectly well from the gap list and the product facts already in
+# context, and reads the published help centre only to avoid writing an article
+# that already exists. Say no once through set_reach and it stops asking.
+requires:
+  optional:
+    tools: [web]
+
+context:
+  # Workspace scope is a closed set — company_name, crm, icp, industry, product,
+  # regions, sender_name, sender_voice. `product` is a real field and every
+  # other app reads it, so nobody is asked here who was asked elsewhere.
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+
+  # App-scoped, because they are facts about this workspace's documentation
+  # rather than about its company.
+  - key: help_center
+    scope: app
+    ask: "Where do help articles live today — a URL, or 'nowhere yet'?"
+    type: text
+  - key: reader
+    scope: app
+    ask: "Who reads these — the people using it day to day, the admin who set it up, or both?"
+    type: enum
+    options: [end_users, admins, both]
+
+output:
+  name: knowledge_base
+  target: retention.knowledge_base
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [articles, faq, not_documented]
+    description: >-
+      The standing account of the knowledge base after this run. Every gap on the
+      list appears exactly once across the three arrays — an article, a FAQ entry,
+      or a reason it should not be documented. A gap missing from all three is a
+      gap nobody decided about, which is the state this app exists to end.
+    properties:
+      articles:
+        description: >-
+          One per gap that deserves its own page. Ordered by how many tickets the
+          gap cost, highest first.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [gap, title, question, answer, ticket_phrasings, grounded_in, draft_id]
+          properties:
+            gap:
+              description: The gap from the support list that this article closes, quoted as it was recorded.
+              type: string
+            title:
+              description: The title in the words somebody would search, not the words on the feature.
+              type: string
+            question:
+              description: The question this answers, phrased the way a customer asked it.
+              type: string
+            answer:
+              description: The answer, first and on its own. A few sentences that resolve the question without the context below.
+              type: string
+            detail:
+              description: The context that comes after the answer — steps, limits, what to do when it does not work.
+              type: string
+            ticket_phrasings:
+              description: >-
+                The actual words customers used when they asked. At least one — an
+                article written without them is written in our vocabulary, and the
+                person searching does not have it.
+              type: array
+              minItems: 1
+              items: {type: string}
+            grounded_in:
+              description: >-
+                The product facts, existing pages or tickets each claim rests on. At
+                least one — an unsourced help article is a confident guess that gets
+                quoted back at renewal.
+              type: array
+              minItems: 1
+              items: {type: string}
+            draft_id:
+              description: >-
+                The stage_draft id this article was staged under. An article with no
+                draft id was written and never put in front of anybody.
+              type: string
+      faq:
+        description: >-
+          Questions that recur but do not carry a page of their own. Entries staged
+          together share one draft id.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [gap, question, answer, ticket_phrasings, grounded_in, draft_id]
+          properties:
+            gap: {type: string}
+            question:
+              description: The question in the customer's words.
+              type: string
+            answer:
+              description: Two or three sentences. Anything that needs more than that is an article.
+              type: string
+            ticket_phrasings:
+              type: array
+              minItems: 1
+              items: {type: string}
+            grounded_in:
+              type: array
+              minItems: 1
+              items: {type: string}
+            draft_id: {type: string}
+      not_documented:
+        description: >-
+          Gaps deliberately left unwritten, each with the reason. This array is how
+          the list gets finished honestly rather than by padding it with articles
+          nobody needed.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [gap, reason]
+          properties:
+            gap: {type: string}
+            reason:
+              description: Why documenting it is the wrong answer, in one line a person can disagree with.
+              type: string
+            needs_product_change:
+              description: >-
+                True when the gap can only be closed by changing the product rather
+                than by writing about it. That is the escalation, and it belongs in
+                the record where whoever reads this next can see it.
+              type: boolean
+      notes:
+        description: Anything about the run worth one line — a gap list that arrived empty, product facts that contradict each other.
+        type: string
+
+# NO {{placeholders}}. A workspace value named by a placeholder refuses
+# composition until somebody has set it, and every declared value reaches the
+# prompt through the Context section anyway, named or not.
+instructions: |-
+  You are writing the help articles the last ten tickets should not have needed.
+
+  Start from the gap list support keeps, and take it in the order it costs
+  money: the gap that produced the most tickets is the first article. Do not
+  reorder it by what is easiest to write.
+
+  Write the answer first and the context after. Somebody who reads two sentences
+  and leaves should already have what they came for; steps, limits and the
+  what-if-it-does-not-work go underneath. An article that needs the reader to
+  already know the answer is not an article.
+
+  Use the words in the tickets, not the words in the product. If customers call
+  it "the invite link" and we call it "workspace provisioning", the title says
+  invite link. Carry the phrasings you wrote from into the output — they are
+  what the next person searching will type.
+
+  Every claim comes from a product fact you can point at, or from an existing
+  page, or from a ticket where somebody got a real answer. Where the facts are
+  missing or disagree, write the part you can stand behind and say in the run
+  notes what you could not establish. Never invent a setting, a limit or a
+  screen; a wrong help article is worse than a missing one, because support will
+  cite it.
+
+  Some questions recur without deserving a page. Those are FAQ entries: two or
+  three sentences, same sourcing rule, no ceremony.
+
+  Some gaps should not be documented at all — the answer is confusing because
+  the product is confusing, and a page explaining the workaround makes the
+  workaround permanent. Put those in not_documented with the reason, and set
+  needs_product_change when documenting cannot close it. That is the escalation;
+  do not bury it inside an article that tells people to contact support.
+
+  Stage every article and every FAQ set with stage_draft before you finish, and
+  put the draft id it returns on each entry. Nothing here publishes itself.
+
+  Finish the list. Every gap you were given ends the run as an article, a FAQ
+  entry, or a stated reason — return that as your structured output, and say in
+  one line how many of each you wrote.

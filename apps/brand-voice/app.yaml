@@ -1,0 +1,252 @@
+# The voice, settled once, so every draft downstream has something to be checked
+# against. The same message written twice in two voices reads as two companies.
+#
+# WHY IT IS NOT PART OF `Positioning and messaging`. That app decides what is
+# TRUE about this product — the category, the story, the hierarchy. This one
+# decides how it SOUNDS. They move on different clocks: the positioning changes
+# when the market or the product does, the voice changes when the founder does,
+# and one app doing both would re-open the category every time somebody wanted a
+# tagline.
+#
+# ONE OUTPUT TARGET, THREE CONTEXT KEYS. The Brand Voice Definer card produces
+# positioning.brand_voice, positioning.naming and positioning.tagline. An app
+# declares ONE validated object going to ONE place, so the whole artefact lands
+# in positioning.brand_voice — names and tagline included, in the same object —
+# and the agent running this app copies those two blocks across to
+# positioning.naming and positioning.tagline through the pipeline tool, bounded
+# by its own scope.context.writes. The alternative was three apps producing
+# three thirds of one decision, which is how a voice ends up disagreeing with
+# its own tagline.
+#
+# THE DONE_WHEN IS IN THE SCHEMA, NOT IN THE PROSE. The card is done when the
+# voice has traits with a before-and-after example each, a do-not-say list, and
+# a tagline that survives being said out loud. So: a trait REQUIRES `before`
+# and `after` and the founder's own sentence it was heard in; a banned phrase
+# REQUIRES the reason it is banned; the tagline REQUIRES the lines that were
+# said out loud beside it and lost. A model cannot return an adjective with no
+# evidence and call it a voice, because the object will not validate.
+#
+# NO SKILLS, and this is the honest answer rather than a shortcut. TEAMS.md
+# names tone-of-voice, naming and tagline-generation for this row; none of the
+# three exists in either vendored inventory. The nearest real skill,
+# swan-gtm/anti-ai-slop-writing, is a near-miss twice over: it EDITS shipped
+# copy rather than defining a voice to edit against, and its body routes to
+# references/zero-instance-patterns.md and references/clustering-and-formatting
+# .md, neither of which ships in the vendored directory. Naming it would put a
+# model in front of two pages that are not there, in the voice of a skill whose
+# whole purpose was to stop it improvising.
+name: Brand voice
+description: How the company sounds — traits with examples, the words we never say, and the tagline.
+category: content
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "define our brand voice"
+  - "what words should we never use?"
+  - "we need a tagline"
+
+# `read` and nothing else.
+#
+# NO `stage`: the card's gate is none and it stages nothing for approval —
+# unlike the Messaging Writer beside it, whose hierarchy the founder signs off
+# before any channel quotes it. The voice is written, not requested.
+#
+# NO `emit`, and therefore NO `emits:`. Everything this app has to say lands in
+# positioning.brand_voice. A `positioning.voice_defined` signal would be a
+# second label for a context write anybody can already read, and a signal that
+# duplicates a fact is the one that goes stale first.
+may:
+  - read
+
+# NO `tools:`. The voice comes from what the founder has already written and
+# from the positioning the Strategist settled — both already in context. A `web`
+# binding here would fail this app at bind in every deployment that has not
+# bound it, in exchange for reading a homepage this workspace wrote itself.
+
+context:
+  # Workspace-scoped, and it must be a real WorkspaceValues field — the scope is
+  # a closed set of eight. `company_name` is here rather than assumed because
+  # naming a tier and writing a tagline both put the company's own name in the
+  # line, and an app that guessed it would ship a tagline for a company that
+  # does not exist.
+  - key: company_name
+    scope: workspace
+    ask: "What's the company called?"
+    type: text
+
+  # App-scoped, because these are this app's raw material and nothing else reads
+  # them. `voice_samples` is the whole job: the card says describe the voice
+  # from the founder's own words, and a model with no samples describes the
+  # voice of whatever it has read most of.
+  - key: voice_samples
+    scope: app
+    ask: "Paste three things you've actually written or said — a post, an email to a customer, a bit of a call. Your words, not the marketing page."
+    type: sample
+  - key: banned_words
+    scope: app
+    ask: "Any words or phrases you already refuse to use? Tell me why for each — the reason is what makes the ban stick."
+    type: list
+  - key: naming_needs
+    scope: app
+    ask: "What needs a name — the product, the tiers, a concept you keep having to explain?"
+    type: list
+
+output:
+  name: brand_voice
+  target: positioning.brand_voice
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [traits, do_not_say, names, tagline, tensions]
+    properties:
+      traits:
+        description: >-
+          Three to six. Fewer is a voice nobody can apply; more is a list nobody
+          reads to the end.
+        type: array
+        minItems: 3
+        maxItems: 6
+        items:
+          type: object
+          additionalProperties: false
+          required: [trait, heard_in, before, after]
+          properties:
+            trait:
+              description: The trait in two or three words, as a person would say it.
+              type: string
+            means:
+              description: What it means when somebody is drafting at 6pm and has to decide.
+              type: string
+            heard_in:
+              description: >-
+                The founder's own sentence this was read off. A trait with no
+                sentence behind it was assigned, not observed.
+              type: string
+            before:
+              description: A real sentence written the way anyone in this market would write it.
+              type: string
+            after:
+              description: The same sentence in this voice. The pair is the definition; the adjective is only its label.
+              type: string
+      do_not_say:
+        description: >-
+          The market's shared phrases, the hype, and whatever the founder has
+          already banned. At least one — every market has its shared phrases,
+          and a list with none means nobody looked.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [phrase, reason]
+          properties:
+            phrase: {type: string}
+            reason:
+              description: Why it is banned. A ban with no reason gets overruled by the next person who likes the word.
+              type: string
+            instead:
+              description: What to write in its place, where there is a straight replacement.
+              type: string
+      names:
+        description: >-
+          One per thing that needs naming. Empty when nothing does — which is a
+          real answer and better than naming something to fill the array.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, refers_to, means]
+          properties:
+            name: {type: string}
+            refers_to:
+              description: The product, the tier, or the concept this is the name of.
+              type: string
+            means:
+              description: >-
+                What it means, in one sentence. If it takes two, it is not a
+                name yet.
+              type: string
+            also_considered:
+              type: array
+              items: {type: string}
+      tagline:
+        description: The line that pairs with the positioning statement, and the ones it beat.
+        type: object
+        additionalProperties: false
+        required: [line, pairs_with, also_considered]
+        properties:
+          line: {type: string}
+          pairs_with:
+            description: The positioning statement this sits under, quoted as it stands.
+            type: string
+          also_considered:
+            description: >-
+              At least two candidates that were said out loud and lost. A single
+              line with nothing beside it was the first thing written down.
+            type: array
+            minItems: 2
+            items: {type: string}
+      tensions:
+        description: >-
+          Where the founder's natural voice pulls against what the beachhead
+          persona responds to. Empty only when the two genuinely agree — this is
+          what the card escalates on, so it is stated rather than smoothed over.
+        type: array
+        items: {type: string}
+
+instructions: |-
+  You are settling how this company sounds, once, so that every email, post and
+  page written after this has something to be checked against.
+
+  Start with what the founder actually wrote. Read the samples the way you would
+  read a transcript — what do they do with a sentence that nobody else does?
+  Short verbs? A joke halfway through the hard part? Numbers instead of
+  adjectives? That is the voice. Name three to six traits, and for each one give
+  the founder's own sentence you heard it in.
+
+  Then show it. Take a real sentence written the way anyone in this market would
+  write it, and write it again in this voice. The pair teaches more than the
+  adjective does — nobody has ever drafted a better email because they were told
+  to be "confident". If you cannot produce the rewrite, you have not found a
+  trait, you have found a compliment.
+
+  Ban a word only with the reason it is banned. "Seamless" comes out because
+  every competitor's homepage says it and it survives its proof being removed —
+  say that, not "avoid hype". A ban with no reason is overruled by the first
+  person who likes the word. Start with the phrases the founder already refuses,
+  add the ones the whole market shares, and where there is a straight
+  replacement, give it.
+
+  Name what needs naming. A name that has to be explained twice is not a name;
+  if the sentence explaining it runs past one line, try again or say plainly
+  that this thing does not need a name yet. Say what each one refers to and what
+  it means, and keep the ones you rejected — the runners-up are how somebody
+  later understands the choice.
+
+  Write the tagline last, because it is the voice and the positioning in one
+  line and you need both first. Say every candidate out loud. A line that reads
+  well and cannot be said is a line that dies in the first demo. Keep the one
+  that pairs with the positioning statement as it actually stands, and keep at
+  least two it beat.
+
+  Never make the voice sound like the market's. That is what the positioning
+  exists to escape, and a voice assembled from what everyone else sounds like
+  undoes it quietly.
+
+  If the founder's natural voice pulls against what the beachhead persona
+  responds to — they are dry and the buyer wants warmth, they swear and the
+  buyer is a compliance team — do not split the difference. Write the tension
+  down in `tensions` and say it in your closing line. That is the Lead's call,
+  not yours.
+
+  Return the whole thing as your structured output. The names and the tagline
+  travel inside it; whoever runs you lands them in positioning.naming and
+  positioning.tagline.

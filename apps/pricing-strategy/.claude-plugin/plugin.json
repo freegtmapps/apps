@@ -1,0 +1,8 @@
+{
+  "name": "pricing-strategy",
+  "description": "What to charge, on what unit, and the evidence for the number \u2014 priced on value, never on cost.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "revenue-metrics",
+  "description": "MRR, ARR, NRR, GRR, ARPA and the cohorts beneath them, computed the same way every period.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

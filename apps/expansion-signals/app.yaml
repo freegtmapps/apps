@@ -1,0 +1,321 @@
+# The week an account outgrows what it bought, it says so in its own usage.
+#
+# THE CARD THIS IS THE TOOL FOR is `expansion.signal-detector`
+# (gtmsrv/agents/expansion/signal-detector.yaml, "Expansion Signal Detector").
+# Its whole instruction block is three lines — "A threshold crossed is a fact;
+# what it means is somebody else's job. Report the change, the size and when it
+# happened, never the recommendation. No signal without a number behind it, and
+# no signal on an unhealthy account." Everything below is downstream of those
+# lines, and where this manifest could have disagreed with the card, the card
+# wins.
+#
+# THE TARGET IS THE CARD'S KEY, NOT THE ROW'S. The dispatch note for this app
+# said `expansion.signals`; the card's `produces.context` says
+# `expansion.expansion_signals`, and so does every card that reads it —
+# upsell-strategist and cross-sell-mapper both name `expansion.expansion_signals`
+# in their `needs.context`. A target nobody reads is a document written to an
+# address that does not exist, so the card's spelling is used here. If the
+# platform later renames the key, this line and those three cards move together.
+#
+# ONE OUTPUT TARGET, AND THE OTHER HALF IS THE RECORDS. The card produces two
+# context keys — `expansion.expansion_signals` and `records`. Only the first is
+# structured output: one validated object, one destination. The flag on each
+# account ("so whoever picks it up sees the signal, not a summary of it") is
+# written per record through update_lead as the app works the list, bounded by
+# the agent's `scope: {records: write}`. An app declares ONE target; a manifest
+# naming both would claim a destination it cannot validate into.
+#
+# WHY IT EMITS, WHICH IS THE EXCEPTION AND NOT THE HABIT. The card's `produces`
+# names `expansion.signal_detected` and its `sinks` is `[signal]`. `may` is
+# enforced by projection alone, so an agent running this app without `emit`
+# declared here has no emit_signal in its prompt and cannot produce the thing its
+# own card says it produces. The document and the event are also not the same
+# fact on the same clock: `expansion.expansion_signals` is the window's standing
+# list, rewritten every run, and the signal is one account crossing one line on
+# one date — which is what lets an upsell path open on the crossing instead of
+# waiting for the Lead's monthly pass.
+#
+# NO `skills:`, and the omission was checked rather than assumed. TEAMS.md names
+# `usage-threshold-detection` and `seat-growth` for this row; neither exists in
+# either vendored repo. The near misses were read and refused: swan-gtm's
+# `buying-signals-6` ranks signals for COLD OUTREACH to companies that are not
+# customers (its "expansion" entry means a prospect is hiring, not that a
+# customer filled its seats), and NEON-Rutger's `onboarding-activation` designs
+# the program between signature and first value — a phase this app runs after,
+# on a weekly clock it says nothing about. A near-miss skill is a method the app
+# cannot follow, in the confident voice of one it can.
+name: Expansion signals
+description: Watches customer usage for the week an account outgrows its plan — the measure, the number, the date.
+category: watch-signals
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "which customers are outgrowing their plan?"
+  - "find expansion signals"
+  - "who hit their seat limit this week?"
+
+# THE CARD NAMES `[analytics, enrichment, records, pipeline, signal]` AND ONLY
+# TWO OF THOSE ARE SPELLABLE HERE. `analytics` is not in the capability
+# vocabulary; `product` is the nearest real capability and the right one — a
+# binding to the thing that records what users do, which is where a seat count
+# and a volume step are read from. `records` is `crm`: the list of who is still
+# a customer, and where the flag lands. `pipeline` and `signal` are platform
+# tools granted by the agent's scope, not bundle declarations, so there is
+# nothing to list.
+#
+# A deployment that binds neither `product` nor `crm` cannot run this app, and it
+# fails at bind rather than running and inventing a seat count. That failure is
+# the point: an invented threshold reads exactly like a measured one, and
+# somebody calls a customer about it.
+tools: [product, crm, enrichment]
+
+# Degrades without enrichment rather than refusing. Org growth — the company
+# itself getting bigger — is one of four measures, and a workspace that declines
+# enrichment through set_reach still gets seats, limits and volume off its own
+# product data. It stops being asked and the org-growth measure simply never
+# appears, which is a smaller run and not a worse one.
+requires:
+  optional:
+    tools: [enrichment]
+
+may:
+  - read
+  - write_lead
+  - emit
+
+emits:
+  - expansion.signal_detected
+
+# ONLY THE WORKSPACE KEY IS SUBSTITUTED, and the three app keys deliberately are
+# not. `domain.Substitute` fills {{...}} from WorkspaceValues alone and REFUSES a
+# placeholder no workspace value can fill — `billing-operations` is in the tree
+# today failing exactly that way, on three names it invented. So the app keys
+# below are asked, stored and read back at run time; the instructions refer to
+# them in words ("each limit this workspace named") rather than in braces.
+context:
+  # The one substituted value, and it decides which event is a MEASURE OF
+  # CONSUMPTION rather than of interest: "seats" means something different for a
+  # per-editor tool than for a per-message one. Declared so the runtime fills it
+  # from the workspace profile instead of the app meeting an unset value at
+  # compose and refusing.
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+
+  # THE KEY WITHOUT WHICH THERE IS NO THRESHOLD. A limit is what makes a number a
+  # crossing; with no limits named, every number is just a number going up and
+  # the app has nothing to detect. Named in the workspace's own spelling so a
+  # second reader can recompute the same crossing.
+  - key: plan_limits
+    scope: app
+    ask: "What does a customer's plan actually cap — seats, records, messages, environments? Name each limit the way your billing spells it, with the number."
+    type: list
+    infer_from: [connections]
+
+  # How big a move is news. Asked rather than assumed, because the answer is a
+  # commercial judgement about this product: 80% of seats is a crossing for a
+  # tool bought per editor and noise for one bought per company.
+  - key: threshold_rules
+    scope: app
+    ask: "How much of a jump counts as news — 80% of a limit, 20% more seats, a second team appearing? Give me the lines you'd want to hear about."
+    type: text
+
+  # The comparison window. The card's trigger is weekly and its done_when is
+  # "every customer account has been measured IN THE WINDOW", so what "the
+  # window" means has to be a stated fact rather than whatever the model picked.
+  - key: comparison_window
+    scope: app
+    ask: "Compare each account against when — last week, last month, or last quarter?"
+    type: enum
+    options: [week_over_week, month_over_month, quarter_over_quarter]
+
+# THE CARD'S done_when AND ITS TWO REFUSALS, ENCODED IN THE SHAPE RATHER THAN
+# ASKED FOR IN PROSE:
+#
+#   "every customer account has been measured in the window"
+#       → `coverage` is required, and `not_measured` is required inside it with
+#         a reason on every entry. Required and possibly empty, because "every
+#         account was reachable" is a finding and a missing key is the app not
+#         having looked. This is also the card's first escalate_when — usage
+#         that is missing or unattributable to an account — arriving as data
+#         instead of as silence.
+#
+#   "each signal carries an account, a measure, a number and a date"
+#       → every item in `signals` requires account, measure, before, after,
+#         change and observed_on, and before/after/change are NUMBERS. "No
+#         signal without a number behind it" is not a sentence in the
+#         instructions here; it is a type.
+#
+#   "no signal on an unhealthy account" / "a signal fires on an account the
+#   health model calls at risk"
+#       → `health` on a signal is an enum of `healthy` and `steady` ONLY. An
+#         at-risk account cannot be expressed as a signal in this schema. It
+#         goes in `withheld`, which is required, and every entry there carries
+#         the crossing that was dropped and the health reading that dropped it —
+#         so the Lead can see the retention event rather than lose it.
+#
+# AND WHAT THE SCHEMA REFUSES TO HAVE A PLACE FOR. There is no `recommendation`,
+# no `next_step`, no `tier`. `additionalProperties: false` all the way down means
+# the model cannot add one. "What it means is somebody else's job" is the card's
+# line, and upsell-strategist and cross-sell-mapper are the somebody: giving this
+# app a field for its opinion would let a detection arrive pre-argued.
+output:
+  name: expansion_signals
+  target: expansion.expansion_signals
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [window, coverage, signals, withheld]
+    properties:
+      window:
+        description: The period measured, and what it was compared against. Every number below is read inside it.
+        type: object
+        additionalProperties: false
+        required: [from, to, compared_against]
+        properties:
+          from: {type: string, description: "Start of the window, ISO date."}
+          to: {type: string, description: "End of the window, ISO date."}
+          compared_against:
+            description: The earlier period each measure is differenced against, e.g. "the week of 2026-08-24".
+            type: string
+      coverage:
+        description: How much of the customer base was actually measured. The run is not done until this accounts for all of it.
+        type: object
+        additionalProperties: false
+        required: [customer_accounts, measured, not_measured]
+        properties:
+          customer_accounts:
+            description: How many active customer accounts were in scope this window.
+            type: integer
+            minimum: 0
+          measured:
+            description: How many of them had usage that could be read and attributed. measured + not_measured should equal customer_accounts.
+            type: integer
+            minimum: 0
+          not_measured:
+            description: Every account that could not be measured, with why. Empty only when nothing was missing — an account left out silently is one nobody knows to look at.
+            type: array
+            items:
+              type: object
+              additionalProperties: false
+              required: [account, reason]
+              properties:
+                account: {type: string}
+                reason:
+                  description: What was missing — no usage recorded, usage that could not be attributed to this account, no limit named for its plan.
+                  type: string
+      signals:
+        description: One per crossing. An account that crossed two lines gets two signals; an account that crossed none appears here not at all.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [account, measure, source, before, after, change, observed_on, health]
+          properties:
+            account:
+              description: The customer account the crossing happened at, named as the CRM names it.
+              type: string
+            measure:
+              description: What moved. Closed, because these are the four things the card asks this job to watch.
+              type: string
+              enum: [seats_used, limit_utilization, usage_volume, new_team, org_headcount]
+            source:
+              description: Where the number was read — the event, field or enrichment record, in the product's own spelling, so somebody else can recompute this crossing.
+              type: string
+            before:
+              description: The value at the start of the comparison period.
+              type: number
+            after:
+              description: The value at the end of the window.
+              type: number
+            change:
+              description: after minus before, or the percentage points of a limit crossed. The size of the move, which is the whole content of the signal.
+              type: number
+            unit:
+              description: What the numbers count — seats, percent of limit, messages, people.
+              type: string
+            threshold:
+              description: The line that was crossed, from the workspace's own threshold rules. Absent for a measure with no line, like a new team appearing.
+              type: string
+            observed_on:
+              description: The date the crossing happened, ISO. Not the date this ran — a signal dated to the run is a signal with no when.
+              type: string
+            health:
+              description: The account's standing in retention.health_score_model at detection. Only these two values exist, because an at-risk account is a retention event and cannot be written here at all.
+              type: string
+              enum: [healthy, steady]
+            detail:
+              description: One factual line where the number alone is not legible — which team appeared, which limit. Never what to do about it.
+              type: string
+      withheld:
+        description: Crossings that were detected and deliberately not raised, because the account's health does not support expansion. Required and possibly empty. Dropping them silently would lose a retention event twice — once as an expansion signal nobody sees, once as a health story nobody hears.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [account, measure, change, health]
+          properties:
+            account: {type: string}
+            measure:
+              type: string
+              enum: [seats_used, limit_utilization, usage_volume, new_team, org_headcount]
+            change: {type: number}
+            health:
+              description: What the health model said about this account, in its own words — the band or the score and the direction it is moving.
+              type: string
+
+instructions: |-
+  You are looking for the customer accounts that have outgrown what they bought —
+  the ones paying for {{product}} today whose usage this window says no longer
+  fits the plan they are on.
+
+  Work account by account through the customer list. For each one read the
+  numbers that matter: how many seats are filled against how many are paid for,
+  how close consumption is to each limit this workspace named, whether volume
+  stepped up, whether a team or department shows up that was not there before,
+  whether the company itself got bigger in the enrichment data. Compare over the
+  window the workspace asked for, against the period before it. A crossing is a
+  move that clears one of the lines this workspace said it wanted to hear about.
+
+  A threshold crossed is a fact; what it means is somebody else's job. Report the
+  change, the size and when it happened. Never write the recommendation, never
+  name the tier they should be on, never say the account is "ready" for anything.
+  Somebody downstream reads your numbers and decides that, and a detection that
+  arrives pre-argued is one they cannot check.
+
+  No signal without a number behind it. If you can see that something feels
+  busier but cannot say what it was before, what it is now and when it changed,
+  that is not a signal — it is an impression, and it does not go on the list.
+  Every number carries the event or field you read it from, spelled the way the
+  product spells it, so the next person can recompute the same crossing.
+
+  No signal on an unhealthy account. Check health before you write anything: an
+  account the health model calls at risk, or whose score is falling, does not get
+  an expansion signal even when its usage is climbing — usage climbing while
+  health falls is often what trouble looks like. Put the crossing in `withheld`
+  with what health said, and say so out loud in your summary. That is a retention
+  event and the Lead needs to see it as one.
+
+  Measure everything, then say what you could not. An account whose usage is
+  missing, or whose usage you cannot attribute to it with confidence, goes in
+  `coverage.not_measured` with the reason — never guessed at, never quietly
+  skipped. If that list is a large share of the customer base, say so in your
+  first line: it means the run measured a fraction of the business and every
+  number in it is a fraction too.
+
+  As you go, flag each account that carries a signal on its own record with
+  update_lead, so whoever opens it sees the crossing itself — the measure, the
+  number, the date — and not a summary of it. Emit expansion.signal_detected
+  once per raised signal, never for a withheld one.
+
+  Return the whole window as your structured output, then say in one line how
+  many accounts you measured, how many crossed, and how many you could not read.

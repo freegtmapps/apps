@@ -1,0 +1,259 @@
+# The tool for retention.proof-collector — the job that harvests proof from the
+# customers the product measurably worked for.
+#
+# ITS OUTPUT TARGET IS THE CARD'S ONE PRODUCED KEY. The card produces
+# `retention.proof_points` and nothing else, so there is one target and no
+# second key to explain away. The drafts the card also produces — the
+# testimonial and reference requests — are NOT output: they are staged through
+# stage_draft during the run and go to a human for approval, which is a
+# different path with a different writer. Everything Sales, Positioning,
+# Expansion and Demand later read (five agents name `retention.proof_points` in
+# their needs) is the validated object below.
+#
+# WHY THERE IS NO `skills:`. The obvious candidate is
+# `b2b-case-study-production`, and it is the wrong skill twice over. It is about
+# PRODUCING a written asset from proof that already exists, which is the
+# `Case study` app's job and where that skill is already vendored; this app is
+# the step before, and the two would fight over the same work. And the vendored
+# copy ships SKILL.md alone while its body routes to three `references/` pages,
+# so naming it here means vendoring a body that tells a model to open pages this
+# bundle does not have. `roi-proof-generator` is the other near-miss: it builds
+# a renewal receipt for ONE account out of agent activity, not a permissioned
+# library across the customer base. No skill in the vendored inventory does this
+# job, so this app ships with none, and the method is in the instructions.
+#
+# NO `emits`. Everything this app has to say lands in `retention.proof_points`,
+# and the one event worth anyone's attention — a permission request going to a
+# human — is emitted as `draft.staged` from inside stage_draft, bypassing the
+# allowlist entirely. A declared signal here would be a second label for a fact
+# already in the target.
+name: Proof points
+description: The customer's number, the customer's words, and the permission you were given to use both.
+category: find-and-research
+type: research
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "collect proof points from our customers"
+  - "what results can we actually cite?"
+  - "who would give us a testimonial?"
+
+# `crm` is where the account, the contact and the note somebody wrote after the
+# call live. Without it this app has no customers to start from and no person to
+# ask for permission, so it is a hard need and it fails at bind rather than
+# running on recollection.
+tools: [crm]
+
+# Hand-written, because it is a judgement rather than a fact about the file:
+# `product` is where a before-and-after can be read off the customer's own
+# usage. It is the best source of a number and it is not the only one — a
+# customer who says "we went from four hours to twenty minutes" in a QBR has
+# given you the same fact from their own mouth. A workspace with no product
+# analytics still runs this app; it just does more asking and less reading.
+requires:
+  optional:
+    tools: [product]
+
+# `read` and `stage`, and the pairing is the whole permission story. Nothing
+# this app produces may leave the workspace on its own say-so: a testimonial
+# request, a reference ask and a "may we use this quote" all go out as staged
+# drafts a human approves. NO `write_external` and NO `send` — send is not
+# grantable at all, and that is deliberate.
+may:
+  - read
+  - stage
+
+context:
+  # What counts as an outcome is the customer's vocabulary, not ours, and it is
+  # the one thing a model reliably invents a proxy for. Asked once, app-scoped:
+  # it is this app's working definition and not a setup value other apps read.
+  - key: outcome_metrics
+    scope: app
+    ask: "Which numbers do your customers actually watch — the ones they'd repeat to their own boss?"
+    type: list
+  # Where results get written down differs per company and no amount of reading
+  # finds it: QBR decks in a drive, a churn-save note in the CRM, the support
+  # queue, the product's own dashboard.
+  - key: proof_sources
+    scope: app
+    ask: "Where do customer results get written down here — QBR notes, support threads, the dashboard, somewhere else?"
+    type: list
+  # The list somebody would be furious about. An enterprise customer under NDA,
+  # an account mid-renegotiation, a logo legal has already said no to. Cheaper
+  # to ask than to stage a request that should never have been written.
+  - key: off_limits_accounts
+    scope: app
+    ask: "Any customers I should never approach for a quote or a logo?"
+    type: list
+
+output:
+  name: proof_points
+  target: retention.proof_points
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [proof_points, gaps]
+    properties:
+      proof_points:
+        description: >-
+          One per customer outcome. NO minItems: a month in which no customer
+          produced a sourceable result must return an empty list and a full
+          `gaps`, because the alternative is a model inventing the one proof
+          point the schema demanded.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [customer, metric, quote, permission]
+          properties:
+            customer:
+              description: >-
+                The account, named. A proof point whose customer cannot be named
+                is not written here — it goes to `gaps` with escalate true, which
+                is what the card asks for.
+              type: string
+            segment:
+              description: Size band, vertical or region, so a reader can tell whose mirror this is.
+              type: string
+            metric:
+              description: The customer's own measured outcome. Required, and every part of it is required.
+              type: object
+              additionalProperties: false
+              required: [name, before, after, measured_from, measured_to, source]
+              properties:
+                name:
+                  description: What is being measured, in the customer's words and units.
+                  type: string
+                before: {type: string}
+                after:
+                  description: >-
+                    Exactly as measured. Never rounded up, never "roughly
+                    doubled" for a 1.7x — a number nobody can re-derive is worse
+                    than no number.
+                  type: string
+                measured_from: {type: string, description: "Start of the window the before was taken at. ISO date."}
+                measured_to: {type: string, description: "End of the window the after was taken at. ISO date."}
+                source:
+                  description: >-
+                    Where the number came from, specifically enough to reopen —
+                    the dashboard and view, the QBR deck, the sentence in the
+                    call. Required: an unsourceable number is the card's
+                    escalation, not a field left blank.
+                  type: string
+            quote:
+              description: The customer saying it themselves. Verbatim.
+              type: object
+              additionalProperties: false
+              required: [text, said_by, source]
+              properties:
+                text:
+                  description: >-
+                    Their words, unedited. Trimming for length is allowed and
+                    marked; rewriting is not, ever.
+                  type: string
+                said_by:
+                  description: Person and role, because an unattributed quote is a slogan.
+                  type: string
+                said_on: {type: string, description: "When they said it. ISO date."}
+                source:
+                  description: The call, thread, ticket or review it was said in.
+                  type: string
+            permission:
+              description: What this customer actually agreed to, and who agreed.
+              type: object
+              additionalProperties: false
+              required: [scope]
+              properties:
+                scope:
+                  description: >-
+                    `requested` means the ask is staged and nothing here may be
+                    used yet. Everything else is a permission somebody gave, and
+                    carries `granted_by` and `granted_on`.
+                  enum: [named_public, logo_only, anonymised, internal_only, requested]
+                granted_by:
+                  description: The person who gave it, with their role.
+                  type: string
+                granted_on: {type: string, description: "ISO date."}
+                evidence:
+                  description: Where the yes lives — the email, the signed form, the line in the thread.
+                  type: string
+            supports:
+              description: The claims this proof point stands under, if it maps to one somebody is already making.
+              type: array
+              items: {type: string}
+      gaps:
+        description: >-
+          Every customer looked at that did not produce a proof point, and why.
+          This is the half of the run a reader needs in order to trust the other
+          half.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [customer, what_is_missing]
+          properties:
+            customer: {type: string}
+            what_is_missing:
+              description: The number, the quote, the permission, or the customer's willingness to be named.
+              type: string
+            escalate:
+              description: >-
+                True when a person has to decide: a number that cannot be
+                sourced to the customer's own data, or a customer who will not be
+                named.
+              type: boolean
+
+instructions: |-
+  You are collecting proof for {{company_name}} — the evidence that {{product}}
+  worked, from the customers it demonstrably worked for. Everything sold
+  downstream rests on this, so the standard is a sceptical stranger's, not ours.
+
+  A proof point is theirs, not ours. The founder saying a customer grew is not
+  proof — that is traction, and it belongs in the company profile. Proof is a
+  number out of the customer's own measured outcome and a sentence in the
+  customer's own mouth, with permission attached to both.
+
+  Start where the product already worked. Read the health scores and the
+  voice-of-customer themes first and work from the accounts that are healthy and
+  the themes that are positive. Do not start from the customers you like, the
+  ones who answer email fastest, or the logo somebody wants on the site — that
+  is how a proof library ends up describing your relationships instead of your
+  results.
+
+  For each candidate, get the number before you get the quote. Read it out of
+  what they measure: the before, the after, the dates either side, and where you
+  read it. Use their units and their names for things. Never round up. Never
+  turn 1.7x into "nearly double". If the only version of a number is one we
+  calculated for them and they have never seen, you do not have a proof point —
+  put it in gaps with escalate true and say what would make it real.
+
+  Then take the quote. Their words, as they said them. You may trim for length
+  and say that you did; you may not tidy the grammar, sharpen the adjective or
+  stitch two sentences said an hour apart into one. A quote we improved is a
+  quote they did not say, and the person it is attributed to will read it.
+
+  Ask for the testimonial explicitly. Nobody gives you one you did not ask for,
+  and a quote lifted out of a support thread is not permission to publish it.
+  Stage the request as a draft for approval — who you are asking, which quote and
+  which number it covers, and what you want to be allowed to do with it. Never
+  approach an account on the off-limits list.
+
+  Record what each proof point is permitted under, at the level they gave. Named
+  and public, logo only, anonymised, internal only, or still requested. When it
+  is still requested, everything in that record stays inside the workspace until
+  somebody says yes; write it down anyway, so the ask does not have to be
+  reconstructed later. Where a customer will not be named at all, that is a
+  decision for a person: gaps, escalate true, and say what they would agree to
+  instead.
+
+  Return the whole run as your structured output — the proof points you can
+  stand behind and the gaps beside them. Then say in one line how many proof
+  points are permissioned, how many are waiting on an answer, and what needs a
+  human.

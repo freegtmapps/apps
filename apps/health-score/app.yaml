@@ -1,0 +1,261 @@
+# The model that makes churn visible while it is still behaviour, before it is a notice.
+#
+# The Health Scorer card (gtmsrv/agents/retention/health-scorer.yaml) is the job
+# this app is the tool for: build the model from signals that actually separated
+# churned customers from retained ones, weight each by what it predicted, score
+# every active customer, and raise the drop so the save motion starts on the drop
+# rather than on the cancellation.
+#
+# ONE OUTPUT TARGET, AND IT IS THE MODEL. The card produces two context keys —
+# `retention.health_score_model` and `records.*`. Only the first is structured
+# output: it is one validated object with one destination, which is what an
+# `output:` block is. The per-customer scores are the other half of the same run
+# and land on each record through update_lead as the app works the list, bounded
+# by the agent's `scope: {records: write}`. An app declares ONE target; a manifest
+# that named both would be claiming a destination it cannot validate into.
+#
+# WHY IT EMITS. `retention.health_dropped` is not a second label for the model:
+# at-risk-playbook triggers on exactly that signal, and nothing in the model
+# object says WHICH customer dropped THIS week. The model is a document, the drop
+# is an event, and the team's own rule — "the at-risk playbook fires on a health
+# drop, never on a churn" — is carried by the signal or by nothing. Hence
+# `may: [emit]` beside it.
+#
+# NO `skills:`, and the omission was checked rather than assumed. The vendored
+# inventory has `crm-health-scoring` (swan-gtm), whose subject is the reliability
+# of the CRM's own DATA — duplicate accounts, missing ownership, rule failure
+# rates — and `abm-engagement-scoring` (NEON-Rutger), whose subject is a
+# prospect account's readiness to be handed to sales. Both score something; neither
+# scores a paying customer's risk of leaving from product behaviour. A near-miss
+# skill is a method the app cannot follow, in the confident voice of one it can.
+name: Health score
+description: Weighted usage signals, a score on every customer, and a drop raised before anyone cancels.
+category: watch-signals
+type: scoring
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "score customer health"
+  - "which customers are about to churn?"
+  - "build our health score model"
+
+# Capabilities, not brands. `product` is where the usage comes from — the events
+# the product already records — and without it there is nothing to score from.
+# `crm` is both the list of who is still a customer and where each score lands.
+# A deployment binding neither cannot run this app, and it fails at bind rather
+# than running and inventing a number, which is the failure that matters here:
+# an invented health score is indistinguishable from a measured one and somebody
+# calls a customer about it.
+tools: [product, crm]
+
+may:
+  - read
+  - write_lead
+  - emit
+
+# One signal, and it is the one another job waits on.
+emits:
+  - retention.health_dropped
+
+context:
+  # Substituted in the instructions, so it has to be declared or composition
+  # refuses. It is also the thing that decides which events count as value:
+  # "logged in" means something different for a data product than for a scheduler.
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+
+  # THE KEY WITHOUT WHICH THIS APP IS ASTROLOGY. Weights come from what actually
+  # separated churned customers from retained ones; with no churned cohort there
+  # is nothing to separate, and a weight becomes a guess dressed as a measurement.
+  # The card's escalate_when is this key coming back empty.
+  - key: churn_history
+    scope: app
+    ask: "Which customers have you lost in the last year, and roughly when did each one go? Paste a list or an export — names and dates are enough."
+    type: sample
+    infer_from: [connections]
+
+  # Asked last and usually not at all: where the product is connected the event
+  # names are readable, and the answer only matters when they are not. Naming
+  # them in the product's own spelling is what keeps the model reproducible by
+  # somebody who did not run it.
+  - key: usage_signals
+    scope: app
+    ask: "Which product events do you actually record? Name them the way your product spells them — or say 'work it out' and I'll read what's there."
+    type: list
+    infer_from: [connections]
+
+# THE MODEL, IN THE SHAPE THAT MAKES IT A DIAGNOSIS RATHER THAN A GRADE.
+#
+# The card's done_when is encoded here rather than asked for in prose:
+#
+#   "inputs are named and weighted"  → signals minItems 1, each requiring `weight`
+#                                      AND `separation` — what the signal did in
+#                                      past data. A weight with no separation
+#                                      behind it is somebody's opinion of what
+#                                      ought to matter, which is the model this
+#                                      job exists to replace.
+#   "the model states what a drop means" → drop_rules minItems 1.
+#   "never score a customer we cannot observe; mark it unknown and say why"
+#                                      → coverage.unscorable is REQUIRED and every
+#                                      entry requires a reason. Required and
+#                                      possibly empty, because "nobody was
+#                                      unobservable" is a finding and a missing
+#                                      key is the model not having looked.
+#   cohort counts are required so a reader can see the model was fitted to
+#   something, and how much of it — the same reason every profile in Competitor
+#   research carries its sources.
+output:
+  name: health_score_model
+  target: retention.health_score_model
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [version, cohort, signals, bands, drop_rules, coverage]
+    properties:
+      version:
+        description: This model's own version. A changed signal or weight is a new version and a new baseline, never the same model improving.
+        type: string
+      cohort:
+        description: What the weights were fitted to. Numbers with the dates they were measured over.
+        type: object
+        additionalProperties: false
+        required: [window, retained, churned]
+        properties:
+          window:
+            description: The date range the past data covers, e.g. "2025-01 to 2025-12".
+            type: string
+          retained: {type: integer, minimum: 0}
+          churned:
+            description: How many churned customers the weights were separated against. Zero means there was nothing to fit to — say so and escalate rather than shipping weights.
+            type: integer
+            minimum: 0
+      signals:
+        description: The inputs, each one named, weighted, and defended by what it did in past data.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, source, direction, weight, separation]
+          properties:
+            name: {type: string}
+            source:
+              description: Where the number is read from — the event or field as the product records it, so somebody else can recompute this.
+              type: string
+            direction:
+              description: Which way is healthy.
+              type: string
+              enum: [higher_is_healthier, lower_is_healthier]
+            weight:
+              description: Share of the composite score. The weights across all signals should total 1.
+              type: number
+              minimum: 0
+              maximum: 1
+            separation:
+              description: What this signal did in the cohort — the rate among churned customers against the rate among retained ones. This is the reason the weight is what it is.
+              type: string
+            blind_to:
+              description: Segments or plans where this signal cannot be observed, and therefore cannot contribute.
+              type: array
+              items: {type: string}
+      bands:
+        description: What a score means. At least two, or the number bands nothing.
+        type: array
+        minItems: 2
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, min, max, means]
+          properties:
+            name: {type: string}
+            min: {type: integer, minimum: 0, maximum: 100}
+            max: {type: integer, minimum: 0, maximum: 100}
+            means:
+              description: What this band says about the customer, in a sentence somebody would act on.
+              type: string
+      drop_rules:
+        description: What a drop of each size means and what it earns. This is what makes the score a trigger rather than a report.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [size, over, means]
+          properties:
+            size:
+              description: The fall in points that counts, e.g. "10 or more" or "any fall out of healthy".
+              type: string
+            over:
+              description: The window it is measured across, e.g. "week over week".
+              type: string
+            means:
+              description: What a drop this size is evidence of, and whether it raises retention.health_dropped.
+              type: string
+      coverage:
+        description: Who got a score and who could not. The unscorable are the point — a customer we cannot observe is unknown, never healthy.
+        type: object
+        additionalProperties: false
+        required: [active, scored, unscorable]
+        properties:
+          active: {type: integer, minimum: 0}
+          scored: {type: integer, minimum: 0}
+          unscorable:
+            description: Every customer or segment left unscored, with the reason. Empty only when everyone was observable.
+            type: array
+            items:
+              type: object
+              additionalProperties: false
+              required: [who, reason]
+              properties:
+                who: {type: string}
+                reason:
+                  description: What is missing — no events recorded, connected last week, plan we get no telemetry from.
+                  type: string
+      limits:
+        description: Where you would not trust this model, and what would have to be true for it to improve.
+        type: array
+        items: {type: string}
+
+instructions: |-
+  You are building the health model for {{product}}, and then scoring every active
+  customer with it.
+
+  Start from the customers who left. Line the churned cohort up against the ones
+  who stayed and look for behaviour that was different BEFORE the churn, not at
+  the end of it — a support ticket in the final week is a symptom, not a signal.
+  Weight each input by how well it separated the two groups, and write that
+  separation down next to the weight. If a weight cannot be defended by something
+  the past data did, it does not belong in the model.
+
+  If nothing in the available data separates a customer who stayed from one who
+  left, stop. Say which signals you tried, what each one did in both groups, and
+  that the model cannot be built from what is recorded. That is the honest
+  outcome and it is more useful than weights you made up.
+
+  Then score. Work the active customer list, compute the score from the signals
+  you just weighted, and set it on each record with update_lead — the number, the
+  band, and the two or three inputs that moved it most. A score nobody can
+  decompose is a grade, not a diagnosis, so the inputs go on the record every
+  time, not just when somebody asks.
+
+  Never score a customer you cannot observe. If the events are not there — a new
+  account, a plan you get no telemetry from, a connection made last week — mark
+  them unknown, put them in coverage.unscorable with the reason, and leave the
+  record's score empty. A default score of "healthy" for a customer nobody can
+  see is the exact mistake this model exists to stop.
+
+  Emit retention.health_dropped for each customer whose fall meets one of your own
+  drop rules, naming the customer and what changed. One signal per customer, on
+  the drop — never on a cancellation, which is too late for anyone to act on.
+
+  Return the model as your structured output. Say in one line how many customers
+  you scored, how many you could not, and which signal carried the most weight.

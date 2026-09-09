@@ -1,0 +1,255 @@
+# The pilot as a decision with a date on it, not a way of postponing one.
+#
+# WHY IT IS ITS OWN APP. `Build the business case` argues that the numbers work;
+# this bounds the experiment that finds out whether they do. They are next to
+# each other in the motion — prove — and they are not the same document: a
+# business case is addressed to a CFO who was never on the call, and a pilot
+# scope is a contract with the champion about what counts as a pass. One app
+# doing both writes a case whose evidence is the pilot it has not run yet.
+#
+# NO `skills:`, and that is a decision rather than an omission. TEAMS.md names
+# `pilot-design` and `mutual-action-plan` for this row; neither is a directory
+# under vendor/skills. The nearest real one, swan-gtm's
+# `mutual-action-plan-builder`, is what `build-the-business-case` already
+# composes, and the job card says why it does not belong here in its own first
+# line: a MAP is a path to signature, not a POC scope. Its milestones are buyer
+# evidence on the way to a contract; this app's milestone is a number that can
+# come back wrong. Naming it would be a method the app cannot follow, dressed as
+# a credit line.
+#
+# ONE OUTPUT TARGET, and it is `sales.pilot_design`. The card also produces
+# drafts staged for the deal owner and an approval before anything reaches the
+# buyer; those are not structured output and are not declarable here — they go
+# through stage_draft, and anything written onto the record itself is written by
+# the agent through the pipeline tool, bounded by its own scope.
+#
+# THE DONE_WHEN IS IN THE SCHEMA, not in the prose. The card says a pilot is
+# finished when it has one question, numeric success criteria, a named judge, an
+# end date and a stated consequence for each outcome. So `question` is a single
+# string rather than a list, every criterion carries a `target` that must be a
+# NUMBER, `judge` requires a name and a role, and `outcomes` requires both `pass`
+# and `fail`. A pilot with a success condition and no failure condition does not
+# validate here, which is the only way to stop it being written.
+name: Pilot design
+description: "Scopes a pilot that can fail: one question, numeric criteria, a named judge, an end date."
+category: sell
+type: plan
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "scope the pilot for Acme"
+  - "what should this POC actually prove?"
+  - "set the success criteria before the trial starts"
+
+# NO `tools:`. The pain, the product facts and the stage definitions all reach
+# this app through its context and the record; the card gives this job pipeline,
+# records, approvals and brain, and no vendor connection. An app declaring `crm`
+# or `web` here would fail to bind for the workspaces that never connected one,
+# in order to fetch nothing it does not already have.
+
+# `read` and `stage`, and nothing beyond them.
+#
+# NO `emit`, and therefore no `emits:`. Everything this app has to say — the
+# question, the criteria, the judge, the date, and the criteria the product
+# cannot support — lands in the one validated object. A signal beside it would be
+# a second label for a fact already written, and `may` is enforced by projection
+# alone, so an `emits:` list without `emit` declares signals the app cannot
+# raise.
+#
+# NO `write_lead`: a proposed pilot is not a fact about the deal until a person
+# has approved it and the buyer has agreed. It is staged.
+may:
+  - read
+  - stage
+
+context:
+  # Workspace-scoped, and a real WorkspaceValues field: what the pilot is a pilot
+  # OF. Scoping to what the product does today is half this job, and an app that
+  # had to ask for the product every run would be asking a question three other
+  # apps already have the answer to.
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+
+  # App-scoped: the two limits a model cannot infer and will otherwise invent
+  # generously. The dotted pipeline keys the card reads — company.product_facts,
+  # sales.stages_and_exit_criteria — are not declared here; they are a different
+  # table with a different writer and they arrive with the run.
+  - key: pilot_length
+    scope: app
+    ask: "How long is a pilot allowed to run here before somebody has to decide? Say the longest you will agree to."
+    type: text
+  - key: pilot_terms
+    scope: app
+    ask: "Is a pilot paid or free, and what does the customer commit to before it starts?"
+    type: text
+
+output:
+  name: pilot_design
+  target: sales.pilot_design
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [account, question, pain_evidence, in_scope, out_of_scope, success_criteria, judge, end_date, outcomes, escalations]
+    properties:
+      account:
+        description: >-
+          The deal this pilot is for. The target is a section field rather than a
+          record field, so the object has to say which deal it describes or the
+          next reader cannot tell.
+        type: string
+      question:
+        description: >-
+          The ONE thing the pilot answers, as a question with a yes and a no. One
+          string, not a list — a pilot proving three things proves none of them
+          by the end date.
+        type: string
+      pain_evidence:
+        description: >-
+          Where the pain this pilot addresses is recorded — the call, the note,
+          the quote. At least one: a question nobody in the account raised is a
+          question we invented for them.
+        type: array
+        minItems: 1
+        items: {type: string}
+      in_scope:
+        description: What the pilot covers, in terms of what the product does today.
+        type: array
+        minItems: 1
+        items: {type: string}
+      out_of_scope:
+        description: >-
+          What it deliberately does not cover, said out loud before it starts. At
+          least one — a pilot with nothing out of scope is an open-ended one.
+        type: array
+        minItems: 1
+        items: {type: string}
+      success_criteria:
+        description: >-
+          The numbers agreed before the pilot starts. At least one, and each is a
+          measurement somebody can actually take.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [metric, direction, target, unit, measured_from]
+          properties:
+            metric:
+              description: What is measured, in the buyer's words.
+              type: string
+            direction:
+              description: Which way it has to move for this criterion to pass.
+              enum: [at_least, at_most]
+            target:
+              description: >-
+                The number. A NUMBER — "meaningfully faster" is not a criterion,
+                it is a disagreement waiting for the end of the pilot.
+              type: number
+            unit:
+              description: What the number is in — hours, tickets, percent, dollars.
+              type: string
+            baseline:
+              description: >-
+                What it is today, and where that figure came from. Empty when the
+                buyer does not measure it yet, which makes establishing the
+                baseline the pilot's first week.
+              type: string
+            measured_from:
+              description: >-
+                The system or report the number is read out of, on the buyer's
+                side. A criterion the buyer could not measure is not a criterion.
+              type: string
+      judge:
+        description: The person who decides whether the criteria were met. One named human, not a committee.
+        type: object
+        additionalProperties: false
+        required: [name, role]
+        properties:
+          name: {type: string}
+          role: {type: string}
+      start_date:
+        description: When the clock starts. Empty when it is still being agreed.
+        type: string
+        format: date
+      end_date:
+        description: >-
+          When it stops, whatever has happened. Required, because a pilot without
+          one does not end, it fades.
+        type: string
+        format: date
+      outcomes:
+        description: >-
+          What happens on each result, agreed in advance. Both branches required:
+          the failure condition is written as plainly as the success one, and a
+          pass that does not name a purchase is not a pass.
+        type: object
+        additionalProperties: false
+        required: [pass, fail]
+        properties:
+          pass:
+            description: What the buyer commits to if the criteria are met — the order, the term, the date.
+            type: string
+          fail:
+            description: What happens if they are not. Say the no.
+            type: string
+          partial:
+            description: Only where a genuine middle exists and both sides have agreed what it means. Prefer leaving it empty.
+            type: string
+      escalations:
+        description: >-
+          What the buyer asked to prove that the product facts do not support, or
+          criteria they will not put a number on. Empty when there are none; never
+          quietly dropped, because these are the ones a person has to answer
+          before this goes out.
+        type: array
+        items: {type: string}
+
+instructions: |-
+  You are scoping a pilot for a live deal, and the point of it is that it can
+  come back a no.
+
+  An open-ended pilot is a way of not deciding. Bound it: what is being proved,
+  by when, against what number, judged by whom. Everything you write here gets
+  read back to the buyer by a rep in a room, so write it the way it will be said.
+
+  Start from the pain that is already on the record. The question the pilot
+  answers is the buyer's question — quoted or paraphrased from something they
+  actually said in discovery — not the feature you would most like to show. If
+  the record has no quantified pain, say so and stop; there is nothing to scope
+  yet, and the Discovery Coach is the one who fixes it.
+
+  One question. A pilot proving three things proves none of them by the end
+  date, and a short pilot proving one thing beats a long one proving everything.
+  Scope it to what the product does today, from the product facts you have, and
+  write down what is out of scope before somebody assumes it is in.
+
+  A criterion the buyer could not measure is not a criterion. For each one, name
+  the number, which way it has to move, and the report on their side it comes
+  out of. If they do not measure it today, say so and make establishing the
+  baseline the first week of the pilot rather than guessing at one. Never invent
+  a baseline, a target or a unit; a number nobody in the account said is the one
+  they will find.
+
+  Name the judge. One person, with their role, who says at the end whether it
+  passed — not "the team" and not "we will see how it goes".
+
+  Write the failure condition as plainly as the success one. A pass has to name
+  what they buy; a fail has to name what happens then, and it is allowed to be
+  "we stop and part on good terms". A pilot with two happy endings is a pilot
+  nobody will hold anyone to.
+
+  Where the buyer wants a pilot with no criteria at all, or wants to prove
+  something the product does not do today, put it in escalations and say it in
+  one line. Do not quietly design around it.
+
+  Return the design as your structured output and stage it with stage_draft for
+  the deal owner. Nothing reaches the buyer until a person has approved it.

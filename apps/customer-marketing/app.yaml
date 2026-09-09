@@ -1,0 +1,263 @@
+# The marketing that points inward: telling people who already bought what changed.
+#
+# WHY IT IS ITS OWN APP. `Product launch` announces a release to a market that has
+# not bought yet; this one writes to the customer base, which is a different
+# reader with a different question. A prospect asks whether the product is worth
+# buying. A customer asks whether this changes what they already do on Monday.
+# One app doing both writes to whichever reader the model pictured that run.
+#
+# ITS OUTPUT IS COVERAGE, NOT COPY. The drafts themselves are staged for a person
+# — that is the approval path, and nothing reaches a customer without it. What
+# lands in `retention.customer_marketing` is the account of the window: which
+# customer-visible changes were announced, which were deliberately not, and why.
+# The Customer Marketer's card is done when every change in the window has an
+# announcement OR a stated reason it does not need one, so the schema is two
+# arrays that have to add up: `announcements` and `not_announced`, both against
+# `changes_reviewed`. A change that is in neither is a change nobody decided
+# about, and the shape makes that visible instead of leaving it to prose.
+#
+# WHY `not_announced` REQUIRES A REASON of at least one character: "already went
+# out in last month's note" is the only structural defence against mailing a
+# customer twice about the same change, which is the one thing the card names
+# that a reader will actually notice.
+#
+# NO SKILLS. The vendored inventory has newsletter and roundup skills, and both
+# are about building an audience of strangers with a weekly digest — the opposite
+# reader from this app's. Naming one would be credit for a method this app does
+# not follow, and a near-miss skill is worse than none: the model would take the
+# newsletter's advice about attracting high-ticket clients into a release note
+# for people who already pay.
+#
+# THE OTHER RETENTION KEYS ARE NOT THIS APP'S TO WRITE. `retention.activation_definition`
+# arrives from the Activation Designer through the pipeline and is read, never set;
+# anything the Customer Marketer records besides this one validated object — a note
+# on a record, a gap on `gaps.retention` — is written by the agent through the
+# pipeline tool, bounded by its own scope. An app declares one output target.
+name: Customer marketing
+description: Turns what shipped into customer announcements built around the job, with lifecycle mail tied to activation.
+category: content
+type: plan
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "announce what shipped to our customers"
+  - "draft this month's customer announcements"
+  - "what did we ship that customers should hear about?"
+
+# NO REQUIRED TOOLS, and that is a decision rather than an omission. The job card
+# holds pipeline, brain, approvals and records — it is deliberately not the card
+# with the analytics connection, unlike the Activation Designer's. An app that
+# hard-required `product` would fail at bind for exactly the workspace whose
+# release notes were pasted in by hand, which is most of them at the start.
+#
+# Where the connections do exist they change the work, so they are named as
+# optional: `github` and `website` are where the record of what shipped usually
+# lives, and `product` is the only way to place a customer against the activation
+# event rather than against days since signup.
+requires:
+  optional:
+    tools: [product, website, github]
+
+# `read` and `stage`.
+#
+# NO `write_external`: this app does not publish to the community itself, it
+# drafts the post and a person posts it. NO `emit`, and therefore no `emits:` —
+# everything this run has to say is already in the output target, and a signal
+# beside it would be a second label for the same fact. NO `write_lead`: mailing
+# a customer twice is prevented by reading what already went out, not by writing
+# a flag onto the record mid-run.
+may:
+  - read
+  - stage
+
+context:
+  # Workspace-scoped, because `sender_voice` is a real WorkspaceValues field and
+  # the answer belongs to the workspace rather than to this app — asked once,
+  # read by everything that writes in somebody's name. Voice matters more here
+  # than in most apps: a release note in the wrong register reads as a different
+  # company than the one the customer bought from.
+  - key: sender_voice
+    scope: workspace
+    ask: "Whose voice do customer announcements go out in, and how does that person write?"
+    type: text
+
+  # App-scoped: the three things the model cannot work out by looking.
+  - key: change_source
+    scope: app
+    ask: "Where is the record of what shipped — release notes, a changelog page, a repo, or somewhere a person writes it up?"
+    type: text
+  - key: announcement_window
+    scope: app
+    ask: "How far back should I look for changes each time this runs?"
+    type: enum
+    options: [last_week, last_month, last_quarter]
+  - key: announcement_channels
+    scope: app
+    ask: "Where do these land — customer email, in-app, the community, the changelog?"
+    type: list
+
+output:
+  name: customer_marketing
+  target: retention.customer_marketing
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [window, changes_reviewed, announcements, not_announced, lifecycle_emails, escalations]
+    properties:
+      window:
+        description: The dates this run covered. Coverage is a claim about a period, and a claim with no period cannot be checked next month.
+        type: object
+        additionalProperties: false
+        required: [from, to]
+        properties:
+          from: {type: string}
+          to: {type: string}
+      changes_reviewed:
+        description: >-
+          How many customer-visible changes were in the window. It exists to be added up:
+          announcements plus not_announced must equal it, and when they do not, a change
+          was dropped rather than decided about.
+        type: integer
+        minimum: 0
+      announcements:
+        description: One per change. One change per message — the field is a string, not a list, because a message about three changes is read as a changelog.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [change, job, step, channel, source, staged]
+          properties:
+            change:
+              description: The one change this message is about, in a customer's words rather than the release note's.
+              type: string
+            job:
+              description: The job this makes easier for them. Not what we built — what they can now do that was harder last month.
+              type: string
+            step:
+              description: The single step to try it, specific enough to follow without a call.
+              type: string
+            headline:
+              description: The subject line or post title, if one was written.
+              type: string
+            channel:
+              description: Where this one goes — customer email, in-app, community, changelog.
+              type: string
+            audience:
+              description: Which customers it is for. Empty means everyone, which is a real answer and rarely the right one.
+              type: string
+            source:
+              description: Where the change was read — the release note, PR or entry. At least one character, so an announcement can be traced back to something that actually shipped.
+              type: string
+              minLength: 1
+            staged:
+              description: Whether the draft was staged for approval. An announcement that was not staged has not reached anybody.
+              type: boolean
+      not_announced:
+        description: >-
+          The changes deliberately left alone. This is the other half of done: every change
+          in the window is either here or in announcements, and nowhere else.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [change, reason]
+          properties:
+            change: {type: string}
+            reason:
+              description: >-
+                Why this one needs no message — internal only, a fix nobody noticed, or
+                already announced and when. "Already went out in the March note" is what
+                stops a customer being mailed twice about the same change.
+              type: string
+              minLength: 1
+      lifecycle_emails:
+        description: The standing mail, placed against the activation event rather than against days since signup.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, position, trigger, purpose, staged]
+          properties:
+            name: {type: string}
+            position:
+              description: Where the customer is against activation when this arrives.
+              type: string
+              enum: [before_activation, at_activation, after_activation]
+            trigger:
+              description: The observable thing that sends it — an event or the absence of one, never "day 14" alone.
+              type: string
+            purpose:
+              description: What the customer does differently after reading it.
+              type: string
+            subject: {type: string}
+            staged: {type: boolean}
+      escalations:
+        description: >-
+          What a person has to decide before it can be written. Empty when nothing needed
+          escalating, and present either way, because a run that quietly announced a change
+          it should have escalated is the failure this field exists to make visible.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [change, reason]
+          properties:
+            change: {type: string}
+            reason:
+              description: >-
+                Why it stopped here — the change alters what a customer already paid for, or
+                the release notes cannot say what a customer gets from it.
+              type: string
+              minLength: 1
+
+instructions: |-
+  You are writing to people who already bought. They are not deciding whether the
+  product is worth it; they are deciding whether this changes what they do on
+  Monday. Write to that reader and nothing else.
+
+  Start from the record of what shipped in the window and go through it change by
+  change. Most of what is in there is not customer-visible — a refactor, a fix
+  nobody noticed, an internal tool. Say so and move on. Every change you look at
+  ends up in one of two places: an announcement, or the not-announced list with
+  the reason. A change in neither is a change nobody decided about.
+
+  Announce the job, not the feature. "Bulk edit" is a feature; "you can fix a
+  hundred records without opening a hundred records" is the job. One change per
+  message, and one step to try it — the step is the whole point, and an
+  announcement without it is a changelog entry with a friendlier font.
+
+  Before you write anything, look at what already went out. A customer who gets
+  told twice about the same change stops reading the third one. If it has been
+  announced, that is a reason, not an oversight — put it in not_announced and say
+  which message covered it.
+
+  The lifecycle mail hangs off the activation event this workspace has defined,
+  not off the calendar. Where the customer is against that event is what decides
+  which mail they get: someone who has not activated does not need to hear about
+  an advanced feature, and someone who activated last week does not need the
+  getting-started note again. If nobody has defined the activation event yet, say
+  so and write the announcements without the lifecycle half rather than inventing
+  a definition the rest of the team is not using.
+
+  Two things stop the run rather than getting written around. If a change alters
+  what somebody already paid for — a limit, a price, something moving to a higher
+  tier — that is not an announcement you draft, it is an escalation, and it goes
+  in escalations with the reason. Same when the release notes cannot say what a
+  customer gets from a change: do not work out a benefit that sounds right. Ask.
+
+  Never invent the detail that makes the copy land. If you do not know what the
+  step is, the answer is to say the step is missing, not to write a plausible one
+  — an announcement is read by paying customers who will try exactly what it
+  says.
+
+  Stage every draft with stage_draft. Nothing here sends itself, and a person
+  approves each message before a customer sees it. Return the coverage as your
+  structured output and say in one line how many changes were in the window, how
+  many are announced, and what is waiting on a decision.

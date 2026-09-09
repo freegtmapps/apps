@@ -1,0 +1,8 @@
+{
+  "name": "kb-and-docs",
+  "description": "Turns the support team's gap list into help articles and FAQ entries, in the words customers used.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

@@ -1,0 +1,248 @@
+# The second half of the ICP: `Define your ICP` says which companies, this says
+# which people inside them. A segment is a company and nobody in a company signs
+# because of firmographics — the buying group does, one role at a time, each for
+# a reason of their own.
+#
+# WHY IT IS A SEPARATE APP FROM `Map the buying committee`. That one answers
+# "who decides at Acme?" — one account, real names, a CRM row and a LinkedIn
+# profile. This one answers "who buys this, in general?" — a segment-level
+# document that is true of every account in the segment and names nobody. The
+# two look alike and are not: an account map goes stale when somebody changes
+# job, a persona goes stale when the market moves. Same reason `Competitor
+# research` and `Brand and competitor mentions` are two apps.
+#
+# ONE OUTPUT TARGET, AND THE CARD PRODUCES THREE KEYS. `icp.personas` is the
+# validated object this app returns; `icp.jobs_to_be_done` and
+# `icp.pains_and_triggers` are written by the agent through the pipeline tool
+# while it works, bounded by its own scope.context.writes. An app declares ONE
+# destination for ONE validated object — and the job and the pain live inside
+# each persona here anyway, where they belong: a job with no one to hold it is
+# a sentence, not a fact about a buyer.
+#
+# NO `skills:`, AND THAT IS THE DECISION RATHER THAN AN OMISSION. The vendored
+# inventory has two candidates and both are near-misses in the way that matters.
+# `buying-group` maps ONE ACCOUNT and requires a Lusha connection this app does
+# not hold — a method it cannot follow. `persona-mapping-framework` opens on
+# closed-won CRM analysis and then spends most of its body on LinkedIn ad
+# budgets, Clay enrichment rules and a Notion asset pipeline; composing it here
+# would point a segment-research app at campaign ops. Both are already carried
+# by `Map the buying committee`, which is the app they were written for.
+name: Buyer personas
+description: The people inside your segment — what each hires the product for, what hurts, and what makes it urgent.
+category: find-and-research
+type: research
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "build our buyer personas"
+  - "who actually buys this, and why now?"
+  - "what job do our customers hire us for?"
+
+# `web` is the whole method: reviews, communities, job posts and public profiles
+# are where buyers use their own words. Named at the top level because
+# requires.tools is derived from it.
+tools: [web]
+
+# A CRM is where the interviews already are — call notes, won-deal contacts, the
+# reason somebody gave for switching. Optional because it is a judgement about
+# what this app degrades gracefully without, and it does: a workspace with no
+# CRM gets personas built from public evidence, which is thinner but honest.
+requires:
+  optional:
+    tools: [crm]
+
+# `read` and nothing else. This app writes a document about a market segment; it
+# touches no lead, drafts nothing for approval and ships no scripts.
+#
+# NO `emits:`. Everything this app has to say is in the personas — the primary
+# one, the seats it found empty, the triggers it could not date. A signal beside
+# that would be a second label for a fact already written down.
+may:
+  - read
+
+context:
+  # Workspace scope is a closed set — company_name, crm, icp, industry, product,
+  # regions, sender_name, sender_voice — and these three are real fields other
+  # apps already asked for. Nobody is asked twice.
+  - key: company_name
+    scope: workspace
+    ask: "What's the company called?"
+    type: text
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+  - key: icp
+    scope: workspace
+    ask: "Which segment am I building personas for? Paste your ICP, or describe the companies you win."
+    type: text
+
+  # App-scoped, and the one thing the web cannot supply: what your own buyers
+  # actually said. `sample` because the right answer is pasted material rather
+  # than a sentence — call notes, a review, a Slack message, a churn reason.
+  # Optional in practice: infer_from tries the CRM first, and an empty answer
+  # means the personas are built from public evidence and say so.
+  - key: voice_of_customer
+    scope: app
+    ask: "Paste anything in your buyers' own words — call notes, review quotes, a reason somebody gave for switching. Or say skip."
+    type: sample
+    infer_from: [crm]
+
+# THE DONE_WHEN IS THE SCHEMA, not a paragraph of prose the model may skim.
+#
+# The card says a persona is finished when it has a job, a pain and a trigger,
+# every persona cites where it came from, and one is named primary. So:
+# `pains` is minItems 1 and each pain REQUIRES a trigger; `sources` is minItems
+# 1 on every persona; `primary` is a required object. A persona missing any of
+# them cannot be returned at all — which is the point. An app that cannot find
+# a trigger for its primary persona is in the card's escalate_when, and the
+# right behaviour is to stop and say so, not to compose a plausible one.
+output:
+  name: personas
+  target: icp.personas
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [personas, primary, empty_seats, gaps, sources]
+    properties:
+      personas:
+        description: One per role in the buying group. Ordered by who the message should reach first.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, buying_role, titles, job_to_be_done, pains, sources]
+          properties:
+            name:
+              description: What this workspace would call them out loud — "the RevOps lead at a Series B", not "Persona A".
+              type: string
+            buying_role:
+              description: Which seat they hold in the decision. One seat each; a person holding two is two entries only if they behave differently.
+              enum: [champion, economic_buyer, technical_evaluator, end_user, blocker]
+            titles:
+              description: The titles this persona actually appears under, so a list can be built from it.
+              type: array
+              minItems: 1
+              items: {type: string}
+            job_to_be_done:
+              description: What they are trying to get done, in their words rather than the product's. Never a feature.
+              type: string
+            pains:
+              description: What hurts now, each with the event that makes it urgent. A pain with no trigger is a complaint, not a reason to buy — so the trigger is required.
+              type: array
+              minItems: 1
+              items:
+                type: object
+                additionalProperties: false
+                required: [pain, trigger]
+                properties:
+                  pain:
+                    description: The problem as they describe it, not as the product solves it.
+                    type: string
+                  trigger:
+                    description: The event that makes them go looking today — a funding round, a hire, a renewal, a broken quarter.
+                    type: string
+                  observed_on:
+                    description: When the trigger was last seen, where the evidence allows a date. Absent means undated, not recent.
+                    type: string
+            success_metrics:
+              description: What this persona is measured on. It is what a message has to move.
+              type: array
+              items: {type: string}
+            objections:
+              description: What they say when they do not buy. Empty when nobody has heard one yet.
+              type: array
+              items: {type: string}
+            sources:
+              description: Where this persona came from — reviews, interviews, job posts, profiles. At least one, because a persona with none was imagined.
+              type: array
+              minItems: 1
+              items: {type: string}
+      primary:
+        description: The one persona the message is aimed at first, and the order the rest come in.
+        type: object
+        additionalProperties: false
+        required: [persona, why]
+        properties:
+          persona:
+            description: The `name` of one of the personas above, spelled the same way.
+            type: string
+          why:
+            description: Why this seat first — who feels the pain, who has the budget, who goes looking.
+            type: string
+          then:
+            description: The other personas in the order they should be reached, and what each one needs to hear that the primary did not.
+            type: array
+            items: {type: string}
+      empty_seats:
+        description: >-
+          Roles in the buying group with nobody in them for this segment. An empty
+          list is a claim that every seat was found; inventing a persona to fill
+          one is the failure this field exists to prevent.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [buying_role, what_was_looked_for]
+          properties:
+            buying_role: {enum: [champion, economic_buyer, technical_evaluator, end_user, blocker]}
+            what_was_looked_for:
+              description: Where you looked and what you did not find, so somebody else can look somewhere better.
+              type: string
+      gaps:
+        description: What could not be established — an undated trigger, a persona with one weak source, a job you are inferring rather than quoting.
+        type: array
+        items: {type: string}
+      sources:
+        description: Everything read across the whole run, so a reader can retrace it.
+        type: array
+        items: {type: string}
+
+instructions: |-
+  You are describing the people inside {{company_name}}'s best segment: who they
+  are, what they are trying to get done, and what makes them go looking today.
+  The segment itself is already decided — read it from the ICP and do not
+  re-argue it.
+
+  Their words, not ours. A job to be done is what a buyer says when a peer asks
+  what they are working on; it is never a feature, a category name or a benefit
+  {{product}} claims. Go and find those words: review sites, community threads,
+  job posts written by the team you are describing, public profiles, and
+  anything the workspace pasted in from its own calls. Quote where you can.
+
+  A pain with no trigger is a complaint, not a reason to buy. For every pain,
+  name the event that makes it urgent now — the round that closed, the head of
+  ops who was hired, the renewal in ninety days, the quarter that missed. Date
+  it when the evidence carries a date and leave it undated when it does not;
+  never supply a date to make one look fresher.
+
+  Work the buying group seat by seat: who signs, who uses it daily, who
+  evaluates it, who can quietly stop it. DO NOT INVENT A PERSONA TO FILL A SEAT.
+  If nobody in this segment holds a seat, put it in empty_seats with what you
+  looked for. A segment where the economic buyer is genuinely absent is a real
+  and useful finding; a plausible one you made up is worse than the blank.
+
+  Every persona cites where it came from. If the only thing behind a persona is
+  what you already believed about that job title, it is not a persona and it
+  does not go in.
+
+  Name one primary persona and say why it goes first, then the order the rest
+  come in and what each of them needs to hear that the primary did not.
+
+  Two things mean stop and say so rather than write around them. If the segment
+  is broad enough that its personas do not share a job to be done, the segment
+  is the problem and the personas will paper over it — say which two jobs you
+  are seeing. If you cannot find a single trigger for the primary persona, say
+  that, and do not compose one; a trigger is the whole reason this document
+  exists, and the schema will not take a pain without one.
+
+  Return the personas as your structured output. Then say in one line how many
+  personas you built, which is primary, and which seats you left empty.

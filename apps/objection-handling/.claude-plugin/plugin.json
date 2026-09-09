@@ -1,0 +1,8 @@
+{
+  "name": "objection-handling",
+  "description": "Answer the objection this buyer actually raised, from the approved map \u2014 and report the ones it cannot answer.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

@@ -1,0 +1,245 @@
+# The app the Channel Strategist runs (gtmsrv/agents/demand/channel-strategist.yaml).
+#
+# WHAT IT IS FOR: a founder with six channels has none. This picks two the
+# constraints can actually pay for, says what each is expected to cost per
+# customer and shows the arithmetic, and names the channels deliberately
+# dropped so nobody re-proposes them in a month.
+#
+# ONE OUTPUT TARGET, AND THE CARD PRODUCES TWO KEYS. `demand.channel_plan` is
+# the validated object and lands here. `demand.watering_holes` — the named
+# places a buyer already gathers — is written by the AGENT through the pipeline
+# context tool during the run, not as structured output: an app declares one
+# validated object going to one place, and a manifest claiming two destinations
+# would be a second answer to a question the loader asks once
+# (E_WRITES_EXCEED_SCOPE compares this target against the agent's
+# scope.context.writes, which covers both keys). The instructions below say to
+# write it, and say what shape it has to be in.
+#
+# NO `skills:`. The method here — rank every plausible channel on reach, cost
+# and fit, then commit to two you can operate weekly — is not one the vendored
+# inventory has written down. `multichannel-campaign-builder` writes the
+# sequence once a channel is chosen, `subreddit-research` vets one channel's
+# communities and needs Reddit access this app does not hold, and
+# `market-finder` sizes a universe rather than choosing a route to it. Each is
+# a near miss, and a near miss is a model told to follow a method that does not
+# fit the job.
+#
+# NO `emits:`. Everything this app has to say lands in the plan. A signal here
+# would be a second label for a fact already written down, and the app has no
+# `emit` in `may` to raise one with.
+name: Channel strategy
+description: The two channels you can actually fund, each with a CAC estimate you can argue with, and what you dropped.
+category: find-and-research
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "which two channels should we run?"
+  - "pick our demand channels"
+  - "where do our buyers actually gather?"
+
+# `web` and nothing else, and it is a real need rather than a wish. What a test
+# actually costs here, and which communities, newsletters and events this buyer
+# is already in, are read off live pages — a CAC figure recalled from a
+# benchmark deck is exactly the artefact this app exists to replace. A
+# deployment binding nothing fails at bind rather than running and inventing
+# numbers, which is the right way round for an app whose output is arithmetic.
+#
+# No `requires.optional`: there is nothing here this app degrades gracefully
+# without. Declaring a capability it does not reach would only suppress a step
+# for the workspaces that said no to it.
+tools: [web]
+
+# Read only. This app commits budget on paper and nothing else: no lead is
+# touched, nothing is sent, and the plan is a document a founder argues with
+# before anyone spends.
+may:
+  - read
+
+context:
+  # Workspace-scoped, and all three are real WorkspaceValues fields other apps
+  # have already asked for. The card needs the ICP and the positioning before a
+  # single channel is named; the ICP is the shared value, and positioning is
+  # read from the pipeline at run time rather than re-asked here.
+  - key: icp
+    scope: workspace
+    ask: "Who is this for — the buyer you are trying to reach, in one or two lines?"
+    type: text
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+  - key: regions
+    scope: workspace
+    ask: "Which regions or markets are you selling into?"
+    type: list
+
+  # App-scoped: the constraints. These are the four facts that decide whether a
+  # channel is a channel here, and none of them can be inferred from anything
+  # already in the workspace. Without the budget and the hours the app would be
+  # ranking channels in the abstract, which is the deck this replaces.
+  - key: monthly_budget
+    scope: app
+    ask: "What can you spend on demand each month, all in? A rough number is fine — say if it's zero."
+    type: text
+  - key: weekly_capacity
+    scope: app
+    ask: "Who works on this and for how many hours a week? Name the people, not the roles."
+    type: text
+  - key: average_deal_value
+    scope: app
+    ask: "What does a customer pay you in the first year, on average?"
+    type: text
+  - key: channels_tried
+    scope: app
+    ask: "What have you already tried, and what did it cost you? Including the things that went nowhere."
+    type: list
+
+output:
+  name: channel_plan
+  target: demand.channel_plan
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [primaries, rejected, drop_first_if_budget_halves]
+    properties:
+      primaries:
+        description: >-
+          Exactly two. Not one, because a single channel is a single point of
+          failure; not three, because the whole job is refusing the sixth.
+        type: array
+        minItems: 2
+        maxItems: 2
+        items:
+          type: object
+          additionalProperties: false
+          required: [channel, why_this_buyer, weekly_operating_cost, cac_estimate, first_test]
+          properties:
+            channel:
+              description: Named as a person would run it — "founder posts on LinkedIn", not "social".
+              type: string
+            why_this_buyer:
+              description: Why THIS buyer is reachable here, in terms of where they already are.
+              type: string
+            weekly_operating_cost:
+              description: >-
+                Who does it and for how many hours a week. A channel nobody here can
+                operate every week is not a channel, and this is where that shows.
+              type: string
+            cac_estimate:
+              description: >-
+                Required, because a channel chosen without a cost per customer is a
+                preference. The arithmetic and the assumption that breaks it are both
+                required with it — a number with no working behind it cannot be argued
+                with, which is the only thing this estimate is for.
+              type: object
+              additionalProperties: false
+              required: [amount, arithmetic, breaking_assumption]
+              properties:
+                amount:
+                  description: The cost per acquired customer, with the currency.
+                  type: string
+                arithmetic:
+                  description: >-
+                    The whole calculation written out — spend, volume, and each
+                    conversion rate in the chain, with where each number came from.
+                  type: string
+                breaking_assumption:
+                  description: The one assumption that, if wrong, makes this estimate worthless.
+                  type: string
+            first_test:
+              description: The cheapest thing that would tell you whether this channel works here.
+              type: object
+              additionalProperties: false
+              required: [what, cost, duration, what_would_prove_it]
+              properties:
+                what: {type: string}
+                cost: {type: string}
+                duration: {type: string}
+                what_would_prove_it:
+                  description: The result that would count as a yes, decided before the test runs.
+                  type: string
+      also_testing:
+        description: >-
+          At most one more, run cheaply beside the two. It is not a third primary
+          and carries no CAC estimate — it is a bet you are paying to learn about.
+        type: array
+        maxItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [channel, cost, what_would_prove_it]
+          properties:
+            channel: {type: string}
+            cost: {type: string}
+            what_would_prove_it: {type: string}
+      rejected:
+        description: >-
+          Every plausible channel that was considered and dropped, one line each.
+          At least one: a plan that rejected nothing did not rank anything, and the
+          rejections are what stop the same six channels being re-proposed next month.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [channel, why_not]
+          properties:
+            channel: {type: string}
+            why_not:
+              description: One line. Reach, cost, or nobody here can run it — say which.
+              type: string
+      drop_first_if_budget_halves:
+        description: >-
+          What goes first if the money halves, decided now while nobody is panicking.
+        type: string
+
+instructions: |-
+  You are choosing the two channels {{company_name}} will actually run to sell
+  {{product}}, for the buyer described in {{icp}}, in {{regions}}.
+
+  Read the ICP, the positioning and the constraints before you name a single
+  channel. Then list every channel that could plausibly reach this buyer — ten
+  or twelve of them, not four — and rank each on three things: how many of the
+  right people it reaches, what it costs to run here, and whether it fits how
+  this buyer decides. Only then commit.
+
+  Two channels, not six. A channel nobody here can operate every week is not a
+  channel, however good it looks in a case study: check the hours against who
+  actually works on this. If the two you would pick need more time than the
+  workspace has, pick the two it can run and say what you gave up.
+
+  Show the arithmetic behind every CAC estimate. Spend, volume, each conversion
+  rate in the chain, and where each number came from — the workspace's own past
+  attempts first, a live page second, a benchmark never. Then name the one
+  assumption that breaks it. If you had to reach for an industry average, say
+  the number is borrowed and say so in the same line as the estimate.
+
+  A third channel may be tested cheaply beside the two. It gets a cost and a
+  result that would count as a yes; it does not get a CAC estimate, because you
+  do not have one yet.
+
+  Every channel you dropped gets one line saying why. This is the half of the
+  plan that survives — it is what stops the same six ideas coming back in a
+  month.
+
+  Say what you would drop first if the budget halved. Decide it now.
+
+  Then write demand.watering_holes with set_context: the named places this buyer
+  is already in, as somewhere a person could open today. "r/devops", "the
+  Thursday RevOps newsletter", "SaaStr Annual" — never "developer communities",
+  "industry newsletters", "conferences". Each one gets the name, the link, and
+  a line on what people do there. Where you cannot find real ones, write fewer
+  and say the ICP is too vague to place the buyer rather than filling the list
+  with categories.
+
+  Return the plan as your structured output. If the constraints cannot fund the
+  first test in either channel you chose, say so plainly in one line and stop —
+  that is a decision for the demand lead, not a cheaper plan you invent.

@@ -1,0 +1,8 @@
+{
+  "name": "billing-operations",
+  "description": "Chase failed payments through an approved sequence, and tell an expired card apart from a customer leaving.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

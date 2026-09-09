@@ -1,0 +1,273 @@
+# The save motion, run on the drop rather than on the cancellation.
+#
+# WHERE THE OUTPUT LANDS, AND WHY IT IS NOT `retention.at_risk_playbook`.
+#
+# This app was commissioned with `output.target: retention.at_risk_playbook`. The
+# job card it serves — gtmsrv/agents/retention/at-risk-playbook.yaml — declares
+# `produces.context: [records.*]` and `scope: {records: write}`, and no file in
+# this tree mentions a `retention.at_risk_playbook` key. `output.target ⊆
+# scope.context.writes` is the loader's ONE cross-document rule
+# (agent.schema.yaml, E_WRITES_EXCEED_SCOPE), and `records.*` does not cover a
+# `retention.*` key: the commissioned target would refuse the pairing at load.
+#
+# It is also the wrong shape for the work. The card triggers on
+# `retention.health_dropped`, one account at a time, and `<lead>` resolves to
+# exactly one record per run from the trigger's record_id. A triage of THIS
+# account's drop belongs on THIS account's record. A section-level
+# `retention.*` field would be one account's save plan overwriting the last
+# one's — which is what a segment-level artifact written by a per-record app
+# always becomes.
+#
+# So the target is `records.<lead>.at_risk_playbook`. If a
+# `retention.at_risk_playbook` key is later added to the map AND to the card's
+# produces list, this is a one-line change — but it should be made in both files
+# or in neither.
+#
+# THE CARD'S OTHER OUTPUTS ARE NOT STRUCTURED OUTPUT. The drafts go to approvals
+# through stage_draft, and any free-form note the agent writes on the record goes
+# through the pipeline and records tools, bounded by the agent's own scope. An app
+# declares one validated object going to one place; those are neither.
+#
+# WHAT THE done_when IS MADE OF, in the schema rather than in the prose: a cause
+# from a closed list, at least one piece of evidence with a date on it, a chosen
+# play, and an outreach decision that carries its rationale whether or not
+# anything was staged. "Either a staged draft or a stated reason not to reach
+# out" is `outreach.decision` plus a required `rationale`, so the second branch
+# cannot be silence.
+name: Churn prevention
+description: Triage a customer's health drop by cause, pick the save play it earns, draft the outreach.
+category: reach-out
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "this account's health just dropped"
+  - "why is Acme at risk?"
+  - "what do we do about this at-risk customer?"
+
+# NO `skills:`, and it is not an omission.
+#
+# TEAMS.md names risk-triage, save-outreach and executive-check-in for this row.
+# None of the three exists: the vendored inventory is
+# vendor/skills/swan-gtm/gtm-skills and vendor/skills/NEON-Rutger/
+# B2B-revops-skills, and an app naming a skill with no file fails to load.
+#
+# The near misses were checked and refused. `onboarding-activation` owns the
+# window before steady state and its own description hands flagged accounts off
+# to a `renewal-save-motion` skill nobody has vendored — the same handoff
+# `qbr-ebr-builder` names. `qbr-ebr-builder` builds a scheduled customer-facing
+# review, not an intervention fired by a drop. `multi-threading-coach` re-threads
+# a live DEAL through a buying committee, which is a pre-sale motion with a
+# different clock. `closed-lost-revival` starts after the loss, and this app
+# exists precisely to run before it.
+#
+# A method this app cannot follow, credited to an author who did not write it
+# for this job, is worse than the founder's own framing below.
+
+# NOTHING IS REQUIRED, and both optionals are real.
+#
+# `product` is how "adoption stalled" acquires a number — which feature, whose
+# seats, since when. `crm` carries the renewal date and the account owner, which
+# decide how much time the save has.
+#
+# Neither is at the top level, because the app degrades honestly without them:
+# the health score and its inputs are already on the record, written by the
+# health scorer, and the records timeline holds the correspondence. An app that
+# refused to run without product analytics would refuse for every workspace whose
+# health model reads billing and support instead.
+requires:
+  optional:
+    tools: [product, crm]
+
+# `stage` is the point of the app — every message to an at-risk customer goes to
+# approval, per the card, and nothing here sends. `write_lead` records the risk
+# and the chosen play on the record beside the structured output.
+#
+# NO `emit`, and therefore no `emits:`. Everything this app has to say lands in
+# `records.<lead>.at_risk_playbook`: the cause, the play, the escalation. A
+# signal would be a second label for a fact already written where the Lead reads
+# it, and `draft.staged` is emitted from inside stage_draft anyway.
+may:
+  - read
+  - write_lead
+  - stage
+
+# What must be said before this runs.
+#
+# The card's `needs.context` — retention.health_score_model,
+# retention.activation_definition — is NOT here. Those are dotted pipeline keys
+# with a different writer, read through the pipeline tool at run time; a context
+# key is `^[a-z][a-z0-9_]*$` and could not name them if it wanted to.
+context:
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what did they buy?"
+    type: text
+  - key: sender_name
+    scope: workspace
+    ask: "Who signs the save outreach?"
+    type: text
+  # The load-bearing app key. The card says: if there is nothing honest to
+  # offer, say so rather than send a save email that admits nothing. This is
+  # what makes that decidable instead of rhetorical.
+  - key: save_offer
+    scope: app
+    ask: "What can you honestly offer an account that has stalled — time with a person, a rebuild of their setup, a pause on billing? Say what you actually have, not what you wish you had."
+    type: text
+  - key: exec_sponsor
+    scope: app
+    ask: "Who on your side makes the executive check-in when it has to come from above the day-to-day contact?"
+    type: text
+
+output:
+  name: at_risk_playbook
+  target: records.<lead>.at_risk_playbook
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [cause, what_changed, evidence, play, play_rationale, outreach]
+    properties:
+      cause:
+        description: >-
+          What kind of risk this is. The first four are usage causes this team can act on;
+          `commercial` and `product_gap` are the two the card escalates, and choosing one of
+          them means filling in `escalation`.
+        type: string
+        enum: [never_activated, adoption_stalled, sponsor_gone, value_not_seen, commercial, product_gap]
+      what_changed:
+        description: >-
+          The one specific thing that changed on THIS account, in a sentence you could say to
+          them. "Usage is down" is not it; "the three people who ran your weekly export stopped
+          in the last month" is.
+        type: string
+        minLength: 1
+      evidence:
+        description: >-
+          What you are reading the drop off. At least one — a cause with no evidence behind it
+          is a guess dressed as a triage, and it is the thing the customer will ask about first.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [metric, before, after, as_of]
+          properties:
+            metric:
+              description: What was looked at — a usage counter, a login, a ticket, a person.
+              type: string
+            before: {type: string}
+            after: {type: string}
+            as_of:
+              description: The date the after reading is from. A number with no date cannot be checked later.
+              type: string
+            source:
+              description: Where it was read — product analytics, the record's timeline, the CRM.
+              type: string
+      play:
+        description: >-
+          The intervention the cause earns. A save email does not fix a champion who left, and
+          a walkthrough does not fix a budget cut.
+        type: string
+        enum: [activation_assist, adoption_help, rethread_to_new_sponsor, value_recap, executive_check_in, escalate_to_lead]
+      play_rationale:
+        description: Why this play fits this cause, on this account. One or two sentences.
+        type: string
+        minLength: 1
+      outreach:
+        description: >-
+          What actually happens next. Not reaching out is a permitted answer and it still owes a
+          reason — the card's done_when accepts a staged draft OR a stated reason, never neither.
+        type: object
+        additionalProperties: false
+        required: [decision, rationale]
+        properties:
+          decision:
+            type: string
+            enum: [save_email_staged, executive_check_in_staged, not_reaching_out]
+          rationale:
+            description: >-
+              What you are offering and why they should believe it — or, when not reaching out,
+              what is missing that a message would only paper over.
+            type: string
+            minLength: 1
+          audience:
+            description: Who it goes to, and why them rather than the contact who went quiet.
+            type: string
+      escalation:
+        description: >-
+          Fill this in when the risk is not something this team can fix by talking to the
+          customer — a price or a contract problem, a missing product capability, or the same
+          cause dropping accounts across a whole segment. The Lead reads it off this record.
+        type: object
+        additionalProperties: false
+        required: [reason, note]
+        properties:
+          reason:
+            type: string
+            enum: [commercial, product_gap, segment_wide]
+          note:
+            description: What the Lead needs to route it — including which other accounts, if this is segment-wide.
+            type: string
+            minLength: 1
+
+instructions: |-
+  A customer of {{product}} has just dropped on the health score. You are running
+  the save while it is still cheap to change — months before anybody cancels
+  anything.
+
+  Fire on the drop, never on the cancellation. That is the whole timing of this
+  job: by the time someone asks to leave, the decision was taken weeks ago and
+  the conversation you are having is a refund negotiation.
+
+  START WITH WHAT CHANGED, NOT WITH THE SCORE. The score is a summary; a customer
+  does not recognise it. Go to the inputs underneath it and find the one specific
+  thing that moved on this account — who stopped logging in, which workflow went
+  quiet, which ticket never got answered, whose email started bouncing. Put it in
+  `what_changed` in words they would recognise, and put the readings behind it in
+  `evidence` with their dates. If you cannot find anything specific, say that in
+  `what_changed` rather than writing a sentence that sounds specific.
+
+  THEN NAME THE CAUSE, because the cause decides the play:
+
+    never_activated  — they signed and never got to the first useful thing.
+    adoption_stalled — they got there and then stopped, or it never spread
+                       past the person who bought.
+    sponsor_gone     — the person who wanted this left, changed jobs, or went
+                       silent, and nobody inherited it.
+    value_not_seen   — they are using it and cannot tell you what it did for
+                       them. Often the quietest and the most dangerous.
+    commercial       — budget, procurement, a price change, a contract term.
+    product_gap      — they need something that does not exist.
+
+  Pick the play the cause earns. A save email does not fix a champion who left —
+  that is `rethread_to_new_sponsor`, and it is a different message to a different
+  person. Someone who never activated needs a person walking them through the
+  first useful thing, not a case study. Someone using it happily who cannot say
+  what it did needs their own numbers said back to them, which is `value_recap`
+  or, when it has to come from above the day-to-day contact, an
+  `executive_check_in` from {{sender_name}} or the sponsor this workspace named.
+
+  WHAT YOU MAY OFFER is the offer this workspace actually has, and nothing else.
+  Do not invent a discount, a roadmap date, a dedicated engineer or a pause
+  nobody has agreed to. If what is on hand does not answer the cause you found,
+  that is a real answer: set `outreach.decision` to `not_reaching_out`, say in
+  the rationale what is missing, and let the Lead route it. A save email that
+  admits nothing reads as a renewal collection call and costs you the next one.
+
+  When the cause is `commercial` or `product_gap`, fill in `escalation` — this
+  team cannot fix a price or ship a feature by writing to the customer. Do the
+  same when you notice the same cause dropping accounts across a segment rather
+  than this one: one account is a save, a segment is somebody else's decision.
+
+  Draft the outreach with stage_draft, in this workspace's voice, with the
+  account's own numbers in it and one clear thing you are asking them to do.
+  Everything a customer sees goes to approval; nothing here sends. Record the
+  risk and the chosen play on the record with update_lead, and return the
+  triage as your structured output.

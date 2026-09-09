@@ -1,0 +1,8 @@
+{
+  "name": "context-manager",
+  "description": "Who filled each field, how sure they were, and what is still empty \u2014 a gap list per team.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

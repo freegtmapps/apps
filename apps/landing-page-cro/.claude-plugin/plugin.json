@@ -1,0 +1,8 @@
+{
+  "name": "landing-page-cro",
+  "description": "Drafts the page around the promise that got the click, and turns each change into a test with a stopping rule.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

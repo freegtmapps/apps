@@ -1,0 +1,8 @@
+{
+  "name": "funnel-analytics",
+  "description": "What each channel actually produced, where the funnel leaks, and what a qualified record costs.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

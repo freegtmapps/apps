@@ -1,0 +1,403 @@
+# The arithmetic under every argument the rest of this company is having.
+#
+# It is the tool for the Unit Economist card (gtmsrv/agents/revenue/
+# unit-economist.yaml). Demand argues for a channel, Sales argues for a segment,
+# and both arguments are really one claim: that a customer is worth more than it
+# costs to get one. This app settles it with numbers, and the card's rules are
+# encoded in the schema wherever they could be rather than only asked for in
+# prose:
+#
+#   - "segment before you average — a blended CAC hides the channel that is
+#     losing money"  →  THERE IS NOWHERE IN THIS SCHEMA TO PUT A BLENDED NUMBER.
+#     No top-level `cac`, no top-level `ltv`. `segments` and `channels` both have
+#     minItems 1, and a figure only exists inside one of them.
+#   - "state the period on every number"  →  `period` is required at the top with
+#     a start and an end, and every count in the report belongs inside it.
+#   - "where an input is missing, leave the figure out and name the input"  →
+#     every value is nullable and every figure REQUIRES its `inputs` list, plus a
+#     required `missing_inputs` array at the top. A null with the input named
+#     validates; an invented number that looks precise is what this shape exists
+#     to make harder.
+#   - "lifetime value comes from behaviour, not from an assumed churn rate"  →
+#     `ltv.method` is a closed enum, so a model taking the churn-assumption route
+#     has to say so in the object rather than in a sentence somebody skims, and
+#     `months_observed` says how much behaviour it actually saw.
+#   - escalate when "acquisition spend cannot be attributed to the deals it won"
+#     →  `unattributed_spend` is a required object with its own amount and share.
+#     There is no way to quietly spread that money across the channels that were
+#     running, which is the move that makes every channel look affordable.
+#   - escalate when "every cohort is too young to read"  →  `too_young_to_read`
+#     names them, and the LTV beside them is null rather than extrapolated.
+#
+# ONE OUTPUT TARGET, and the card produces exactly one key: revenue.unit_economics.
+# The card's `needs.context` — demand.campaigns, records, revenue.revenue_metrics,
+# and the previous revenue.unit_economics — are READS. They arrive through the
+# pipeline and the record scope, not through `context:` here: those dotted keys
+# live in a different table with a different writer, and a context key cannot
+# spell a dot anyway.
+#
+# NO SKILLS, and it was the closest call in this bundle. `revops-metrics` in the
+# vendored NEON-Rutger set is literally this method — CAC, LTV, payback, cohort
+# analysis, LTV:CAC by segment — but its body routes to `references/benchmarks.md`
+# and `references/revenue-data-model-scaffold.md`, and neither page exists in the
+# vendored tree at freegtm-apps/vendor/skills/NEON-Rutger/B2B-revops-skills/
+# revops-metrics, which holds SKILL.md and nothing else. Shipping it would put a
+# model in front of two pages that are not there, in the voice of the skill that
+# was supposed to keep it honest. `Funnel analytics` reached the same conclusion
+# on the same evidence. So the method is written out below in our own words and
+# this bundle claims no upstream authorship.
+#
+# NO EMITS. Both of the card's escalations are already fields in the output — the
+# spend nobody can attribute, the cohorts nobody can read. The agent holds the
+# signal sink and raises them from there; a signal declared here would be a second
+# label for a number this app already wrote down.
+name: Unit economics
+description: CAC, payback, gross margin and lifetime value per segment and channel, with every input named.
+category: watch-signals
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "what does a customer actually cost us?"
+  - "work out our CAC, payback and LTV"
+  - "which channel is losing money?"
+
+# `crm` is where the deals, their close dates and their amounts live. Without it
+# there is nothing to divide the spend by, so it is required and this app fails
+# at bind rather than running against nothing.
+#
+# `product` is optional because plenty of workspaces bill outside the product and
+# can only see cohort revenue in the CRM. Missing it costs this app usage-based
+# expansion inside a cohort, not the report.
+tools: [crm]
+
+requires:
+  optional:
+    tools: [product]
+
+may:
+  - read
+
+context:
+  # Five app-scoped keys, and every one of them changes a number. None is
+  # guessable: a segmentation a model invents produces a CAC per segment that
+  # is precise about a grouping nobody uses, and an invented COGS line produces
+  # a gross margin that is wrong in the same direction every month.
+  #
+  # Nothing is workspace-scoped. Which CRM holds the deals is already answered by
+  # the `crm` binding above, and a second answer to that question is a second
+  # thing to keep in sync.
+  - key: segments
+    scope: app
+    ask: "How do you split customers into segments? Say them the way your team says them — SMB and enterprise, by industry, by plan, whatever you actually use."
+    type: list
+  - key: acquisition_spend_source
+    scope: app
+    ask: "Where do I find what you spent to win customers in a period — ad platforms, a spreadsheet, payroll for the sales team? Name everything that should count."
+    type: text
+  - key: cost_of_delivery_source
+    scope: app
+    ask: "What does it cost you to serve a customer once they are paying — hosting, support, onboarding, third-party fees? Gross margin is the difference, so this is half of it."
+    type: text
+  - key: reporting_period
+    scope: app
+    ask: "What period should each run cover — last month, last quarter, or the trailing twelve months?"
+    type: enum
+    options: [last_month, last_quarter, trailing_12_months]
+  - key: fully_loaded
+    scope: app
+    ask: "Should CAC include sales and marketing salaries, or only the money you spent on programmes? Say 'fully loaded' or 'programme spend only'."
+    type: enum
+    options: [fully_loaded, programme_spend_only]
+
+output:
+  name: unit_economics
+  target: revenue.unit_economics
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [period, segments, channels, unattributed_spend, missing_inputs, sources]
+    properties:
+      period:
+        description: The window every number in this book belongs to. Stated once, at the top, because a CAC without its period is not a measurement.
+        type: object
+        additionalProperties: false
+        required: [start, end]
+        properties:
+          start: {type: string, description: "ISO date, inclusive."}
+          end: {type: string, description: "ISO date, inclusive."}
+          basis:
+            description: What CAC counts as spend in this run — fully loaded, or programme spend only. Two runs on different bases are not comparable and this is where a reader sees that.
+            type: string
+          note:
+            description: Anything that makes this period not comparable with the last one — a pricing change, a segment renamed, a month with two quarters of spend in it.
+            type: string
+      segments:
+        description: One per segment this workspace named. A segment with too few won deals to divide by still appears, with nulls and the reason.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, customers_won, cac, payback_months, gross_margin, ltv]
+          properties:
+            name: {type: string}
+            customers_won:
+              description: Deals closed won in the period, in this segment. The denominator under CAC, so it is stated rather than implied.
+              type: integer
+              minimum: 0
+            cac:
+              description: Acquisition spend attributed to this segment, divided by the customers it won in the same period.
+              type: object
+              additionalProperties: false
+              required: [value, currency, inputs]
+              properties:
+                value:
+                  description: Null when an input is missing. Never a placeholder, and never zero standing in for unknown.
+                  type: ["number", "null"]
+                currency: {type: string}
+                spend:
+                  description: The numerator — what was spent against this segment in the period.
+                  type: ["number", "null"]
+                inputs:
+                  description: The named figures this was computed from, or the ones it needs and does not have. A number with no inputs listed cannot be checked by the person who has to act on it.
+                  type: array
+                  minItems: 1
+                  items: {type: string}
+                assumption:
+                  description: The judgement inside the number — how shared spend was split across segments, whose salaries counted. Only where one was made.
+                  type: string
+            payback_months:
+              description: Months of gross profit from one customer needed to earn back what it cost to win them.
+              type: object
+              additionalProperties: false
+              required: [value, inputs]
+              properties:
+                value: {type: ["number", "null"]}
+                inputs:
+                  type: array
+                  minItems: 1
+                  items: {type: string}
+                assumption: {type: string}
+            gross_margin:
+              description: Revenue minus what it costs to serve, as a share of revenue. Nothing downstream is real without it — an LTV on revenue rather than gross profit is a bigger number about nothing.
+              type: object
+              additionalProperties: false
+              required: [value, inputs, assumption]
+              properties:
+                value:
+                  type: ["number", "null"]
+                  minimum: 0
+                  maximum: 1
+                inputs:
+                  type: array
+                  minItems: 1
+                  items: {type: string}
+                assumption:
+                  description: How cost of delivery was allocated to this segment. There is always one; naming it is what lets somebody disagree with the margin rather than with you.
+                  type: string
+            ltv:
+              description: What a customer in this segment is worth once won, in gross profit.
+              type: object
+              additionalProperties: false
+              required: [value, method, inputs, assumption]
+              properties:
+                value: {type: ["number", "null"]}
+                method:
+                  description: >-
+                    observed_cohorts means the number came from what these customers actually did.
+                    assumed_churn means it came from a churn rate somebody chose, which is a
+                    forecast wearing a measurement's clothes — allowed, but it has to say so here.
+                  enum: [observed_cohorts, assumed_churn]
+                months_observed:
+                  description: How much real behaviour is behind it. A twelve-month LTV from three months of cohort is an extrapolation and this is the field that admits it.
+                  type: integer
+                  minimum: 0
+                inputs:
+                  type: array
+                  minItems: 1
+                  items: {type: string}
+                assumption:
+                  description: The one thing that would change the answer most if it were wrong.
+                  type: string
+            ltv_to_cac:
+              description: LTV divided by CAC, and null whenever either side is null. A ratio computed from one real number and one guess is the most confident wrong number in this report.
+              type: ["number", "null"]
+            enough_data:
+              description: False when this segment closed too few deals to divide by. Three won deals give a CAC with two significant figures and no meaning.
+              type: boolean
+      channels:
+        description: The same arithmetic one axis over — what each channel spent and what it won. A channel that spent money and won nothing still appears, with zeros.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, spend, currency, customers_won, cac, inputs]
+          properties:
+            name: {type: string}
+            spend: {type: ["number", "null"]}
+            currency: {type: string}
+            customers_won: {type: integer, minimum: 0}
+            cac: {type: ["number", "null"]}
+            payback_months: {type: ["number", "null"]}
+            segment:
+              description: The segment this channel mostly won, where it is not spread across all of them.
+              type: string
+            inputs:
+              type: array
+              minItems: 1
+              items: {type: string}
+            enough_data: {type: boolean}
+      cohorts:
+        description: >-
+          Revenue by acquisition cohort, which is where LTV comes from when it is measured
+          rather than assumed. Empty only when the records cannot be grouped by when the
+          customer was won.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [cohort, customers, months_observed, revenue_by_month]
+          properties:
+            cohort:
+              description: When these customers were won — a month, a quarter, in whatever grain the records support.
+              type: string
+            segment: {type: string}
+            customers: {type: integer, minimum: 0}
+            months_observed: {type: integer, minimum: 0}
+            revenue_by_month:
+              description: Gross profit per customer per month since acquisition, in order. This is the behaviour LTV is read off.
+              type: array
+              items: {type: ["number", "null"]}
+            retained_share:
+              description: Share of the cohort still paying at the last observed month, 0 to 1.
+              type: ["number", "null"]
+      unattributed_spend:
+        description: >-
+          Acquisition spend that cannot be tied to the deals it won. Reported as its own number,
+          never spread evenly across the channels that happened to be running — that spread is
+          what makes every channel look affordable and is the card's first escalation.
+        type: object
+        additionalProperties: false
+        required: [amount, currency, share_of_spend, reason]
+        properties:
+          amount: {type: ["number", "null"]}
+          currency: {type: string}
+          share_of_spend:
+            type: ["number", "null"]
+            minimum: 0
+            maximum: 1
+          reason:
+            description: Why it is unattributable — no source on the deal, an agency invoice covering four channels, a brand campaign with no path to a record.
+            type: string
+      too_young_to_read:
+        description: >-
+          Segments or cohorts whose LTV was left null because there is not enough life behind
+          them yet, and what month they become readable. The card's second escalation.
+        type: array
+        items: {type: string}
+      missing_inputs:
+        description: >-
+          Every input that was needed and not found, and which figure it left out. Empty only
+          when nothing was missing. A derived number standing on an invented input is worse
+          than a gap, because nothing downstream can tell the two apart.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [input, affects]
+          properties:
+            input:
+              description: The thing that was not there — payroll for the sales team, hosting cost by plan, close dates before March.
+              type: string
+            affects:
+              description: The figures left null because of it.
+              type: array
+              minItems: 1
+              items: {type: string}
+            where_it_would_come_from: {type: string}
+      changes_since_last:
+        description: >-
+          What moved since the last run of this book, per segment, with the number. Empty on a
+          first run. A CAC is only interesting next to the CAC before it.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [segment, metric, previous, current]
+          properties:
+            segment: {type: string}
+            metric: {type: string}
+            previous: {type: ["number", "null"]}
+            current: {type: ["number", "null"]}
+            note:
+              description: What is known about why, and nothing that is only plausible.
+              type: string
+      sources:
+        description: Where each set of numbers was read from, so somebody can retrace this book rather than trust it.
+        type: array
+        minItems: 1
+        items: {type: string}
+
+instructions: |-
+  You are writing {{company_name}}'s book of numbers: what a customer costs to
+  win and what they are worth once won. Demand and Sales are both arguing for
+  more of something. Your job is to make that argument about arithmetic instead
+  of about who is more confident.
+
+  Segment before you average. A blended CAC is the single most expensive number
+  in a company, because it hides the channel that is losing money inside the one
+  that is not. Report every figure per segment, using this workspace's own
+  segment names, and again per channel. There is nowhere in your output to put a
+  company-wide CAC, and that is deliberate — do not put one in your closing line
+  either.
+
+  Every number carries its period. State the window once at the top and keep
+  every count inside it: spend from the period, deals closed in the period. If a
+  campaign straddles the boundary or a pricing change lands mid-period, say so in
+  the period note rather than letting the number carry the caveat silently.
+
+  Where an input is missing, the figure is null and the input is named in
+  `missing_inputs`. Do not estimate it, do not carry last month's forward, do not
+  let a zero stand in for unknown. A derived number resting on an invented input
+  looks exactly like a real one and there is no way for the person acting on it
+  to tell — a gap they can go and fill is a better answer.
+
+  Gross margin comes before lifetime value, always. LTV is gross profit, not
+  revenue: a lifetime value computed off top-line revenue is a bigger number
+  about nothing, and it is the number that makes an unaffordable channel look
+  fine. Say in `gross_margin.assumption` how you allocated cost of delivery to
+  each segment, because you did allocate it and somebody should be able to
+  disagree with the allocation rather than with you.
+
+  Build lifetime value from behaviour. Group the customers by when they were won,
+  read what each cohort actually paid month by month, and take LTV from that with
+  `method: observed_cohorts`. Only reach for a churn rate when the cohorts cannot
+  carry it — and when you do, set `method: assumed_churn`, name whose rate it is,
+  and say in one line that this figure is a forecast rather than a measurement.
+  Where every cohort is too young to read, leave LTV null, list the segment in
+  `too_young_to_read` with the month it becomes readable, and say so plainly.
+  That is an answer. An extrapolated lifetime off two months of data is not.
+
+  Spend you cannot attribute goes in `unattributed_spend` with its share and the
+  reason. Never split it evenly across the channels that were running, never give
+  it to the last touch because that is the one you can see, and never drop it so
+  the channel numbers add up to the invoice. If most of the spend lands there,
+  that is the finding, and CAC per channel is not reportable this period.
+
+  Do not compute a ratio out of one real number and one guess. LTV:CAC is null
+  whenever either side is null; it is the most persuasive wrong number available
+  to you.
+
+  Return the whole book as your structured output and cite in `sources` where
+  each set of numbers came from. Then say in three lines: the period and its
+  basis, the segment with the longest payback and its number, and the single
+  input whose absence cost you the most figures.

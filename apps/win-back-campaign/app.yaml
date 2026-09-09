@@ -1,0 +1,292 @@
+# The churned-customer half of revival. `revive-closed-lost-deals` is the other
+# half and they are deliberately not the same app.
+#
+# THE BOUNDARY, because it is the first thing a reader will want. That app works
+# the pipeline you already paid for: deals that never closed, proposals that went
+# quiet, champions who changed jobs. Everyone in it is a stranger who almost
+# bought. Everyone HERE bought, used the thing, and left — and left for a reason
+# somebody wrote down. That difference decides the whole method: a closed-lost
+# sweep gates on engagement and ranks accounts one at a time, and this one starts
+# from the coded churn reason and works a SEGMENT at a time, because a hundred
+# people who left over the same missing integration are one message, not a
+# hundred investigations.
+#
+# It is also why this app ships no `skills:`. `closed-lost-revival` is the
+# nearest vendored method and it is a near miss in three ways that matter: it
+# caps a sweep at 5-15 accounts where this writes to whole cohorts, it argues at
+# length that the sweep must be quarterly where this job runs monthly, and its
+# hard gates are written against deal stages and verified job changes rather than
+# against a churn reason. A method the app cannot follow, composed in front of a
+# model, is worse than no method — so the method here is prose in `instructions:`
+# and structure in the schema, and the credit line stays honest.
+#
+# WHAT IT PRODUCES, AND WHAT IT DOES NOT. One validated object lands in
+# `retention.win_back`: which segments are worth reopening, what changed for
+# each, and the sequence that says so. The drafts a person actually approves go
+# to approvals through stage_draft — that is the agent's write through its own
+# tool, not a second output target. An app declares one.
+#
+# THE DONE_WHEN IS IN THE SCHEMA, not in the prose. The card says a segment gets
+# a sequence only where the reason has DEMONSTRABLY been addressed, so
+# `what_changed`, `changed_on` and at least one piece of `evidence` are required
+# on every segment that carries messages — a segment cannot be written to without
+# a dated, checkable change. And the segments left alone go in `not_revived`,
+# which has no place to put a message: it is structurally impossible for this app
+# to write copy for people whose reason still stands.
+name: Win-back campaign
+description: "Finds the churn segments whose reason you have since fixed, and writes the sequence that names what changed."
+category: reach-out
+type: sequence
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "win back the customers who left"
+  - "who churned over something we've since fixed?"
+  - "write the win-back sequences"
+
+# `read` and `stage`, and nothing else.
+#
+# NO `write_lead`: this app decides who is worth writing to and writes the
+# sequence. It does not change what is on a churned record — the churn reason is
+# the churn analyst's field and revising it from inside a campaign is how a
+# reason quietly becomes whatever was convenient to reopen.
+#
+# NO `emit`, and therefore no `emits:`. Everything this run has to say lands in
+# `retention.win_back`, which a person can read; a signal announcing that the
+# segments changed would be a second label for a write that already happened.
+# Staging is reported by stage_draft from inside the tool.
+may:
+  - read
+  - stage
+
+# NO `tools:`. The card's tools are the platform's — pipeline, brain, approvals,
+# records — and none of them is a bound capability. Naming `crm` here would make
+# the app refuse to bind for a workspace whose churned base is in the records,
+# which is most of them, in exchange for nothing this job actually does with a
+# CRM connection.
+
+# WORKSPACE SCOPE IS A CLOSED SET — company_name, crm, icp, industry, product,
+# regions, sender_name, sender_voice. `sender_voice` is a real field and it is
+# the one that matters here: this email arrives from a person the customer
+# already knows, and a win-back in house-marketing voice tells them immediately
+# that nobody remembers them.
+#
+# The dotted pipeline keys this job reads — `retention.churn_reasons` and the
+# records — are a different table with a different writer and never appear here.
+context:
+  - key: sender_voice
+    scope: workspace
+    ask: "Who does this come from, and how do they write? A sentence in their register."
+    type: text
+  # The key nothing else in the workspace holds, and the one the whole job turns
+  # on. Without it a model asked to find what changed will find something — that
+  # is the failure this app exists to prevent.
+  - key: fixes_shipped
+    scope: app
+    ask: "What have you actually fixed or shipped since these customers left? Name each one and roughly when."
+    type: list
+  - key: lookback
+    scope: app
+    ask: "How far back should I go? Somebody who left three years ago is a stranger again."
+    type: enum
+    options: [six_months, twelve_months, eighteen_months, twenty_four_months, any]
+
+output:
+  name: win_back
+  target: retention.win_back
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [segments, not_revived, held_back, coding_gaps]
+    properties:
+      segments:
+        description: >-
+          One per churn reason worth reopening. Deliberately no minimum — a month
+          in which nothing has been fixed produces no segments, and an empty
+          array beside a full `not_revived` is the honest answer to this job
+          rather than a failed run.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [churn_reason, left_between, customers, what_changed, changed_on, evidence, premise, messages]
+          properties:
+            churn_reason:
+              description: The coded reason, in the words the churn analyst wrote it in. Not a rephrasing — this is what the customer will be reminded they said.
+              type: string
+              minLength: 1
+            left_between:
+              description: The dated window this cohort left in, e.g. "2024-11 to 2025-04". A segment is a reason AND a time; the same reason two years apart is two different conversations.
+              type: string
+              minLength: 1
+            customers:
+              description: How many churned customers are in the segment after exclusions.
+              type: integer
+              minimum: 1
+            what_changed:
+              description: The specific thing that has been addressed since, in terms this cohort would recognise as the thing they left over. Not "we've improved reliability".
+              type: string
+              minLength: 1
+            changed_on:
+              description: >-
+                When the change shipped. Required, and it has to be AFTER they
+                left — a fix that predates the churn is not what they left over,
+                it is something they already had and rejected.
+              type: string
+              minLength: 1
+            evidence:
+              description: >-
+                What a sceptical customer could go and check — the release note,
+                the changelog entry, the new page, the number. At least one: a
+                segment whose change cannot be checked is a claim, and this
+                cohort has already been disappointed once.
+              type: array
+              minItems: 1
+              items: {type: string, minLength: 1}
+            premise:
+              description: One line a colleague could read and agree with — their reason, the change, and the date. If it cannot cite a date it does not ship.
+              type: string
+              minLength: 1
+            messages:
+              description: In send order, and short. One credible re-open, then one follow-up at most; this cohort gives you a single knock.
+              type: array
+              minItems: 1
+              maxItems: 3
+              items:
+                type: object
+                additionalProperties: false
+                required: [send_after_days, subject, body]
+                properties:
+                  send_after_days:
+                    description: Days after the segment enters. The first is 0.
+                    type: integer
+                    minimum: 0
+                  subject:
+                    description: What the email is about. Their reason is usually already in it.
+                    type: string
+                    minLength: 1
+                  body: {type: string, minLength: 1}
+      not_revived:
+        description: >-
+          Every segment left alone, and why. This is half the deliverable, not a
+          leftover: the card is done when the rest are RECORDED as not worth
+          reviving. Note there is nowhere here to put a message — an app that
+          could draft for these would eventually draft for these.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [churn_reason, customers, why_not]
+          properties:
+            churn_reason: {type: string, minLength: 1}
+            customers: {type: integer, minimum: 0}
+            why_not:
+              description: >-
+                Usually one of: the thing they left over is still true; it was
+                fixed before they left; they were never the right customer; the
+                cohort is outside the lookback. Say which, plainly.
+              type: string
+              minLength: 1
+      held_back:
+        description: Who was kept out of every segment because they asked not to be contacted.
+        type: object
+        additionalProperties: false
+        required: [people, where_checked]
+        properties:
+          people:
+            description: How many were excluded. Zero is a legitimate answer.
+            type: integer
+            minimum: 0
+          where_checked:
+            description: >-
+              Where the opt-outs were read from — the suppression list, the
+              record field, the exit interview. At least one, because zero
+              exclusions from a place nobody looked is not the same fact as zero
+              exclusions, and only one of them is safe to act on.
+            type: array
+            minItems: 1
+            items: {type: string, minLength: 1}
+      coding_gaps:
+        description: >-
+          Churns that could not be segmented — no coded reason, or a reason so
+          broad ("price", "not a fit") that it holds two different conversations.
+          This is the card's escalation in the shape of a field: name what would
+          have to be coded, and hand it back to the churn analyst rather than
+          guessing a segment out of it. Empty only when nothing was ambiguous.
+        type: array
+        items: {type: string, minLength: 1}
+
+# NO {{placeholders}}. A workspace value named by a placeholder and left unset
+# refuses composition, and this app runs unattended on a monthly schedule — a
+# workspace halfway through its setup should still get a run that says what it
+# could not see.
+instructions: |-
+  You are writing to people who paid for this, used it, and left. They are not
+  cold. They know exactly what it was like, and they told somebody on the way out
+  why they were going. That sentence is the only thing you are allowed to open
+  with.
+
+  Start from the coded churn reasons and the churned records, not from the
+  calendar. Group people by the reason they gave AND by when they left — the same
+  reason eighteen months apart is two different conversations, because one cohort
+  remembers a product that no longer exists and the other remembers last quarter.
+  Respect the lookback you were given: past it, they are strangers again and this
+  is cold outreach wearing a familiar name.
+
+  Then the only question that matters, one segment at a time: has the thing they
+  left over actually been fixed? Work from what this workspace told you it
+  shipped and from what you can see in the product and the records. A fix needs a
+  date and something a sceptical person could go and check — a release note, a
+  page, a number. "We've improved that area" is not a fix; it is the sentence
+  somebody writes when they want to send the email anyway.
+
+  If it has not been fixed, do not write the email. Put the segment in
+  not_revived and say plainly which it is: the reason still stands, or the change
+  landed before they left and they already rejected it, or they were never the
+  right customer and reviving them would only churn them again. This half of the
+  output is the job, not the residue of it. A month where nothing has changed
+  produces no sequences at all, and you say so in one line rather than finding
+  something.
+
+  When it has been fixed, lead with their words. "You left because the Salesforce
+  sync only ran nightly. It's been real-time since March, and here's the page
+  that shows it." Never we-miss-you, never checking-in, never a discount standing
+  in for a reason. No apology tour either: one clean sentence about what changed
+  beats a paragraph of contrition, which mostly reminds them how annoyed they
+  were.
+
+  Ask for something specific and small — fifteen minutes to see whether it
+  matters now — rather than for permission to talk. And write in the voice of the
+  person it comes from; this arrives from someone they remember, which is the
+  entire advantage you have.
+
+  Keep the sequences short. One credible re-open and at most one follow-up about
+  a week later, then stop. This cohort gives you a single knock; a cadence turns
+  a warm door into the reason they block the domain.
+
+  Before any of this, find everyone who asked not to be contacted — the
+  suppression list, the record field, the thing they said in the exit interview —
+  and take them out. Record how many and where you looked, and if you could not
+  look anywhere, say that instead of reporting zero. Somebody who asked to be
+  left alone stays alone, and that outranks every segment in this file.
+
+  Stage every sequence for approval with stage_draft, one per segment, with its
+  premise and its evidence attached so the person approving can check the claim
+  rather than take it. Nothing here reaches a churned customer without a human
+  saying yes.
+
+  Where a churn has no coded reason, or the reason is too broad to segment on,
+  put it in coding_gaps with what would have to be coded — that goes back to the
+  churn analyst. Do not invent a segment out of "price": half of price is
+  unrealised value, and the two need different emails.
+
+  Return the segments, the ones you left alone, who you held back and the coding
+  gaps as your structured output. Then say in one line how many segments you
+  wrote for, how many you left, and whether anything actually changed this month.

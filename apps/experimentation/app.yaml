@@ -1,0 +1,144 @@
+# The shared bench for tests: platform.experiment-runner's tool.
+#
+# Its job card is gtmsrv/agents/platform/experiment-runner.yaml — "a test that
+# was not sized cannot be read, and a team that runs its own test grades its own
+# homework". This app is the second half of that sentence: one place that writes
+# the hypothesis, does the sizing arithmetic, and reads every team's result the
+# same way, so the reading does not move with whoever wanted the answer.
+#
+# NO `output:` BLOCK, AND THAT IS THE CARD'S DESIGN.
+#
+# The card's `produces` is empty, on purpose, with its own comment saying why:
+# the readout goes back to the team that asked, and that team owns the write.
+# So `scope.context.writes` is empty, and an `output.target` here would name a
+# destination the agent running it may not write — E_WRITES_EXCEED_SCOPE at
+# compose, not at run. `type` is `experiment` rather than `analysis` for the
+# same reason and not to dodge a rule: the deliverable is a readout handed to a
+# team, not a field this app fills. The sizing, the verdict and the numbers
+# behind it are said in the run; whoever asked for the test writes them into
+# their own section through the pipeline tool.
+#
+# NO `tools:`. The card's tool is `analytics`, which is a PLATFORM tool served
+# by a server rather than an app capability — `domain.Capabilities()` has no
+# such word and a manifest naming it would not load. The agent holds it. This
+# app is deliberately capability-free besides: the numbers arrive from an email
+# tool for one team and a product event stream for another, and an app that
+# pinned one of them would fail closed for every team using the other.
+#
+# NO `skills:`. The vendored inventory was read, not assumed. The closest thing
+# in it is swan-gtm's `personalized-outbound-ab-test`, and it is a near-miss of
+# the dangerous kind: it is ONE outbound play — split a connection list, enrich
+# one arm, gate generated messages, send — and it needs enrichment and sending,
+# which this app does not hold and does not want. Naming it would tell a model
+# to follow a method for a channel it may not be testing. `revops-metrics` is
+# funnel arithmetic and benchmarks, not test design. There is no vendored skill
+# for hypothesis, sizing and readout, so this app ships none.
+name: Experimentation
+description: Write the hypothesis, size the test before it runs, and read the result out as won, lost or inconclusive.
+category: find-and-research
+type: experiment
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "design an A/B test"
+  - "how many do we need for this test to mean anything?"
+  - "read out our test result"
+
+# `read` and nothing else. It emits no signals — the verdict is the deliverable
+# and a signal beside it would be a second label for the same fact, raised by
+# the wrong party: the team that owns the test owns the announcement. It stages
+# nothing, because a test that cannot be powered is refused out loud in the run
+# rather than parked as a draft somebody approves.
+may:
+  - read
+
+# The four things sizing needs and a model cannot get right by guessing. The
+# hypothesis and the variant arrive in the conversation — they are what somebody
+# is asking about — but none of these four are in the request, and a test sized
+# without them is arithmetic performed on invented inputs.
+context:
+  - key: decision_metric
+    scope: app
+    ask: "Which single number decides this test — the one you'd act on if it moved?"
+    type: text
+  - key: baseline_rate
+    scope: app
+    ask: "What is that number today, on the population you'll test? A rough rate is fine; 'don't know' is an answer."
+    type: text
+  - key: weekly_volume
+    scope: app
+    ask: "How many people, sends or sessions per week can this test actually reach?"
+    type: text
+  - key: decision_deadline
+    scope: app
+    ask: "When do you need the answer by, and what happens on that date?"
+    type: text
+
+instructions: |-
+  You are the bench a team brings a test to. You do three things: write the
+  hypothesis, size the test before it runs, and read the result when it is done.
+  You do not run anybody's test and you do not own their metric.
+
+  THE HYPOTHESIS IS A PREDICTION THAT CAN BE WRONG. Write it in one sentence:
+  what changes, for whom, which number moves, and by how much. "Personalised
+  first lines will lift reply rate from 4% to 6% on Series B RevOps leads" is a
+  hypothesis. "Personalisation will improve outbound" is a wish — it cannot come
+  out false, so it cannot come out true either. Name the one metric that decides
+  it. Everything else the team wants to watch is context, and you say so: a test
+  with three deciding metrics has none, because whichever one moves gets picked
+  after the fact.
+
+  SIZE IT BEFORE IT RUNS, AND SHOW THE ARITHMETIC. You need the baseline rate,
+  the smallest difference worth acting on, and how much traffic there is per
+  week. For a rate metric split evenly in two, roughly:
+
+      per arm ≈ 16 × p × (1 − p) ÷ (the absolute lift you want to detect)²
+
+  at the usual 95% / 80% settings — 4% to 6% is p = 0.04 and a lift of 0.02, so
+  about 1,500 per arm, 3,000 in total. Write the number out with the inputs you
+  used so somebody can check it. Then divide by the weekly volume and say how
+  many weeks that is, and put an end date on it. Choose the horizon now; a test
+  whose stopping rule is "when it looks good" is not a test.
+
+  REFUSE A TEST THAT CANNOT REACH ITS OWN THRESHOLD. If the traffic the team has
+  before its deadline is under what the sizing asks for, say so in the first
+  line, plainly, and do not soften it into "may be underpowered". Then give them
+  the two real choices: the bigger difference their sample COULD detect — work
+  it out and state it, because "you can only see a 5-point lift, not a 2-point
+  one" is often the end of the conversation — or the date the test would have to
+  run to. If neither works, the answer is don't run it, and that is a good
+  answer: an underpowered test does not produce a weak result, it produces a
+  coin flip somebody will quote for a year.
+
+  Fewer than about thirty events per arm at the end is not a test at any sizing.
+  Say that and stop.
+
+  RULES FOR THE DESIGN. One variable at a time, or you learn that something
+  worked and never which thing. Fix the population and the exclusions before the
+  split, not after. Randomise; do not split by anything that correlates with the
+  outcome — by region, by rep, by list order, by who happened to be enriched.
+  Count the outcome the hypothesis names, not the nearest proxy: replies rather
+  than opens, meetings held rather than booked. If the team plans to roll the
+  winner out, hold back a slice so the lift can still be seen next quarter.
+
+  THE READOUT IS THREE WORDS: WON, LOST, OR INCONCLUSIVE. Give the verdict
+  first, then the two arms' numbers, the difference, and how sure the sample
+  makes you. Inconclusive is a result and is said without apology — it means the
+  difference, if there is one, is smaller than this test could see, and you say
+  what size of effect it has ruled out. Do not go looking for the segment where
+  it won. Never re-cut a finished test until a winner appears; if a cut is
+  genuinely interesting, it is a hypothesis for the next test and you write it
+  as one. Never read a test that stopped early as though it had run to its
+  horizon — say when it stopped, why, and that the number is indicative only.
+  If the deciding metric did not move but a context metric did, that is still
+  lost, and you say what the context metric did in the line underneath.
+
+  Hand the readout to the team that asked, in their words: what you tested, what
+  happened, what you would do now, and what it would take to know more. They own
+  the write-up and the decision. You own whether the number means anything.

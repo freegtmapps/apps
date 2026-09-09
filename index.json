@@ -29,6 +29,92 @@
       }
     },
     {
+      "slug": "account-planning",
+      "name": "Account planning",
+      "description": "Map a landed account, name the sponsor who can open the next team, and sequence the rollout.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "plan the expansion into this account",
+        "who opens the next team at this customer?",
+        "build the land-and-expand plan"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "crm",
+          "product"
+        ]
+      },
+      "needs_answered": [
+        "product"
+      ]
+    },
+    {
+      "slug": "activation-metrics",
+      "name": "Activation metrics",
+      "description": "The one event that means a customer got value, and how long it actually takes them to reach it.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "what counts as activation for us?",
+        "define our activation event",
+        "how long does it take a customer to get value?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "product"
+        ],
+        "optional": [
+          "crm"
+        ]
+      },
+      "needs_answered": [
+        "company_name",
+        "product"
+      ]
+    },
+    {
+      "slug": "analytics",
+      "name": "Analytics",
+      "description": "Any question about your product and web event data, answered with the query, the window and the row counts.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "how many people signed up last month?",
+        "check that number in the analytics",
+        "can our data answer this question?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "product"
+        ],
+        "optional": [
+          "website"
+        ]
+      },
+      "needs_answered": [
+        "company_name"
+      ]
+    },
+    {
       "slug": "battlecard",
       "name": "Battlecard",
       "description": "Positioning, weaknesses and objection handling against a named competitor.",
@@ -57,6 +143,28 @@
       ]
     },
     {
+      "slug": "billing-operations",
+      "name": "Billing operations",
+      "description": "Chase failed payments through an approved sequence, and tell an expired card apart from a customer leaving.",
+      "category": "watch-signals",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "chase our failed payments",
+        "did their card fail, or did they leave?",
+        "run dunning for this account"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "needs_answered": [
+        "company_name",
+        "sender_name"
+      ]
+    },
+    {
       "slug": "brand-and-competitor-mentions",
       "name": "Brand and competitor mentions",
       "description": "Mentions of you, your competitors and your category's pain language, classified and routed.",
@@ -79,6 +187,42 @@
         "tools": [
           "web"
         ]
+      }
+    },
+    {
+      "slug": "brand-voice-enforcer",
+      "name": "Brand voice enforcer",
+      "description": "The last read before a draft goes out — voice, clarity, and the Hebrew-English crossing.",
+      "category": "content",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "check this draft against our voice",
+        "edit this before it goes out",
+        "does this sound like us?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      }
+    },
+    {
+      "slug": "brand-voice",
+      "name": "Brand voice",
+      "description": "How the company sounds — traits with examples, the words we never say, and the tagline.",
+      "category": "content",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "define our brand voice",
+        "what words should we never use?",
+        "we need a tagline"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
       }
     },
     {
@@ -165,6 +309,36 @@
       }
     },
     {
+      "slug": "buyer-personas",
+      "name": "Buyer personas",
+      "description": "The people inside your segment — what each hires the product for, what hurts, and what makes it urgent.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "build our buyer personas",
+        "who actually buys this, and why now?",
+        "what job do our customers hire us for?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "web"
+        ],
+        "optional": [
+          "crm"
+        ]
+      },
+      "needs_answered": [
+        "company_name",
+        "product"
+      ]
+    },
+    {
       "slug": "case-study",
       "name": "Case study",
       "description": "A customer story built around their numbers, not adjectives.",
@@ -190,6 +364,92 @@
       }
     },
     {
+      "slug": "channel-strategy",
+      "name": "Channel strategy",
+      "description": "The two channels you can actually fund, each with a CAC estimate you can argue with, and what you dropped.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "which two channels should we run?",
+        "pick our demand channels",
+        "where do our buyers actually gather?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "web"
+        ]
+      },
+      "needs_answered": [
+        "company_name",
+        "icp",
+        "product",
+        "regions"
+      ]
+    },
+    {
+      "slug": "churn-analysis",
+      "name": "Churn analysis",
+      "description": "Codes every churn to one primary reason with its evidence, and states the cohort curve behind them.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "why are customers leaving?",
+        "code our churn reasons",
+        "build the cohort retention curve"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "crm"
+        ],
+        "optional": [
+          "product"
+        ]
+      },
+      "needs_answered": [
+        "company_name"
+      ]
+    },
+    {
+      "slug": "churn-prevention",
+      "name": "Churn prevention",
+      "description": "Triage a customer's health drop by cause, pick the save play it earns, draft the outreach.",
+      "category": "reach-out",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "this account's health just dropped",
+        "why is Acme at risk?",
+        "what do we do about this at-risk customer?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "product",
+          "crm"
+        ]
+      },
+      "needs_answered": [
+        "product",
+        "sender_name"
+      ]
+    },
+    {
       "slug": "clean-the-crm-governed",
       "name": "Clean the CRM, governed",
       "description": "Cleanup with rules and a proposal, never a bulk delete.",
@@ -212,6 +472,29 @@
       "requires": {
         "tools": [
           "crm"
+        ]
+      }
+    },
+    {
+      "slug": "community-program",
+      "name": "Community program",
+      "description": "Whether this ICP would actually gather, where, around what ritual — and who runs it every week.",
+      "category": "content",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "should we build a community?",
+        "design our customer community",
+        "plan a community program"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "web"
         ]
       }
     },
@@ -273,6 +556,148 @@
       ]
     },
     {
+      "slug": "content-engine",
+      "name": "Content engine",
+      "description": "Turns ranked pillars into a dated content calendar, long-form drafts in your voice, and the cuts other channels need.",
+      "category": "content",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "plan this quarter's content",
+        "turn the pillars into a calendar",
+        "draft the pillar piece"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "web"
+        ]
+      }
+    },
+    {
+      "slug": "context-manager",
+      "name": "Context manager",
+      "description": "Who filled each field, how sure they were, and what is still empty — a gap list per team.",
+      "category": "keep-in-sync",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "what's missing from our context?",
+        "show me the gaps blocking each team",
+        "who filled this field and how sure are we?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "needs_answered": [
+        "company_name"
+      ]
+    },
+    {
+      "slug": "cross-sell",
+      "name": "Cross-sell",
+      "description": "Which second product each customer segment is already ready for, ranked by evidence, with the accounts it applies to.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "map our cross-sell paths",
+        "which of our products actually sell together?",
+        "who is ready for a second product?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "crm",
+          "product"
+        ]
+      },
+      "needs_answered": [
+        "product"
+      ]
+    },
+    {
+      "slug": "customer-marketing",
+      "name": "Customer marketing",
+      "description": "Turns what shipped into customer announcements built around the job, with lifecycle mail tied to activation.",
+      "category": "content",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "announce what shipped to our customers",
+        "draft this month's customer announcements",
+        "what did we ship that customers should hear about?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "product",
+          "website",
+          "github"
+        ]
+      }
+    },
+    {
+      "slug": "customer-onboarding",
+      "name": "Customer onboarding",
+      "description": "The path from signature to activation — a dated sequence per persona, with a stall check on each milestone.",
+      "category": "keep-in-sync",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "design our customer onboarding",
+        "what should the first 30 days after signing look like?",
+        "new customers sign and then stall — fix the onboarding"
+      ],
+      "skills": [
+        "onboarding-activation"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      }
+    },
+    {
+      "slug": "customer-support",
+      "name": "Customer support",
+      "description": "Triage the ticket, answer it from the knowledge base with the article cited, escalate what the base cannot answer.",
+      "category": "handle-replies",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "answer this support ticket",
+        "triage the support inbox",
+        "what do we tell this customer?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "web"
+        ]
+      },
+      "needs_answered": [
+        "product"
+      ]
+    },
+    {
       "slug": "define-your-icp",
       "name": "Define your ICP",
       "description": "Who you sell to, built from won deals and real conversations — refined, not declared.",
@@ -302,6 +727,29 @@
         "best_customers",
         "company_name",
         "deal_breakers"
+      ]
+    },
+    {
+      "slug": "demo-script",
+      "name": "Demo script",
+      "description": "The demo the buyer would have asked for — every beat opens on a pain they named and closes on proof.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "design the demo for Acme",
+        "what should we actually show them?",
+        "build the demo script from discovery"
+      ],
+      "skills": [
+        "discovery-to-demo-bridge"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "needs_answered": [
+        "product"
       ]
     },
     {
@@ -351,6 +799,45 @@
       }
     },
     {
+      "slug": "discount-policy",
+      "name": "Discount policy",
+      "description": "What a rep may discount unaided, who approves past that, and what the buyer gives back for each step.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "set our discount policy",
+        "how much can a rep discount without asking?",
+        "what do we give away to get an annual deal?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "needs_answered": [
+        "product"
+      ]
+    },
+    {
+      "slug": "email-nurture",
+      "name": "Email nurture",
+      "description": "A sequence per lifecycle moment — signed up, went quiet, came back — each with an entry rule, a cadence and an exit.",
+      "category": "reach-out",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "write the nurture sequences",
+        "what do we send the people who aren't ready?",
+        "someone signed up and went quiet — what now?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      }
+    },
+    {
       "slug": "enrich-the-contact",
       "name": "Enrich the contact",
       "description": "Find a deliverable address for one person, with the sources shown and the gaps named.",
@@ -376,6 +863,78 @@
           "crm",
           "github"
         ]
+      }
+    },
+    {
+      "slug": "expansion-metrics",
+      "name": "Expansion metrics",
+      "description": "Breaks NRR into expansion, contraction, churn and flat renewal, and sizes the expansion pipeline behind it.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "what is our NRR really made of?",
+        "break down net revenue retention by segment",
+        "how big is the expansion pipeline?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "crm"
+        ]
+      }
+    },
+    {
+      "slug": "expansion-signals",
+      "name": "Expansion signals",
+      "description": "Watches customer usage for the week an account outgrows its plan — the measure, the number, the date.",
+      "category": "watch-signals",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "which customers are outgrowing their plan?",
+        "find expansion signals",
+        "who hit their seat limit this week?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "product",
+          "crm",
+          "enrichment"
+        ],
+        "optional": [
+          "enrichment"
+        ]
+      },
+      "needs_answered": [
+        "product"
+      ]
+    },
+    {
+      "slug": "experimentation",
+      "name": "Experimentation",
+      "description": "Write the hypothesis, size the test before it runs, and read the result out as won, lost or inconclusive.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "design an A/B test",
+        "how many do we need for this test to mean anything?",
+        "read out our test result"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
       }
     },
     {
@@ -506,6 +1065,36 @@
       }
     },
     {
+      "slug": "funnel-analytics",
+      "name": "Funnel analytics",
+      "description": "What each channel actually produced, where the funnel leaks, and what a qualified record costs.",
+      "category": "watch-signals",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "how did our channels do last month?",
+        "where is the funnel leaking?",
+        "what does a qualified lead actually cost us?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "crm"
+        ],
+        "optional": [
+          "website",
+          "product"
+        ]
+      },
+      "needs_answered": [
+        "company_name"
+      ]
+    },
+    {
       "slug": "give-first-email",
       "name": "Give-first email",
       "description": "An email that offers something concrete — a teardown, a benchmark, an estimate — instead of asking for time.",
@@ -611,6 +1200,33 @@
       ]
     },
     {
+      "slug": "health-score",
+      "name": "Health score",
+      "description": "Weighted usage signals, a score on every customer, and a drop raised before anyone cancels.",
+      "category": "watch-signals",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "score customer health",
+        "which customers are about to churn?",
+        "build our health score model"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "product",
+          "crm"
+        ]
+      },
+      "needs_answered": [
+        "product"
+      ]
+    },
+    {
       "slug": "hiring-radar",
       "name": "Hiring radar",
       "description": "Roles a company is hiring for, verified, as a buying signal.",
@@ -635,6 +1251,35 @@
       }
     },
     {
+      "slug": "intent-signals",
+      "name": "Intent signals",
+      "description": "Decide which observable events mean a buyer has the problem now — and which look-alikes are noise.",
+      "category": "watch-signals",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "define our buying signals",
+        "which events should we watch for?",
+        "what counts as a signal for our ICP?"
+      ],
+      "skills": [
+        "website-to-signals"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "web"
+        ],
+        "optional": [
+          "enrichment",
+          "crm"
+        ]
+      }
+    },
+    {
       "slug": "interpret-the-signal",
       "name": "Interpret the signal",
       "description": "Is this event relevant, urgent, noise — and for whom, and what next.",
@@ -652,6 +1297,55 @@
       "maintained_by": {
         "name": "freegtm",
         "url": "https://github.com/freegtmapps"
+      }
+    },
+    {
+      "slug": "kb-and-docs",
+      "name": "KB and docs",
+      "description": "Turns the support team's gap list into help articles and FAQ entries, in the words customers used.",
+      "category": "content",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "write the help articles for this week's gaps",
+        "close the knowledge base gaps",
+        "turn these support questions into a FAQ"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "web"
+        ]
+      }
+    },
+    {
+      "slug": "landing-page-cro",
+      "name": "Landing page CRO",
+      "description": "Drafts the page around the promise that got the click, and turns each change into a test with a stopping rule.",
+      "category": "content",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "audit our landing page",
+        "draft the page for this campaign",
+        "design a test for the pricing page"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "website"
+        ],
+        "optional": [
+          "web"
+        ]
       }
     },
     {
@@ -791,6 +1485,30 @@
       ]
     },
     {
+      "slug": "message-testing",
+      "name": "Message testing",
+      "description": "Put the messages in front of the market, score what happened, and re-rank the hierarchy on it.",
+      "category": "content",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "test our messaging",
+        "which message actually won?",
+        "re-rank the message hierarchy on the results"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "website",
+          "web"
+        ]
+      }
+    },
+    {
       "slug": "multichannel-campaign",
       "name": "Multichannel campaign",
       "description": "One campaign across email, LinkedIn and calls, with the sequencing and the A/B plan.",
@@ -817,6 +1535,33 @@
       }
     },
     {
+      "slug": "new-segments",
+      "name": "New segments",
+      "description": "The segments, verticals and geographies your customers already dragged you into — ranked, with the cost of entry.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "where should we expand next?",
+        "find our adjacent segments",
+        "which markets are we winning by accident?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "web"
+        ]
+      },
+      "needs_answered": [
+        "company_name",
+        "product"
+      ]
+    },
+    {
       "slug": "newsletter-issue",
       "name": "Newsletter issue",
       "description": "This week's issue: format, subject lines, the one idea.",
@@ -832,6 +1577,145 @@
         "email-subject-lines",
         "weekly-roundup-email"
       ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      }
+    },
+    {
+      "slug": "objection-handling",
+      "name": "Objection handling",
+      "description": "Answer the objection this buyer actually raised, from the approved map — and report the ones it cannot answer.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "they said we're too expensive",
+        "how do I answer this objection?",
+        "the buyer says they're happy with what they have"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "needs_answered": [
+        "product"
+      ]
+    },
+    {
+      "slug": "objection-map",
+      "name": "Objection map",
+      "description": "Every objection buyers raise, ranked by how often, each with one response: the reframe, the proof, what to concede.",
+      "category": "content",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "map our objections",
+        "what do we say when they say we're too expensive?",
+        "which objections keep coming back?"
+      ],
+      "skills": [
+        "objection-mining"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "web"
+        ]
+      },
+      "needs_answered": [
+        "product"
+      ]
+    },
+    {
+      "slug": "packaging-tiers",
+      "name": "Packaging tiers",
+      "description": "Cuts the product into tiers a buyer picks between — each with one persona, one named fence and a price.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "build our pricing tiers",
+        "what should good, better and best include?",
+        "package the product"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "needs_answered": [
+        "product"
+      ]
+    },
+    {
+      "slug": "paid-acquisition",
+      "name": "Paid acquisition",
+      "description": "Paid campaigns with one audience, one message, a budget the constraints allow, and a kill rule.",
+      "category": "reach-out",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "plan our paid campaigns",
+        "how should we spend the ad budget?",
+        "structure a paid test for this audience"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "web"
+        ]
+      }
+    },
+    {
+      "slug": "partner-program",
+      "name": "Partner program",
+      "description": "The companies already selling to your buyer who would rather send you traffic than compete for it.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "find us partners",
+        "who else sells to our buyer?",
+        "build a partner target list"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "web",
+          "enrichment"
+        ]
+      },
+      "needs_answered": [
+        "company_name",
+        "product"
+      ]
+    },
+    {
+      "slug": "pilot-design",
+      "name": "Pilot design",
+      "description": "Scopes a pilot that can fail: one question, numeric criteria, a named judge, an end date.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "scope the pilot for Acme",
+        "what should this POC actually prove?",
+        "set the success criteria before the trial starts"
+      ],
+      "skills": [],
       "maintained_by": {
         "name": "freegtm",
         "url": "https://github.com/freegtmapps"
@@ -910,6 +1794,32 @@
       }
     },
     {
+      "slug": "pricing-strategy",
+      "name": "Pricing strategy",
+      "description": "What to charge, on what unit, and the evidence for the number — priced on value, never on cost.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "what should we charge?",
+        "set our pricing",
+        "what should our price scale on?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "web"
+        ],
+        "optional": [
+          "crm"
+        ]
+      }
+    },
+    {
       "slug": "problem-validation",
       "name": "Problem validation",
       "description": "Does the problem exist outside your own calls? Forums, reviews and search, with quotes and volumes.",
@@ -956,6 +1866,63 @@
           "product"
         ]
       }
+    },
+    {
+      "slug": "product-launch",
+      "name": "Product launch",
+      "description": "A dated launch plan — the claim, the waitlist, the assets per destination, and the sequence.",
+      "category": "content",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "plan our launch",
+        "we're launching next month, what do we do?",
+        "build the launch plan and the waitlist sequence"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "web"
+        ]
+      },
+      "needs_answered": [
+        "company_name",
+        "product"
+      ]
+    },
+    {
+      "slug": "proof-points",
+      "name": "Proof points",
+      "description": "The customer's number, the customer's words, and the permission you were given to use both.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "collect proof points from our customers",
+        "what results can we actually cite?",
+        "who would give us a testimonial?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "crm"
+        ],
+        "optional": [
+          "product"
+        ]
+      },
+      "needs_answered": [
+        "company_name",
+        "product"
+      ]
     },
     {
       "slug": "qualify-the-deal",
@@ -1009,6 +1976,81 @@
           "web"
         ]
       }
+    },
+    {
+      "slug": "reference-program",
+      "name": "Reference program",
+      "description": "A bench of customers who agreed to take a call — tiered, rationed, and honest about the segments with none.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "build the reference bench",
+        "who can take a reference call for this deal?",
+        "which segments have no reference?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "crm"
+        ]
+      }
+    },
+    {
+      "slug": "referral-program",
+      "name": "Referral program",
+      "description": "The mechanic that makes an introduction easy, the incentive that doesn't buy it, and the ask itself.",
+      "category": "reach-out",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "set up a referral program",
+        "who should we ask for an introduction?",
+        "design our referral mechanic"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "needs_answered": [
+        "company_name",
+        "product",
+        "sender_name"
+      ]
+    },
+    {
+      "slug": "renewal-management",
+      "name": "Renewal management",
+      "description": "Every renewal in the window, with a dated plan and the value recapped in the customer's own numbers.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "work the renewals coming up",
+        "prep the renewal for this account",
+        "which renewals open this quarter?"
+      ],
+      "skills": [
+        "qbr-ebr-builder"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "crm",
+          "product"
+        ]
+      },
+      "needs_answered": [
+        "product"
+      ]
     },
     {
       "slug": "research-the-account",
@@ -1099,6 +2141,29 @@
       }
     },
     {
+      "slug": "revenue-metrics",
+      "name": "Revenue metrics",
+      "description": "MRR, ARR, NRR, GRR, ARPA and the cohorts beneath them, computed the same way every period.",
+      "category": "watch-signals",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "publish this month's revenue numbers",
+        "what are our MRR, NRR and GRR?",
+        "close the revenue metrics for the period"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "crm"
+        ]
+      }
+    },
+    {
       "slug": "review-the-call",
       "name": "Review the call",
       "description": "Score a call against a rubric and extract the objections that keep recurring.",
@@ -1147,6 +2212,74 @@
         "tools": [
           "crm"
         ]
+      }
+    },
+    {
+      "slug": "revops-hygiene",
+      "name": "RevOps hygiene",
+      "description": "Where demand, sales and revenue disagree about the same fact — with the count behind it and its owner.",
+      "category": "keep-in-sync",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "audit our revenue data",
+        "why don't these two reports agree?",
+        "where do sales and marketing disagree?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "crm"
+        ]
+      },
+      "needs_answered": [
+        "company_name",
+        "crm"
+      ]
+    },
+    {
+      "slug": "sales-enablement",
+      "name": "Sales enablement",
+      "description": "One-pagers, FAQ answers and case-study briefs a rep can send, in the messaging that was approved.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "write the one-pager for our mid-market segment",
+        "update the FAQ from this week's objections",
+        "what collateral is missing?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "website"
+        ]
+      }
+    },
+    {
+      "slug": "sales-motion",
+      "name": "Sales motion",
+      "description": "How this company sells — self-serve, sales-led or both — with stages a reviewer can check on a record.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "how should we be selling this?",
+        "pick our sales motion",
+        "what are our stages and exit criteria?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
       }
     },
     {
@@ -1205,6 +2338,35 @@
           "slack"
         ]
       }
+    },
+    {
+      "slug": "seo-strategy",
+      "name": "SEO strategy",
+      "description": "The searches your buyer actually runs, clustered into pillars you have a right to win.",
+      "category": "content",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "what should we rank for?",
+        "build our keyword map",
+        "which content pillars should we own?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "web",
+          "website"
+        ]
+      },
+      "needs_answered": [
+        "company_name",
+        "industry",
+        "product"
+      ]
     },
     {
       "slug": "set-up-hubspot-properly",
@@ -1340,6 +2502,106 @@
       }
     },
     {
+      "slug": "unit-economics",
+      "name": "Unit economics",
+      "description": "CAC, payback, gross margin and lifetime value per segment and channel, with every input named.",
+      "category": "watch-signals",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "what does a customer actually cost us?",
+        "work out our CAC, payback and LTV",
+        "which channel is losing money?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "crm"
+        ],
+        "optional": [
+          "product"
+        ]
+      },
+      "needs_answered": [
+        "company_name"
+      ]
+    },
+    {
+      "slug": "upsell-playbook",
+      "name": "Upsell playbook",
+      "description": "The route from the tier a customer has outgrown to the one they need, and the message that says so.",
+      "category": "sell",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "build our upsell paths",
+        "which customers have outgrown their tier?",
+        "write the tier-upgrade message"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "needs_answered": [
+        "product"
+      ]
+    },
+    {
+      "slug": "voice-of-customer",
+      "name": "Voice of customer",
+      "description": "What customers actually say, clustered into ranked themes with the counts, quotes and sources behind each.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "what are our customers telling us?",
+        "cluster our customer feedback into themes",
+        "run voice of customer for the quarter"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "crm"
+        ]
+      },
+      "needs_answered": [
+        "company_name",
+        "product"
+      ]
+    },
+    {
+      "slug": "web-research",
+      "name": "Web research",
+      "description": "Runs a research question properly — reads the pages, grades the sources, hands back extracts not conclusions.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "research this question for me",
+        "find me sources on this",
+        "what does the web actually say about it?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "web"
+        ]
+      }
+    },
+    {
       "slug": "website-visitor-radar",
       "name": "Website visitor radar",
       "description": "Turn identified website activity into qualified follow-up.",
@@ -1392,6 +2654,24 @@
         "tools": [
           "web"
         ]
+      }
+    },
+    {
+      "slug": "win-back-campaign",
+      "name": "Win-back campaign",
+      "description": "Finds the churn segments whose reason you have since fixed, and writes the sequence that names what changed.",
+      "category": "reach-out",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "win back the customers who left",
+        "who churned over something we've since fixed?",
+        "write the win-back sequences"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
       }
     },
     {
@@ -1478,5 +2758,5 @@
       ]
     }
   ],
-  "count": 56
+  "count": 108
 }

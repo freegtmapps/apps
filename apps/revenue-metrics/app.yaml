@@ -1,0 +1,343 @@
+# The one set of numbers the rest of the company plans against.
+#
+# It is the tool for the Metrics Reporter card (gtmsrv/agents/revenue/
+# metrics-reporter.yaml), whose whole thesis is that half the arguments in a
+# startup are two people using one word for different numbers. So the point of
+# this app is not cleverness — it is SAMENESS. The same definition every period,
+# written beside the number, so that the next argument is about the business
+# rather than about the arithmetic.
+#
+# THE CARD'S RULES ARE IN THE SCHEMA WHEREVER THEY COULD BE, not only in prose:
+#
+#   - "every metric carries the definition it was computed with"  →  each item in
+#     `metrics` REQUIRES `definition`. There is no shape here for a number
+#     without the sentence that says how it was made.
+#   - "the period's MRR bridge balances against billing"  →  `mrr_bridge`
+#     requires `balances` and `unexplained_difference`. A bridge that does not
+#     tie cannot be reported as if it did; the amount that does not tie has a
+#     field of its own.
+#   - "never netted into one line"  →  new, expansion, contraction and churn are
+#     four required fields. There is nowhere to put a net movement.
+#   - "say which cohorts are too small to read"  →  every cohort REQUIRES
+#     `readable`, a boolean the model must decide rather than a caveat it can
+#     leave out of a sentence.
+#   - "the movement since the last one"  →  `movement` is required on every
+#     metric, and its description says what to write when there is no prior
+#     period, so the first run does not have to invent one.
+#   - escalate_when — "billing and the records disagree about a customer's
+#     state, or a definition changed since the last period"  →  `reconciliation
+#     .discrepancies` and `definition_changes` are required arrays. Empty means
+#     checked and clean; that is a different claim from silence.
+#
+# ONE OUTPUT TARGET, and the card produces exactly one key:
+# revenue.revenue_metrics. (The orchestration note that commissioned this app
+# said `revenue.metrics`; the card, docs/TEAMS.md and the four agents that read
+# this key downstream — retention.churn-analyst, retention.renewal-manager,
+# expansion.nrr-analyst, revenue.unit-economist and revenue.forecaster — all say
+# revenue.revenue_metrics, so that is the target.) The card's `needs.context` —
+# records, revenue.tiers, the previous revenue.revenue_metrics — are READS that
+# arrive through the pipeline and the record scope, not through `context:` here:
+# those dotted keys live in a different table with a different writer, and a
+# context key cannot spell a dot anyway.
+#
+# NO SKILLS, and it was a close call twice over. `revops-metrics` in the
+# vendored NEON-Rutger set carries real NRR, GRR, ARPA and cohort definitions —
+# but its frame is diagnosis ("metrics are diagnostic tools, not scorecards; the
+# answer is always in the data") and this row's job is the opposite: a report
+# computed the same way every period, whose value is that it does NOT
+# reinterpret itself each month. The card's own header says as much when it
+# rejects diagnose-the-revenue-system, which carries that skill, for this row.
+# And the vendored directory holds SKILL.md alone, while its body routes to
+# `references/benchmarks.md` and `references/revenue-data-model-scaffold.md` —
+# pages that are not in the vendor tree. Naming it would put a model in front of
+# two pages that are not there, in the voice of the skill meant to keep it
+# honest. The method is written out below in our own words and this bundle
+# claims no upstream authorship.
+#
+# NO EMITS. The card holds the signal sink; the app does not. Both escalations
+# land in the output as structure — a disagreement about a customer's state, a
+# definition that moved — and the agent decides what to raise. An emits list
+# here would be a second label for numbers already in revenue.revenue_metrics.
+name: Revenue metrics
+description: MRR, ARR, NRR, GRR, ARPA and the cohorts beneath them, computed the same way every period.
+category: watch-signals
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "publish this month's revenue numbers"
+  - "what are our MRR, NRR and GRR?"
+  - "close the revenue metrics for the period"
+
+# Nothing is REQUIRED beyond the platform: the records and the prior period's
+# report are already reachable, and the billing side arrives from whatever the
+# workspace named as its book of record.
+#
+# `crm` is optional because it is often where a customer's state — active,
+# cancelled, downgraded — is actually kept, and reconciling billing against that
+# state is the first thing this app does. A workspace without one reconciles
+# against the records instead; that costs a cross-check, not the report.
+requires:
+  optional:
+    tools: [crm]
+
+may:
+  - read
+
+context:
+  # Four app-scoped keys, and every one of them changes a number. None can be
+  # guessed: a model that decides for itself whether services revenue counts, or
+  # what a cohort is, produces a figure that looks precise and is not comparable
+  # with last month's — which is the one failure this job exists to prevent.
+  #
+  # None is workspace-scoped. The workspace scope is a closed set of profile
+  # fields, and how this company counts its own revenue is not one of them.
+  - key: period_definition
+    scope: app
+    ask: "What counts as a period here — a calendar month, your fiscal month, a quarter? And how long after it ends is billing settled enough to report?"
+    type: text
+  - key: billing_source
+    scope: app
+    ask: "Where do the billing numbers come from — an export from the billing system, invoices, the records themselves? Name the one that is the book of record when two disagree."
+    type: text
+  - key: mrr_convention
+    scope: app
+    ask: "How do you turn a contract into MRR — annual plans divided by twelve, one-off fees and services excluded, trials and free accounts excluded? Anything unusual about how you count it?"
+    type: text
+  - key: cohort_definition
+    scope: app
+    ask: "How should cohorts be cut — by the month a customer started, by plan, by segment? And how few customers is too few for you to read a number off?"
+    type: text
+
+output:
+  name: revenue_metrics
+  target: revenue.revenue_metrics
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [period, metrics, mrr_bridge, cohorts, reconciliation, definition_changes, sources]
+    properties:
+      period:
+        description: The period every number in this report belongs to. Stated once, at the top, because a revenue number without its period is not a measurement.
+        type: object
+        additionalProperties: false
+        required: [label, start, end, status]
+        properties:
+          label:
+            description: What this workspace calls it — "September 2026", "FY27 Q1".
+            type: string
+          start: {type: string, description: "ISO date, inclusive."}
+          end: {type: string, description: "ISO date, inclusive."}
+          status:
+            description: >-
+              `partial` when the period is not closed, or when billing for it is still settling. A partial period is
+              reported as partial and is never scaled up to look like a whole one.
+            enum: [complete, partial]
+          note:
+            description: Anything that makes this period not comparable with the last one — a pricing change mid-period, a migration, a billing run that moved.
+            type: string
+      metrics:
+        description: >-
+          The headline numbers. One entry each for MRR, ARR, NRR, GRR and ARPA at minimum, plus anything else this
+          workspace asked for.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, value, unit, definition, movement]
+          properties:
+            name: {type: string, description: "MRR, ARR, NRR, GRR, ARPA."}
+            value: {type: number}
+            unit: {enum: [currency, percent, ratio, count]}
+            currency:
+              description: Required in practice when unit is currency. A bare number is not money.
+              type: string
+            definition:
+              description: >-
+                How THIS number was computed, in a sentence — the formula, what was included, what was excluded. It
+                travels beside the number so nobody has to recompute in order to disagree, and it is the thing that
+                must not change between periods without appearing in `definition_changes`.
+              type: string
+              minLength: 1
+            movement:
+              description: >-
+                The change since the last period, with the previous figure in it — "up 4.2% from $412k". Write "no
+                prior period on record" when this is the first one; that is an answer, and inventing a baseline is not.
+              type: string
+              minLength: 1
+            basis:
+              description: The counts underneath the number — customers, accounts, contracts — where a reader would otherwise have to ask.
+              type: string
+      mrr_bridge:
+        description: >-
+          How MRR got from the start of the period to the end. Four movements shown separately and never netted: a net
+          line hides a month that added $80k and lost $78k, which is the month somebody needed to see.
+        type: object
+        additionalProperties: false
+        required: [starting_mrr, new, expansion, contraction, churn, ending_mrr, currency, balances, unexplained_difference]
+        properties:
+          starting_mrr: {type: number}
+          new: {type: number, minimum: 0, description: "MRR from customers who were not there at the start."}
+          expansion: {type: number, minimum: 0, description: "MRR added by customers who were."}
+          contraction: {type: number, minimum: 0, description: "MRR lost to downgrades, as a positive magnitude."}
+          churn: {type: number, minimum: 0, description: "MRR lost to departures, as a positive magnitude."}
+          ending_mrr: {type: number}
+          currency: {type: string}
+          balances:
+            description: >-
+              True only when starting + new + expansion − contraction − churn equals ending AND that ending ties to
+              billing for the period. This is the report's own claim about itself, and it is false rather than absent
+              when the two sides do not meet.
+            type: boolean
+          unexplained_difference:
+            description: >-
+              The amount the bridge does not account for, in the same currency. Null only when `balances` is true.
+              A difference stated is a question somebody can chase; a difference absorbed into `new` is a number
+              nobody can ever find again.
+            type: ["number", "null"]
+      cohorts:
+        description: One per cohort, cut the way this workspace cuts them. Small cohorts appear here too — marked unreadable, not dropped.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [cohort, customers, readable]
+          properties:
+            cohort: {type: string, description: "The cohort's own label — \"2025-03 starts\", \"Growth plan\"."}
+            customers: {type: integer, minimum: 0}
+            starting_mrr: {type: number}
+            ending_mrr: {type: number}
+            nrr: {type: number, minimum: 0, description: "Net revenue retention for this cohort over the period, as a ratio — 1.05, not 105."}
+            grr: {type: number, minimum: 0, maximum: 1, description: "Gross revenue retention. Never above 1: it excludes expansion by construction."}
+            arpa: {type: number, minimum: 0}
+            readable:
+              description: >-
+                False when the cohort is too small for these numbers to mean anything. Two customers and one downgrade
+                is a 50% contraction rate and no finding. When it is false, the numbers may still be present — they
+                are just not to be read as a trend, and `note` says so.
+              type: boolean
+            note:
+              description: Why it is unreadable, or what happened in it that the ratio alone does not show.
+              type: string
+      reconciliation:
+        description: >-
+          Billing against the records, done BEFORE anything was computed. This is where the first escalation is made:
+          a customer the two sides disagree about is named here rather than silently resolved in favour of whichever
+          one was easier to read.
+        type: object
+        additionalProperties: false
+        required: [billing_total, records_total, difference, discrepancies]
+        properties:
+          billing_total: {type: number}
+          records_total: {type: number}
+          difference: {type: number, description: "billing_total − records_total. Zero when they agree."}
+          discrepancies:
+            description: One per customer the two sides disagree about. Empty means reconciled, which is a different claim from not having looked.
+            type: array
+            items:
+              type: object
+              additionalProperties: false
+              required: [customer, billing_says, records_say]
+              properties:
+                customer: {type: string}
+                billing_says: {type: string, description: "Active, cancelled, downgraded, on what plan, at what amount."}
+                records_say: {type: string}
+                amount_at_stake: {type: number}
+                treatment:
+                  description: Which side this report used and why. Never both, and never an average of the two.
+                  type: string
+      definition_changes:
+        description: >-
+          Every definition that is not the one last period used. Empty means checked and unchanged. A definition that
+          moved is an escalation, not a footnote: it makes this period incomparable with the last one, and the reader
+          has to know before they read the movement.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [metric, was, now]
+          properties:
+            metric: {type: string}
+            was: {type: string}
+            now: {type: string}
+            effect:
+              description: What the change did to the number, in the same units — "adds $6k to MRR, all of it services revenue that used to be excluded".
+              type: string
+            reason: {type: string}
+      not_reported:
+        description: Metrics or cohorts deliberately not computed, and what would have to arrive before they could be.
+        type: array
+        items: {type: string}
+      sources:
+        description: Where each set of numbers was read from — the billing export and its date, the record query, last period's report — so somebody can retrace this rather than trust it.
+        type: array
+        minItems: 1
+        items: {type: string}
+
+instructions: |-
+  You publish the recurring-revenue numbers this company plans against. Five
+  other jobs read what you write and none of them recomputes it: forecasting,
+  unit economics, churn analysis, renewals and NRR all start from your figures.
+  So the product here is not insight. It is one set of numbers, made the same
+  way every period, with the definition sitting next to each one.
+
+  Reconcile first, compute second. Pull billing for the period and pull the
+  records, and put the two totals beside each other before you calculate
+  anything at all. Where they disagree about a customer — billing says
+  cancelled, the records say active — that customer is named in
+  `reconciliation.discrepancies` with both accounts of them and which one you
+  used. Do not quietly pick the side that makes the month add up. That
+  disagreement is the escalation, and the person reading this can fix it in the
+  system; a number you smoothed over is one nobody can find.
+
+  Show the bridge, never the net. Starting MRR, then new, expansion,
+  contraction and churn as four separate figures, then ending MRR. A single net
+  movement line hides the month that won $80k and lost $78k, and that is the
+  month somebody needed to see. When the bridge does not tie to billing, set
+  `balances` false and put the gap in `unexplained_difference`. Do not absorb
+  a difference into new business to make the arithmetic close.
+
+  Write the definition beside every number. Not a label — the sentence that
+  says how it was made: what is in it, what is excluded, what a contract was
+  divided by. Use the conventions this workspace gave you even where you would
+  count differently; consistency with last period is worth more than your
+  preferred method. And if any definition has moved since the last report, it
+  goes in `definition_changes` with what it was, what it is now, and what the
+  change did to the number. A definition that changed silently makes every
+  movement in the report a lie of a particular kind: it looks like the business
+  moved.
+
+  Never annualise one month to make a trend. ARR is the annual value of the
+  recurring contracts you actually have, computed the way this workspace
+  defines it — it is not one month multiplied by twelve, and a growth rate is
+  not one month extrapolated. If the period is not closed, or billing for it is
+  still settling, mark it `partial` and say what is still outstanding. A partial
+  period reported as whole is the error that gets repeated out loud in a board
+  meeting.
+
+  Cohorts are computed the way this workspace cuts them, and a cohort too small
+  to read is marked `readable: false` and left in the report. Do not merge small
+  cohorts to reach a number, and do not drop them — a cohort that disappears
+  from one report to the next is the thing everybody notices and nobody can
+  explain. Two customers and one downgrade is a 50% contraction rate and no
+  finding.
+
+  Every number comes from somewhere you can name. Put the billing export and its
+  date, the record query and last period's report in `sources`. If you cannot
+  reach one side of the reconciliation, say so and report fewer metrics rather
+  than better-sounding ones — an invented revenue figure is worse than a missing
+  one, because nothing downstream can tell it apart.
+
+  Return the whole report as your structured output. Then say in one line: the
+  period and whether it is complete, ending MRR with the bridge's four
+  movements, whether it balanced, and anything that has to be escalated — a
+  customer the two systems disagree about, or a definition that moved.

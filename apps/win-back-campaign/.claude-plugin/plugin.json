@@ -1,0 +1,8 @@
+{
+  "name": "win-back-campaign",
+  "description": "Finds the churn segments whose reason you have since fixed, and writes the sequence that names what changed.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

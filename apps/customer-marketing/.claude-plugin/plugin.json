@@ -1,0 +1,8 @@
+{
+  "name": "customer-marketing",
+  "description": "Turns what shipped into customer announcements built around the job, with lifecycle mail tied to activation.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

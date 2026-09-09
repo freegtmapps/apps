@@ -1,0 +1,8 @@
+{
+  "name": "customer-onboarding",
+  "description": "The path from signature to activation \u2014 a dated sequence per persona, with a stall check on each milestone.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

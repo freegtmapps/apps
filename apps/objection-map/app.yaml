@@ -1,0 +1,257 @@
+# The standing answer to "what do we say when they push back", written once so
+# nobody improvises it on the next call.
+#
+# WHY IT IS NOT `Battlecard`. A battlecard is a claim about ONE NAMED COMPETITOR
+# assembled for a deal that is live now; this is the segment-level document that
+# battlecard, the sequences and the reply handling all quote. The objection
+# "you're too expensive" is not about a competitor at all, and the most common
+# objection in most catalogues — doing nothing — has no vendor to card.
+#
+# WHERE THE OBJECTIONS COME FROM, and it is mostly not from this app. Sales and
+# Retention meet them and propose them onto
+# `positioning.objections_and_responses`; the competitor profiles predict the
+# rest. This app reads what the teams that were in the room already wrote down.
+# It is why there is no `tools: [crm]` and no inbox: an objection this app went
+# looking for on the internet is one nobody actually heard.
+#
+# ONE OUTPUT TARGET, and the card produces exactly one context key, so there is
+# nothing to split. The escalation the card names — an objection answerable only
+# by contradicting the positioning, or by a product fact we do not have — is
+# carried INSIDE the validated object as `unanswerable`, not written to a second
+# key and not left as prose. An escalation that lives only in a Final is one
+# nobody can count next month.
+name: Objection map
+description: "Every objection buyers raise, ranked by how often, each with one response: the reframe, the proof, what to concede."
+category: content
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "map our objections"
+  - "what do we say when they say we're too expensive?"
+  - "which objections keep coming back?"
+
+# ONE SKILL, AND IT IS THIS APP'S ACTUAL METHOD rather than a credit line.
+# `objection-mining` applies to "accumulated call recordings, reply threads and
+# lost-deal notes" and produces "a ranked catalogue with a pre-handle location
+# for each objection" — which is this card's done_when almost word for word. It
+# supplies the six categories, the rule that you classify before you respond,
+# the rule that the ranking is by observed frequency in the buyer's real
+# language, and the argument this whole app rests on: a catalogue of clever
+# rebuttals treats the symptom, and the objection that keeps arriving is a
+# defect upstream of the call.
+#
+# It is vendored at the commit its frontmatter names, body byte-for-byte, and
+# `review-the-call` ships the same file at the same sha — the two apps meet the
+# same objections at different altitudes, one call at a time and one segment at
+# a time.
+#
+# The catalogue's second aspirational name for this row, "competitive
+# counter-messaging", has no skill. `competitor-positioning` is the nearest
+# thing on the shelf and it is a website-teardown method needing pages to read;
+# this app reads profiles somebody else already built. Named here so the absence
+# is a decision rather than an oversight.
+skills:
+  - objection-mining
+
+# READ ONLY. The map is a document about what we say, never a fact about a
+# person: nothing here touches a lead, nothing stages, nothing sends.
+may:
+  - read
+
+# NO `emits:`. Everything this app has to say lands in its output target,
+# including the escalations — a signal beside it would be a second label for a
+# row already written, and the rule is that a declared emit earns its place only
+# when the signal is the ONLY account of the thing.
+
+# Hand-written because it is not derivable: what the app degrades gracefully
+# without. `web` is how a competitor's published price gets confirmed before a
+# response is written against it. Optional rather than required, because the
+# objections themselves and the profiles that predict them are already in the
+# workspace — an app that refused to run without the web would refuse on the
+# one input it does not need.
+requires:
+  optional:
+    tools: [web]
+
+# WORKSPACE SCOPE IS A CLOSED SET — company_name, crm, icp, industry, product,
+# regions, sender_name, sender_voice — so `product` is the only key here that
+# can be workspace-scoped, and the other two are private to this app.
+#
+# `proof_points` is the load-bearing one. The card's done_when is that every
+# recurring objection has a response WITH A PROOF POINT, and what proof this
+# company actually holds — a named customer, a number somebody measured, a
+# guarantee in the contract — is not knowable by reasoning. Without it the model
+# writes "many customers see results quickly", which is the sentence this whole
+# app exists to stop.
+context:
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+  - key: known_objections
+    scope: app
+    ask: "What do buyers push back with? Their words, not a summary — and say roughly how often you hear each."
+    type: list
+  - key: proof_points
+    scope: app
+    ask: "What proof can a response stand on — named customers, numbers somebody measured, guarantees you actually give?"
+    type: list
+
+output:
+  name: objections_and_responses
+  target: positioning.objections_and_responses
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [objections, positioning_defects, unanswerable]
+    properties:
+      objections:
+        description: >-
+          Ordered by times_met, most frequent first. That order IS the ranking the
+          card asks for; a catalogue in the order the objections were remembered
+          tells a rep nothing about which one to prepare for.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [objection, category, source, times_met, response]
+          properties:
+            objection:
+              description: The pushback in the buyer's words, not the tidy version.
+              type: string
+            category:
+              description: >-
+                The six of objection-mining. Classified BEFORE the response is
+                written, because "too expensive" from somebody who has not seen
+                the value is a fit objection wearing a budget costume and a
+                discount loses that deal twice.
+              enum: [timing, budget, authority, trust, fit, competition]
+            source:
+              description: >-
+                `met` — a team was in the room for it. `predicted` — a competitor
+                profile or the do-nothing alternative says it is coming. Kept
+                apart because the ranking is only honest if a guess cannot be
+                counted as a hearing.
+              enum: [met, predicted]
+            times_met:
+              description: How many times this was actually met. 0 only where source is `predicted`.
+              type: integer
+              minimum: 0
+            quotes:
+              description: >-
+                The real language, where somebody wrote it down. A paraphrase is
+                already an answer to a question nobody asked in those words.
+              type: array
+              items: {type: string}
+            response:
+              description: One response, whole. All three parts, because a rebuttal without a concession is the version that loses the first deal where it is wrong.
+              type: object
+              additionalProperties: false
+              required: [reframe, proof, concede]
+              properties:
+                reframe:
+                  description: The answer to the objection they said, in one or two sentences a person could say out loud.
+                  type: string
+                proof:
+                  description: >-
+                    The one fact this response rests on — a customer, a number, a
+                    term in the contract. Required and non-empty: an objection
+                    whose answer has no proof does not belong in this array, it
+                    belongs in `unanswerable`.
+                  type: string
+                  minLength: 1
+                concede:
+                  description: >-
+                    What is true and we give away. Required, and "nothing" is an
+                    answer only where it is really true — a map that wins
+                    everywhere teaches nobody anything.
+                  type: string
+                  minLength: 1
+            pre_handle:
+              description: >-
+                Where this should have been answered before anyone had to say it
+                — the offer, the first touch, the site, qualification. An
+                objection handled on a call is paid every time; handled in the
+                message it is paid once.
+              type: string
+      positioning_defects:
+        description: >-
+          The objections the positioning itself should fix, rather than answer
+          better. Empty is a legitimate answer; a long list is the finding.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [objection, what_to_change]
+          properties:
+            objection: {type: string}
+            times_met: {type: integer, minimum: 0}
+            what_to_change:
+              description: What in the positioning or the messaging would stop this arriving. Addressed to the Strategist and the Messaging Writer, who own those keys.
+              type: string
+      unanswerable:
+        description: >-
+          The card's escalate_when, structured so it can be counted rather than
+          buried in a Final. An objection here is NOT a failure of this run — it
+          is the run refusing to invent a proof point.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [objection, why, what_is_needed]
+          properties:
+            objection: {type: string}
+            why:
+              enum: [contradicts_positioning, missing_product_fact]
+            what_is_needed:
+              description: The specific fact or decision, and who holds it.
+              type: string
+
+instructions: |-
+  You are writing the standing answer to every objection a buyer raises about
+  {{product}}, so that nobody has to improvise one on a call again.
+
+  Start with what was actually met. The teams that were in the room have already
+  proposed objections onto this key — read those first, and read the ones you
+  are given directly. Then add the ones the competitor profiles predict, and add
+  the two that almost every catalogue is missing: the price, and doing nothing.
+  Doing nothing is the competitor that wins most often.
+
+  Answer the objection the buyer said, not the one you wish they had said. Quote
+  their language. "It's too expensive" answered as though it were a budget
+  problem, when what they meant is that they cannot see themselves in the
+  product, is a response that will be delivered confidently and land wrong.
+
+  Concede what is true. Every response carries what we give away, and where a
+  competitor is genuinely better at the thing being asked about, that is the
+  concession — a map that claims we win everywhere is one a rep stops trusting
+  the first time it is wrong in front of a customer.
+
+  Every response rests on one proof point, and it must be a real one: a named
+  customer, a number somebody measured, a term that is in the contract. If the
+  only honest answer needs a fact we do not have, do not write a plausible one.
+  Put the objection in `unanswerable`, say which fact is missing and who would
+  know it, and move on. The same goes for an objection that can only be answered
+  by contradicting the positioning statement — that is a decision for the
+  Strategist, not a sentence for you to write around.
+
+  Rank by how often each one is actually met, and keep met and predicted apart.
+  A prediction that has never been heard is worth having in the map and is not
+  evidence of anything.
+
+  An objection that keeps recurring is a positioning defect. Say so, in
+  `positioning_defects`, with what would have to change — a better rebuttal for
+  the fourth time you hear the same sentence is a rep paid to patch the message
+  by hand on every call.
+
+  Return the map as your structured output. Say in one line how many objections
+  you answered, how many you could not, and which one you would fix upstream
+  first.

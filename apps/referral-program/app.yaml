@@ -1,0 +1,355 @@
+# The cheapest customer the company will ever get is the one a current customer
+# brought. This is the app that builds the mechanism for it.
+#
+# WHAT THIS APP IS FOR is the Referral and Advocacy job
+# (gtmsrv/agents/expansion/referral-and-advocacy.yaml). That card's needs.apps
+# names this slug, and everything it says about the work is said again in the
+# instructions below — the card is read by the agent, the manifest is read by
+# the model doing the run, and the two must not disagree.
+#
+# THE OUTPUT TARGET IS `expansion.referral_program`, and that spelling is not a
+# choice made here. The card's produces.context is `[expansion.referral_program]`,
+# expansion/lead.yaml owns it to this agent by that exact name
+# (`{agent: expansion.referral-and-advocacy, owns: [expansion.referral_program]}`),
+# and TEAMS.md Team 7 row 7 writes the same. The brief that commissioned this app
+# said `expansion.referrals`; no such key appears anywhere in the tree, and since
+# the loader checks `output.target ⊆ agent.scope.context.writes`, targeting it
+# would fail the pairing at compose. Named here so the deviation is deliberate.
+#
+# THE DRAFTS ARE NOT THE OUTPUT. The card produces two things: one context key
+# and "referral asks per advocate, staged for approval". An app declares ONE
+# output target, so the asks live inside the program object as drafts and reach a
+# human through stage_draft — the approval path — rather than as a second
+# structured destination. Every ask that goes to a customer needs approval, and
+# so does any incentive with money in it.
+#
+# NO `skills:`, and that is the honest answer rather than a gap.
+# TEAMS.md names referral-mechanics, incentive-design and referral-outreach for
+# this row; the commissioning brief names referral-program and advocacy. None of
+# the five exists. Checked directory by directory under
+# vendor/skills/swan-gtm/gtm-skills and vendor/skills/NEON-Rutger/
+# B2B-revops-skills. The nearest real ones are near-misses, and a near-miss is
+# worse than nothing: `bridge-before-cold` ranks warm paths INTO one cold
+# account, which is the buyer's side of an introduction and not the advocate's;
+# `b2b-case-study-production` produces proof assets from client work, which is
+# the sibling job (expansion.case-study-producer) and an input to this one, not
+# its method; `reach-out` routes a motion to a reference page and says in its own
+# body that referral has no row. Naming any of them would be a method this app
+# cannot follow.
+#
+# NO `emits`. Everything this app has to say lands in expansion.referral_program
+# — the mechanic, the incentive it recommends or refuses, the eligibility rule,
+# the timing rule, the drafted asks and the named reasons somebody was not asked.
+# A signal beside that would be a second label for the same fact, and an `emits`
+# list without `may: [emit]` declares signals the app structurally cannot raise.
+# The card's `sinks: [signal]` is the agent's route out, not this app's.
+#
+# DONE_WHEN IS IN THE SCHEMA, NOT THE PROSE. The card is done when "the mechanic,
+# the incentive and the eligibility rule are written, and every eligible advocate
+# has a drafted ask or a stated reason not to be asked". So `mechanic`,
+# `incentive`, `eligibility`, `timing`, `asks` and `not_asked` are all required;
+# an entry in `not_asked` requires a `reason`; and an ask requires the `outcome`
+# it is tied to plus at least one piece of `evidence` for that outcome. An ask
+# with no earned outcome behind it is the thing the card exists to prevent, and
+# prose asking for it would be advice rather than a check.
+name: Referral program
+description: The mechanic that makes an introduction easy, the incentive that doesn't buy it, and the ask itself.
+category: reach-out
+type: plan
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "set up a referral program"
+  - "who should we ask for an introduction?"
+  - "design our referral mechanic"
+
+# No `tools:`, and the omission is deliberate rather than an oversight.
+#
+# The card's tools are pipeline, brain, records and approvals — all four are
+# platform tools every app already has. Nothing here reaches a capability: the
+# advocates come from records, the outcomes from expansion.case_studies and the
+# health floor from retention.health_score_model, all of which arrive as context.
+# Declaring `crm` would gate this app against set_reach and suppress it for
+# exactly the workspaces that keep their customers somewhere else, which is a
+# capability claim the work does not make.
+
+# `read` and `stage`, and nothing else.
+#
+# NO `write_lead`: eligibility is a judgement about an account, and if it should
+# be written back onto the record that is the agent's write under its own scope,
+# not this app reaching for update_lead.
+#
+# NO `emit` — see the header. `stage` is the whole point: every ask to a customer
+# and every incentive with money in it goes to a human before it goes anywhere.
+may:
+  - read
+  - stage
+
+context:
+  # Workspace-scoped: shared, real domain.WorkspaceValues fields, and asked once
+  # for the whole workspace rather than again by this app.
+  - key: company_name
+    scope: workspace
+    ask: "What's the company called?"
+    type: text
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+  - key: sender_name
+    scope: workspace
+    ask: "Who should these asks come from — the name a customer already knows?"
+    type: text
+  - key: sender_voice
+    scope: workspace
+    ask: "How do you sound when you write to a customer you like? Paste something you've actually sent."
+    type: text
+
+  # App-scoped, and each of these is something the model gets WRONG by guessing.
+  # The dotted pipeline keys the card reads — records, positioning.brand_voice,
+  # expansion.case_studies, retention.health_score_model — are not declared here:
+  # they live in a different table with a different writer and arrive as context.
+  - key: incentive_ceiling
+    scope: app
+    ask: "What is already approved to give a customer for an introduction — nothing, a thank-you, account credit, a donation, or money? Anything past this I will refuse out loud rather than quietly shrink."
+    type: enum
+    options: [nothing, recognition_only, account_credit, charity_donation, cash]
+  - key: referral_destination
+    scope: app
+    ask: "What does an introduction actually land in — a call with you, a trial, a shared channel? Name the one thing it should point at."
+    type: text
+  - key: winning_moments
+    scope: app
+    ask: "Which moments count as a win worth asking after — a renewal, a milestone hit, a number they told you about, a public thank-you? Name the ones that really happen."
+    type: list
+
+output:
+  name: referral_program
+  target: expansion.referral_program
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [mechanic, incentive, eligibility, timing, asks, not_asked]
+    properties:
+
+      mechanic:
+        description: How an introduction actually travels. The design, not the intention.
+        type: object
+        additionalProperties: false
+        required: [who_can_refer, refers_to, how_it_travels, forwardable_sentence]
+        properties:
+          who_can_refer:
+            description: The kind of person, in this product's own words — an admin, a champion, a whole account.
+            type: string
+          refers_to:
+            description: What the introduction points at. One destination, the one the workspace named.
+            type: string
+          how_it_travels:
+            description: The literal path from the advocate's hand to yours — a forwarded email, a name passed in a call, a link. If it needs a page or a form that does not exist yet, say so here.
+            type: string
+          forwardable_sentence:
+            description: >-
+              The sentence the advocate can forward without editing. Required, because writing it
+              is the whole mechanism — a program that leaves the advocate to compose the
+              introduction has moved the work onto the person doing you the favour.
+            type: string
+            minLength: 1
+          friction:
+            description: What still stands between an advocate wanting to refer and an introduction arriving.
+            type: array
+            items: {type: string}
+
+      incentive:
+        description: >-
+          What the advocate gets, or the plain statement that they get nothing and why that is
+          right. `rationale` is required either way: an incentive with no reason behind it is a
+          number somebody picked.
+        type: object
+        additionalProperties: false
+        required: [stance, rationale, requires_approval]
+        properties:
+          stance: {enum: [none, recognition, account_credit, charity_donation, cash]}
+          what:
+            description: The offer in one line. Empty when the stance is none.
+            type: string
+          rationale:
+            description: >-
+              Why this and not more. Where an incentive would cheapen the relationship, say so
+              here in full and set stance to none — a refusal stated is the deliverable, not a
+              gap in one.
+            type: string
+            minLength: 1
+          requires_approval:
+            description: >-
+              True whenever there is money or a contractual term in it, or whenever it exceeds
+              what the workspace said was already approved. True means a human decides before
+              anything is offered.
+            type: boolean
+          refused:
+            description: Incentives considered and turned down, each with the reason. Empty when nothing was.
+            type: array
+            items:
+              type: object
+              additionalProperties: false
+              required: [what, why]
+              properties:
+                what: {type: string}
+                why: {type: string}
+
+      eligibility:
+        description: Who may be asked at all, stated as a rule somebody else could apply to a new customer next month.
+        type: object
+        additionalProperties: false
+        required: [rule]
+        properties:
+          rule:
+            description: The condition in plain words — the health floor, the tenure, the outcome that has to exist first.
+            type: string
+            minLength: 1
+          health_floor:
+            description: The health-score threshold this rule leans on, named in the model's own terms.
+            type: string
+          disqualifiers:
+            description: What takes an advocate out again — an open escalation, a pricing conversation, a champion who just left.
+            type: array
+            items: {type: string}
+
+      timing:
+        description: When the ask goes out, and when it never does.
+        type: object
+        additionalProperties: false
+        required: [ask_after, never_ask_during, frequency_cap]
+        properties:
+          ask_after:
+            description: The moments that earn an ask. At least one — a program with no trigger is a program that gets asked on a Tuesday.
+            type: array
+            minItems: 1
+            items: {type: string}
+          never_ask_during:
+            description: The moments that forbid one. At least one, and an open ticket is always on this list.
+            type: array
+            minItems: 1
+            items: {type: string}
+          frequency_cap:
+            description: How often one advocate may be asked. Required, because a cap nobody wrote down is no cap.
+            type: string
+            minLength: 1
+
+      asks:
+        description: >-
+          One drafted ask per eligible advocate, ready to stage. Every advocate in the eligible
+          pool appears either here or in `not_asked` — that pairing is the card's done_when.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [advocate, outcome, evidence, forwardable_sentence, draft]
+          properties:
+            advocate:
+              description: The person, and the account they are at.
+              type: string
+            account: {type: string}
+            outcome:
+              description: >-
+                The result that earned this ask, in their numbers rather than yours. Required —
+                an ask untied to an outcome is a cold email to a customer.
+              type: string
+              minLength: 1
+            evidence:
+              description: >-
+                Where that outcome is recorded — a case study, a health score, a usage figure, a
+                thing they said. At least one: an outcome with no evidence behind it was
+                remembered, not observed.
+              type: array
+              minItems: 1
+              items: {type: string}
+            asked_at:
+              description: When this advocate was last asked, if ever. What the frequency cap is checked against.
+              type: string
+            forwardable_sentence:
+              description: The sentence this particular advocate can forward, in their context rather than the generic one.
+              type: string
+            draft:
+              description: The full message, in the company's voice, ready for a human to approve or change.
+              type: string
+              minLength: 1
+            channel:
+              description: How it reaches them — the thread they already use, not a new one.
+              type: string
+
+      not_asked:
+        description: >-
+          Everyone eligibility surfaced who is not being asked, each with the reason. Empty only
+          when every advocate got a draft. An advocate whose health fell after they were made
+          eligible belongs here and needs escalating, not quietly dropping.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [advocate, reason]
+          properties:
+            advocate: {type: string}
+            reason:
+              description: Why not, specifically. "Not a good fit" is not a reason.
+              type: string
+              minLength: 1
+
+      open_questions:
+        description: What a human has to decide before this program runs — the approval an incentive needs, the page that does not exist yet.
+        type: array
+        items: {type: string}
+
+instructions: |-
+  You are designing how {{company_name}}'s happy customers introduce the next
+  ones, and writing the asks that go to them. The people you are writing to are
+  customers, not prospects. Everything else follows from that.
+
+  Start with the mechanic, because the incentive is the smaller question. Work out
+  who is actually in a position to refer — the admin who set it up, the champion
+  who fought for it, the person whose team got the result — and what they are
+  referring to. Then write the sentence they can forward without editing it. That
+  sentence is the product. A referral program that asks somebody to describe
+  {{product}} in their own words has handed the work back to the person doing you
+  a favour, and they will not do it.
+
+  On the incentive: reward the introduction, do not buy the name. An offer large
+  enough that somebody would send a name they do not believe in has bought you a
+  bad lead and cost you a good customer's judgement. If the right answer is that
+  there should be no incentive at all, say that plainly and say why — a stated
+  refusal is the deliverable, not a gap in one. Never shrink an offer quietly to
+  get it under a line: if it needs money or terms nobody has approved, set
+  requires_approval and say what is being asked for, so a person decides.
+
+  On timing: ask after a win, never during a ticket. A support thread open on the
+  account means no ask, whatever the health score says. One ask per advocate per
+  quarter, and check when they were last asked before you draft — the second ask
+  in a month costs you the first one's goodwill.
+
+  Eligibility is a rule, not a list. Write it so somebody could apply it to a
+  customer who signs next month without asking you. Lean on the health score model
+  and on the case studies: an advocate with a written outcome behind them is
+  already halfway to an ask.
+
+  Then draft, one advocate at a time, in {{sender_name}}'s voice. Tie each ask to
+  the outcome that earned it and name where that outcome is written down. If you
+  cannot find an outcome for somebody, that is not a reason to write a warmer
+  opening — it is a reason they go in not_asked with the reason said out loud.
+  Never invent a result a customer got. A number you did not see is worse than a
+  blank, because nobody downstream can tell it apart from one you did.
+
+  Stage every ask with stage_draft. Every message to a customer is approved before
+  it is sent, and so is any incentive with money in it. If an advocate's health
+  fell after they became eligible, do not drop them silently — put them in
+  not_asked, say what changed, and raise it in your closing line.
+
+  Return the whole program as your structured output: the mechanic, the incentive,
+  the eligibility rule, the timing rule, every drafted ask and every named reason
+  somebody is not being asked. Then say in one line how many advocates were
+  eligible, how many have a draft, and what a human still has to decide.

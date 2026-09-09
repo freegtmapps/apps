@@ -1,0 +1,8 @@
+{
+  "name": "health-score",
+  "description": "Weighted usage signals, a score on every customer, and a drop raised before anyone cancels.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

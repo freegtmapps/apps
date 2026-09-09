@@ -1,0 +1,256 @@
+# The other half of demand: somebody already has the audience this company is
+# trying to buy, and some of them would rather send traffic than compete for it.
+#
+# WHAT THIS APP IS FOR is the Partnerships Scout job (gtmsrv/agents/demand/
+# partnerships-scout.yaml). That card's needs.apps names this slug and its
+# produces.context is a single key, `demand.partner_targets`, which is this
+# app's one output target. Everything the card says about the work is said again
+# here in the instructions, because the card is read by the agent and the
+# manifest is read by the model doing the run.
+#
+# NO `skills:`, and that is the honest answer rather than a gap.
+# TEAMS.md names partner-identification, co-marketing, integration-marketing and
+# affiliate-setup for this row. None of the four exists in either vendored
+# library — checked directory by directory under vendor/skills/swan-gtm/
+# gtm-skills and vendor/skills/NEON-Rutger/B2B-revops-skills. The nearest real
+# ones are near-misses and a near-miss is worse than nothing: `company-deep-dive`
+# researches ONE company and this app writes a ranked segment-level list;
+# `market-finder` enumerates every business of a type in a geography, which is a
+# prospect universe rather than a partner shortlist and says nothing about what
+# either side gets; `bridge-before-cold` is about one contact's warm path into
+# one account. Naming any of them would be a method this app cannot follow.
+#
+# NO `emits`, on purpose. Everything this app has to say lands in
+# demand.partner_targets — the targets, the ones it could not size, and the line
+# it writes when nothing adjacent reaches the ICP at all. A signal beside that
+# would be a second label for the same fact, and an `emits` list without
+# `may: [emit]` declares signals the app structurally cannot raise. The card's
+# `sinks: [signal]` is the agent's route out, not this app's.
+#
+# COUNT NOTHING YOU HAVE NOT SEEN A NUMBER FOR is enforced by the schema, not by
+# the prose: every target's `reach` requires a source alongside the number, and a
+# candidate that fits but whose audience could not be evidenced goes in `unsized`
+# under its own name. That is the difference between a partner list somebody can
+# act on and a plausible one.
+name: Partner program
+description: The companies already selling to your buyer who would rather send you traffic than compete for it.
+category: find-and-research
+type: research
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "find us partners"
+  - "who else sells to our buyer?"
+  - "build a partner target list"
+
+# The card asks for web, enrichment, brain and pipeline. The last two are
+# platform tools every app already has; these two are the capability names.
+# `web` is how a partner's own pages, pricing and customer logos get read;
+# `enrichment` is how a company that is only a name acquires a domain, a size
+# and a market. A deployment binding neither fails at bind rather than running
+# and inventing an audience.
+tools: [web, enrichment]
+
+may:
+  - read
+
+context:
+  # Workspace-scoped, so nobody is asked twice. Reach INTO THE ICP is the whole
+  # ranking, so the ICP is not something this app can proceed without, and what
+  # the product actually is decides which partnerships are even possible.
+  - key: icp
+    scope: workspace
+    ask: "Who is your ideal customer — the buyer a partner would have to be able to describe?"
+    type: text
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+
+  # App-scoped: the three things the model cannot get right by guessing, and the
+  # first of them is the one that stops a fabricated integration.
+  - key: integration_surface
+    scope: app
+    ask: "What can your product actually connect to today — a public API, webhooks, native integrations already built, or nothing yet?"
+    type: text
+  - key: partnership_forms
+    scope: app
+    ask: "Which kinds of partnership would you actually run — integration, co-marketing, referral, reseller? Name the ones you have the appetite for."
+    type: list
+  - key: existing_partners
+    scope: app
+    ask: "Who are you already partnered with or already in conversation with, so I do not hand you back a name you know?"
+    type: list
+
+output:
+  name: partner_targets
+  target: demand.partner_targets
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [targets, unsized, sources]
+    properties:
+      targets:
+        description: >-
+          Ranked, best first: reach into the ICP first, and between two of
+          comparable reach the one that takes less to start. Empty is a legitimate
+          answer, and then `escalation` says why.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, what_they_sell, shared_audience, not_a_competitor, form,
+                     what_we_give, what_we_get, first_ask, cost_to_run, effort, reach, sources]
+          properties:
+            name: {type: string}
+            domain: {type: string}
+            what_they_sell:
+              description: Their product in their own words, so the overlap can be checked rather than taken on trust.
+              type: string
+            shared_audience:
+              description: The buyer both sides already sell to, described in this ICP's terms — role, company shape, moment.
+              type: string
+            not_a_competitor:
+              description: >-
+                Why this company is not competing for the same budget. The failure this
+                job escalates on is a candidate list that turns out to be competitors under
+                another name, so every target answers it explicitly.
+              type: string
+            form:
+              description: What the partnership actually is. One form per target — a candidate that could be two is two entries or the likelier one.
+              type: string
+              enum: [integration, co_marketing, referral, reseller, community]
+            what_we_give:
+              description: What they get out of it, said first and said concretely.
+              type: string
+            what_we_get:
+              description: What we get out of it, and it is second for a reason.
+              type: string
+            first_ask:
+              description: The one thing to ask for in the first conversation — small enough that a yes costs them almost nothing.
+              type: string
+            cost_to_run:
+              description: What running this costs us once it is live — build time, revenue share, someone's week each month.
+              type: string
+            effort:
+              description: How much it takes to start, which is half the ranking.
+              type: string
+              enum: [low, medium, high]
+            reach:
+              description: >-
+                How many of this ICP they touch. A number and where the number was
+                seen — never a guess. A candidate whose audience cannot be evidenced
+                belongs in `unsized`, not here with a plausible figure.
+              type: object
+              additionalProperties: false
+              required: [audience_size, basis, source]
+              properties:
+                audience_size:
+                  description: The figure that was actually published — customers, subscribers, members, installs.
+                  type: integer
+                  minimum: 0
+                basis:
+                  description: What that number counts, and how much of it plausibly falls inside this ICP.
+                  type: string
+                source:
+                  description: The page the number came off.
+                  type: string
+              # `source` is required beside the number for the same reason a
+              # competitor profile requires the pages it was built from: an
+              # audience size with no page behind it is a recollection.
+            sources:
+              description: The pages this candidate was built from. At least one — a target with none was remembered, not researched.
+              type: array
+              minItems: 1
+              items: {type: string}
+      unsized:
+        description: >-
+          Candidates that fit the ICP but whose reach could not be evidenced. They
+          are kept under their own name so nobody re-finds them next month, and kept
+          out of `targets` so nothing downstream counts an audience nobody saw.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, shared_audience, what_is_missing]
+          properties:
+            name: {type: string}
+            domain: {type: string}
+            shared_audience: {type: string}
+            what_is_missing:
+              description: The number that could not be found, and where it was looked for.
+              type: string
+      sources:
+        description: Everything read across the whole run, so a reader can retrace it.
+        type: array
+        items: {type: string}
+      gaps:
+        description: What could not be answered, per candidate. Empty only when nothing was missing.
+        type: array
+        items: {type: string}
+      escalation:
+        description: >-
+          Filled ONLY when the honest answer is that there is nothing here — no adjacent
+          company reaches this ICP, or every candidate turned out to be a competitor
+          under another name. Then `targets` is empty and this says which of the two it
+          was, so the person reading knows whether to widen the ICP or the definition of
+          adjacent.
+        type: string
+
+instructions: |-
+  You are looking for the companies that already sell to {{company_name}}'s
+  buyer without competing for the same budget — the ones who would rather send
+  traffic than fight for it. Somebody already has the audience this company is
+  trying to buy. Your job is to find them, and to say what each partnership
+  would actually be before anyone is approached.
+
+  Start from the ICP and from what {{product}} actually is. Ask, for each
+  candidate: does this company's own buyer look like ours, and would their
+  customer be better off with both of us? Reach into the ICP beats logo quality
+  every time. A famous company whose audience is mostly not our buyer is a worse
+  target than an unglamorous one whose whole list is. A partner who cannot
+  describe our buyer is not a partner.
+
+  Check that it is not a competitor before anything else. Companies that solve
+  the same problem with a different word for it are the commonest false positive
+  in this work, and every target has to say in one line why it is not competing
+  for the same budget. If a candidate fails that test, drop it and say so in the
+  gaps rather than softening the description until it fits.
+
+  Say what we give before what we get. The first ask is the one that
+  costs them almost nothing to say yes to — an intro, a joint post, a listing —
+  and never the full programme. Name the form: an integration, a co-marketing
+  piece, a referral, a reseller arrangement, a community placement. Only the
+  forms this workspace said it has appetite for, and only an integration the
+  product can actually support. If the integration surface is "nothing yet",
+  there are no integration partners on this list, however obvious the pairing
+  looks — proposing one is proposing work nobody has agreed to do.
+
+  Never count an audience you have not seen a number for. Reach is a figure the
+  partner or somebody else published — customers, subscribers, members, installs
+  — plus the page it came off and an honest line about how much of it falls
+  inside this ICP. If you cannot find a number, the candidate goes in `unsized`
+  with what was missing and where you looked. A guessed audience is the one field
+  on this list that reads as fact and cannot be checked, and everything
+  downstream ranks on it.
+
+  Rank by reach into the ICP first, then by how little it takes to start. Say
+  what running each one costs once it is live, not just what it costs to open.
+
+  Do not repeat back anyone already named as an existing partner or an open
+  conversation.
+
+  If nothing survives — no adjacent company reaches this ICP, or every candidate
+  is a competitor under another name — return empty targets and fill
+  `escalation` saying which of the two it was. That is a real finding about this
+  market and it is worth more than five names padded out to look like work.
+
+  Return the list as your structured output, and say in one line how many
+  targets you sized, how many you could not, and what you could not reach.

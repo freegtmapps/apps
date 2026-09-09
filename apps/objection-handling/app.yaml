@@ -1,0 +1,289 @@
+# The rep is on a record with a sentence from the buyer in front of them. This
+# app answers THAT sentence, from the answer the company already agreed to.
+#
+# WHY IT IS NOT ONE OF THE THREE APPS THAT ALREADY EXIST, since the overlap is
+# the first thing a reader will suspect:
+#
+#   `objection-map` mines a corpus and ranks objections. Segment-level, on
+#   positioning's clock. This one has one objection and one record.
+#   `review-the-call` extracts the objections a call contained. It reports what
+#   was said; it does not answer anybody.
+#   `handle-the-blocker` is procurement — security review, legal, a stalled
+#   signature. A different obstacle with a different owner (Deal Desk).
+#
+# So the work here is: match what was said to an entry in the approved map,
+# write the response for this buyer, and — the part that keeps the map honest —
+# hand back the objection the map has no answer for, in the wording it was
+# actually heard in.
+#
+# ⚠ OUTPUT TARGET, AND IT IS NOT THE ONE THE JOB BRIEF NAMED.
+#
+# The brief for this app said `sales.objection_playbook`. That key exists
+# nowhere: not in a manifest, not in an agent, not in the pipeline map — grep
+# finds it in the brief and in no file. The agent that runs this app
+# (gtmsrv/agents/sales/objection-handler.yaml) declares
+# `produces.context: [positioning.objections_and_responses]`, and the loader
+# checks `output.target ⊆ agent.scope.context.writes` (E_WRITES_EXCEED_SCOPE).
+# A manifest targeting the playbook key would be refused at compose, and the
+# refusal would be correct: the objection map is positioning's document, and
+# this job proposes into it rather than keeping a second copy of it in sales.
+#
+# `objection-map` declares the same target and OWNS the key
+# (gtmsrv/agents/positioning/lead.yaml gives it to positioning.objection-mapper).
+# That is not a collision: a target is a destination and not a permission, and
+# ContextService.Write decides at run time whether a write applies or routes to
+# feedback. Positioning writes the map; sales proposes into it and the proposal
+# arrives as feedback for the owner to accept — which is exactly what TEAMS.md
+# means by "new objections → feedback".
+#
+# THE DRAFT IS NOT THE OUTPUT, and that is the other thing to understand here.
+# The card's `produces.drafts` is the response staged for the rep, and it
+# reaches the rep through stage_draft and an approval — not through this block.
+# An app declares one validated object going to one place; the response text
+# lands in the draft, and what lands here is the account of the objection: what
+# was heard, what it was matched to, how it was answered, and whether the map
+# had an answer at all.
+name: Objection handling
+description: Answer the objection this buyer actually raised, from the approved map — and report the ones it cannot answer.
+category: sell
+# `analysis` rather than `objection-response`, and the type is doing work.
+#
+# The first move on this app is a classification — what kind of objection is
+# this, and which entry in the map is it — and everything downstream hangs off
+# getting that right. Declaring `analysis` is also what makes `output` REQUIRED
+# rather than merely present (contracts/app.schema.yaml, delta 2). `Handle the
+# reply` carries a long note about the opposite choice: it declares
+# `type: reply`, nothing forces an output, and the confidence gate its rules
+# want to read has no field to read. A free-form type here would have left the
+# matched/new distinction as prose in somebody's Final.
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "they said we're too expensive"
+  - "how do I answer this objection?"
+  - "the buyer says they're happy with what they have"
+
+# NO `skills:`, AND IT IS THE CONSIDERED ANSWER RATHER THAN THE LAZY ONE.
+#
+# The two nearest vendored candidates were read in full before this was left
+# out:
+#
+#   `objection-mining` (swan-gtm) is the method for the OTHER app. Its own first
+#   line says "applies to accumulated call recordings, reply threads and
+#   lost-deal notes", and its rules are MUST rank by observed frequency and MUST
+#   name where each objection is pre-handled upstream. A run of this app has one
+#   objection on one record: there is no frequency to rank and no corpus to
+#   rank it against, so a model carrying those rules would either invent a
+#   ranking or stall on a corpus it was never given. It is vendored where it
+#   belongs — `objection-map` and `review-the-call` both carry it.
+#
+#   `competitor-positioning` (swan-gtm) is a website teardown: crawl their
+#   pages, build a messaging matrix, keep per-competitor snapshot files, run in
+#   delta mode after fourteen days. This app holds no `web` binding and is not
+#   researching anybody mid-call. A method an app cannot follow is worse than no
+#   method, because the model follows it anyway and narrates the research it
+#   never did.
+#
+# TEAMS.md names `objection-handling` and `competitive-counter` for this row.
+# Neither is a directory under vendor/skills. They were the METHOD described,
+# and the method is below, in our own words, where it is ours to be wrong about.
+
+# `read` and `stage`, and the omissions are the interesting half.
+#
+# NO `write_lead`: the agent's scope is `{records: read}`. What the buyer said
+# and what we answered belongs on the draft and in the objection account, not
+# stamped onto the lead by a model that was handed one sentence.
+#
+# NO `emit`, therefore no `emits:` — the two are one decision (APP-BUNDLE §5).
+# The tempting signal is "an objection the map cannot answer", and it would be a
+# second label for something this app's own output already carries in
+# `map_status: new`. The escalation the card asks for — the same unanswered
+# objection on a third record — is a count across runs, which is Positioning's
+# to notice from the map and not a fact one run of this app can know.
+may:
+  - read
+  - stage
+
+context:
+  # Workspace-scoped, and it must name a real WorkspaceValues field. The
+  # response is written against what we actually sell; without it a model
+  # answers "too expensive" about a product it is imagining.
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+
+  # App-scoped, and this is the key that makes the card's hardest instruction
+  # possible: "where the objection is true, say it is true and say what the
+  # buyer gets anyway."
+  #
+  # A model cannot infer where the product is genuinely weak, and it must never
+  # guess: a conceded gap that is not real is a discount somebody gave away, and
+  # an argued gap that IS real is the moment the buyer stops believing the rest
+  # of the call. Somebody who knows says it once, here.
+  - key: known_gaps
+    scope: app
+    ask: "Where are we genuinely weak — the things a buyer is right about and we should admit rather than argue?"
+    type: list
+
+output:
+  name: objection_response
+  target: positioning.objections_and_responses
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [heard, category, map_status, approach, response]
+    properties:
+      heard:
+        description: >-
+          The buyer's own sentence, verbatim. Not a summary of it — the summary
+          is where "we already have something for this" quietly becomes "not
+          interested", and the two get different answers.
+        type: string
+        minLength: 1
+      category:
+        description: >-
+          What the objection is underneath, which is not always what it sounds
+          like. "Too expensive" from somebody who has not seen value is a fit
+          objection wearing a budget costume, and answering it with a discount
+          loses the deal twice.
+        enum: [timing, budget, authority, trust, fit, competition]
+      map_status:
+        description: >-
+          Whether the approved map already answers this. `new` is not a failure
+          of the run — it is the run's most valuable finding, and it is what
+          Positioning reads.
+        enum: [matched, new]
+      map_entry:
+        description: The entry in the approved map this was answered from. Present when map_status is matched.
+        type: string
+      approach:
+        description: >-
+          `answer` uses the approved response. `reframe` is for an objection
+          about the category rather than the product — arguing a category
+          objection on the product's terms concedes the frame. `concede` is
+          where the buyer is right; it requires a named gap.
+        enum: [answer, reframe, concede]
+      response:
+        description: The response drafted for THIS buyer. The same text goes to the rep as a staged draft.
+        type: object
+        additionalProperties: false
+        required: [text, buyer_words_used, grounded_in]
+        properties:
+          text:
+            type: string
+            minLength: 1
+          buyer_words_used:
+            description: >-
+              The buyer's own phrases this response says back to them. At least
+              one, because the card's done_when is a response that names the
+              buyer's own words — a response with none is an answer to the
+              generic objection rather than to this person.
+            type: array
+            minItems: 1
+            items: {type: string}
+          grounded_in:
+            description: >-
+              Where every claim in the response came from — the map entry, a
+              battlecard line, a case study, a number somebody can point at. At
+              least one, because "never invent a proof point" is only enforced
+              by having to name the point's origin. An unsourced proof is a
+              sentence a rep will repeat to a customer believing it.
+            type: array
+            minItems: 1
+            items: {type: string}
+          concedes:
+            description: >-
+              What we admitted, and what the buyer gets anyway. Required in
+              spirit whenever approach is concede — see the conditional below.
+            type: string
+      proposed:
+        description: >-
+          The objection handed back to Positioning when the map had no answer.
+          The wording is the buyer's, not a tidied paraphrase: Positioning is
+          writing an answer to what people actually say.
+        type: object
+        additionalProperties: false
+        required: [wording_heard, why_unanswered]
+        properties:
+          wording_heard: {type: string, minLength: 1}
+          why_unanswered:
+            description: What the nearest map entry was and why it did not fit, or that there was no near entry at all.
+            type: string
+          suggested_answer:
+            description: A starting point for Positioning, clearly ours rather than approved. Optional and often better left empty.
+            type: string
+      needs_a_person:
+        description: >-
+          Why this one should not go out on the strength of a draft — the honest
+          answer concedes a product gap, or the objection is about something no
+          approved answer covers. One line, in the rep's language.
+        type: string
+    allOf:
+      # done_when, structurally: an objection the map cannot answer is not
+      # finished until it has been recorded in the buyer's wording. Prose asking
+      # for this is prose a model can skip on a run that went long.
+      - if:
+          properties: {map_status: {const: new}}
+          required: [map_status]
+        then:
+          required: [proposed]
+      # A conceded gap that names nothing conceded is the shape of a model
+      # agreeing to be agreeable.
+      - if:
+          properties: {approach: {const: concede}}
+          required: [approach]
+        then:
+          properties:
+            response:
+              required: [concedes]
+
+instructions: |-
+  A buyer has pushed back on {{product}} and a rep is waiting. Answer the
+  objection they made, not the one you can answer.
+
+  Start with the words. Read what the buyer actually said and keep the sentence
+  intact — you will need it twice, once to match it and once to say it back to
+  them. What it sounds like and what it means are often different things: "too
+  expensive" from somebody who has not yet seen why this matters is not a price
+  problem, and a discount answers a question they did not ask.
+
+  Then match before you write. Go to the approved objection map first. If this
+  objection is already there, the company has decided what it says about this,
+  and your job is to put that answer in this buyer's terms and against the pain
+  they told you about — not to write a better one. Say which entry you used.
+
+  If the map has no answer, say so plainly and record the objection in the
+  buyer's own wording so Positioning can write one. Do not improvise a company
+  position and leave it sounding approved; the whole reason this job exists is
+  that the same six objections were being answered a different way by every rep.
+  Draft something for the rep to say now, mark it as yours rather than approved,
+  and hand the objection back.
+
+  Never invent a proof point. Every claim in the response names where it came
+  from — a map entry, a battlecard, a customer who actually did this. If you
+  cannot ground it, cut the sentence. A number a rep repeats to a customer
+  because it was in a draft is worse than an answer that says less.
+
+  Where the objection is about the category rather than the product, reframe
+  rather than argue. Somebody saying "we've tried tools like this and they never
+  stick" is not asking about a feature, and answering with features concedes
+  their frame.
+
+  Where the objection is TRUE, say it is true. Check it against the gaps this
+  workspace has told you about, admit the one they are right about in a single
+  sentence, and then say what they get anyway. Do not concede a gap nobody
+  named — you would be giving away something real on a guess.
+
+  Stage the response with stage_draft. Nothing here reaches the buyer without a
+  person approving it, and that is the design rather than a delay: if the honest
+  answer concedes a gap, or the objection is one nothing in the map covers, say
+  so in one line on the draft so the rep reads it before they send.

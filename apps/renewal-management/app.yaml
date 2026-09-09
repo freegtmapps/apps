@@ -1,0 +1,365 @@
+# The renewal worked all year, so renewal week is a formality rather than a negotiation.
+#
+# The Renewal Manager card (gtmsrv/agents/retention/renewal-manager.yaml) is the
+# job this app is the tool for: keep the timeline, prepare the business review
+# for the people who pay, and recap the value in the customer's own numbers to
+# the person who signs. The card fires on `renewal.window_opened`; this app is
+# what runs when it does.
+#
+# ONE OUTPUT TARGET, AND IT IS THE REGISTER. The card produces one context key —
+# `retention.renewals` — and this app validates into it. Everything else the card
+# produces is a DRAFT, not structured output: the business review pack and the
+# renewal outreach are staged with stage_draft for a person to approve, because
+# they are things a customer reads rather than one validated object with one
+# destination. An app declares one target; a manifest that also claimed the pack
+# would be claiming a destination it cannot validate into.
+#
+# THE DONE_WHEN IS IN THE SCHEMA, NOT IN THE PROSE. "Every renewal inside the
+# window has a dated plan and a value recap built from that account's own
+# measured outcomes" is enforced by construction: an entry in `renewals` cannot
+# exist without at least one dated milestone and at least one outcome carrying
+# a baseline, a current number and the system both were read from. A renewal
+# that cannot meet that goes in `escalations` with the reason — which is the
+# card's escalate_when, in the same object, rather than a sentence somebody
+# hopes the model writes.
+#
+# NO `emits`, ON PURPOSE. The card's sinks include signal and the platform
+# raises `renewal.window_opened` upstream of this app; what this app has to say
+# about a renewal in trouble is IN its output, in `escalations`, where the
+# account, the reason and what is missing all travel together. A signal here
+# would be a second label for a row that already exists, and nothing in the
+# retention team triggers on one — at-risk-playbook waits on
+# `retention.health_dropped`, which Health score emits. So no `emit` in `may`
+# either: the pair is the honest declaration.
+#
+# ONE SKILL, CHECKED RATHER THAN ASSUMED. `qbr-ebr-builder` (NEON-Rutger) is the
+# method this job's third responsibility describes — the EBR anchored 90-120 days
+# ahead of the renewal, the three-panel spine, and the value recap in the
+# customer's numbers against an agreed baseline, including what did NOT improve.
+# It is copied whole at the sha its frontmatter names, both reference pages
+# included. `roi-proof-generator` (swan-gtm) was read and rejected: its subject is
+# proving what an AI AGENT delivered, which is a product assumption this app does
+# not get to make about the thing being renewed.
+name: Renewal management
+description: "Every renewal in the window, with a dated plan and the value recapped in the customer's own numbers."
+category: sell
+type: plan
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "work the renewals coming up"
+  - "prep the renewal for this account"
+  - "which renewals open this quarter?"
+
+skills:
+  - qbr-ebr-builder
+
+# Capabilities, never brands, and both are needs rather than a wish list. `crm`
+# is where the renewal dates, the amounts and the people live — without it there
+# is no list to work. `product` is where the outcomes come from: the events the
+# product already records are what makes a recap measured rather than remembered.
+# A deployment binding neither fails at bind, which is the right failure here —
+# an invented number inside a value recap is read out loud to a customer.
+tools: [crm, product]
+
+# `read` and `stage`, and nothing else.
+#
+# NO `write_lead`: the card's produces are drafts and a context key, and the
+# per-account score belongs to Health score. NO `emit`: see the header.
+# `stage` is the whole delivery — the pack, the recap and the outreach all go in
+# front of a person before the customer sees them, which is the card's own
+# approval line.
+may:
+  - read
+  - stage
+
+context:
+  # Substituted in the instructions, so it has to be declared or composition
+  # refuses. It also decides what counts as an outcome: "hours returned" means
+  # something different for a scheduler than for a data product.
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+
+  # THE KEY WITHOUT WHICH THERE IS NO LIST. A renewal register built from a
+  # model's idea of who renews when is a calendar nobody can act on.
+  - key: renewal_dates
+    scope: app
+    ask: "Where do renewal dates live? Point me at the field, or paste a list — account, renewal date, and what it's worth."
+    type: sample
+    infer_from: [connections]
+
+  # How far ahead the timeline opens. The card's whole thesis is that a renewal
+  # defended in the last three weeks is a negotiation; this is where a team says
+  # how much earlier than that they want to start.
+  - key: renewal_lead_time
+    scope: app
+    ask: "How far ahead of a renewal date should I start working it? Most teams say about 120 days."
+    type: text
+
+  # The numbers the recap is written in. Their metrics, not our feature counts —
+  # asked because the answer is a fact about the customer's business that no
+  # amount of reading our own telemetry produces.
+  - key: outcome_metrics
+    scope: app
+    ask: "What numbers do your customers actually judge you by — the ones they'd quote to their own boss?"
+    type: list
+    infer_from: [connections]
+
+# THE REGISTER: every renewal in the window, and for each one either a plan with
+# a recap or a reason it has neither.
+#
+# The card's done_when and escalate_when are both encoded structurally:
+#
+#   "a dated plan"                 → plan.milestones minItems 1, each requiring a
+#                                    date, a what and an owner. An undated plan is
+#                                    an intention.
+#   "a value recap built from that
+#    account's own measured
+#    outcomes"                     → value_recap requires a baseline AND outcomes
+#                                    minItems 1, each requiring baseline_value,
+#                                    current_value, measured_over and source. Two
+#                                    numbers and where they were read from, or it
+#                                    is not a measurement.
+#   "including what did not
+#    improve" (the skill's rule)   → misses REQUIRED, possibly empty. A recap with
+#                                    no misses reads as marketing, and an empty
+#                                    list is a finding while an absent key is not
+#                                    having looked.
+#   escalate_when                  → escalations, required and possibly empty, with
+#                                    a closed reason set naming the card's two.
+#                                    A renewal that cannot be recapped honestly
+#                                    goes HERE rather than getting a thinner recap.
+#
+# coverage exists so a reader can see the window was accounted for: planned plus
+# escalated is every renewal in it, and a gap between them is a renewal nobody
+# looked at.
+output:
+  name: renewals
+  target: retention.renewals
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [as_of, window, renewals, escalations, coverage]
+    properties:
+      as_of:
+        description: The date this register was built. A renewal plan is a claim about time and goes stale.
+        type: string
+      window:
+        description: What counted as inside the window on this run, e.g. "renewal dated on or before 2027-01-15 — 120 days out".
+        type: string
+      renewals:
+        description: >-
+          One per renewal inside the window that HAS a dated plan and a measured recap.
+          Anything that does not belong in escalations, not here with the thin parts left out.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [account, renewal_date, health, plan, value_recap]
+          properties:
+            account: {type: string}
+            renewal_date:
+              description: The date the contract renews or lapses, as the system of record has it.
+              type: string
+            value_at_risk:
+              description: What renews — the amount and how it is charged. Absent when the contract value is not readable.
+              type: string
+            signer:
+              description: >-
+                The person who decides, not the person who uses it. ABSENT MEANS NOT KNOWN
+                YET, which makes finding out the first milestone in the plan rather than a
+                plausible name written down.
+              type: object
+              additionalProperties: false
+              required: [name, role]
+              properties:
+                name: {type: string}
+                role: {type: string}
+                last_heard_the_value_case:
+                  description: When this person last heard what they got for the money, from us, in their numbers. "Never" is the answer that changes the plan.
+                  type: string
+            health:
+              description: Where this account stands going in, read from the health model rather than from an impression of the account.
+              type: object
+              additionalProperties: false
+              required: [read, source]
+              properties:
+                read:
+                  description: What the health model says today, and where it has been this quarter.
+                  type: string
+                trend: {type: string, enum: [improving, flat, declining, unknown]}
+                source:
+                  description: Where the read came from — the health score model, a usage export, the account's own reporting. Named so somebody else can re-read it.
+                  type: string
+            business_review:
+              description: >-
+                The review that carries the value case to whoever signs, anchored ahead of the
+                renewal rather than inside it. Absent means none is planned yet — which on
+                anything with real money on it is the gap this plan should be closing.
+              type: object
+              additionalProperties: false
+              required: [date, audience]
+              properties:
+                date: {type: string}
+                audience:
+                  description: Who is actually in the room.
+                  type: string
+                  enum: [economic_buyer, daily_users, both]
+                status: {type: string, enum: [proposed, invited, booked, held]}
+            plan:
+              description: The dated timeline. This is what makes the renewal worked rather than awaited.
+              type: object
+              additionalProperties: false
+              required: [milestones]
+              properties:
+                opens:
+                  description: The date work starts on this renewal, which is well before the window rather than at it.
+                  type: string
+                milestones:
+                  description: At least one, and every one dated and owned. A step with no date and no owner is an intention.
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required: [date, what, owner]
+                    properties:
+                      date: {type: string}
+                      what: {type: string}
+                      owner:
+                        description: A person on our side or theirs. Half the actions in a real plan belong to the customer.
+                        type: string
+                      status: {type: string, enum: [not_started, in_progress, done, slipped]}
+            value_recap:
+              description: What changed on THIS account since the last review, in the customer's own numbers.
+              type: object
+              additionalProperties: false
+              required: [baseline, outcomes, misses]
+              properties:
+                baseline:
+                  description: The starting point the change is measured against, and when it was agreed — onboarding, or the last review. Without one there is nothing to measure against, and that is an escalation rather than a recap.
+                  type: string
+                outcomes:
+                  description: At least one measured outcome. This is the requirement the whole job turns on.
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required: [metric, baseline_value, current_value, measured_over, source]
+                    properties:
+                      metric:
+                        description: The number in the customer's words — what they call it, not what our schema calls it.
+                        type: string
+                      baseline_value: {type: string}
+                      current_value: {type: string}
+                      measured_over:
+                        description: The period the two numbers span, e.g. "March 2026 to August 2026".
+                        type: string
+                      source:
+                        description: The system both numbers were read from, named so the customer's own analyst could re-read them.
+                        type: string
+                misses:
+                  description: >-
+                    What did not improve, in the same numbers. REQUIRED AND OFTEN EMPTY —
+                    empty means nothing missed, which is a finding. A recap where nothing
+                    went wrong reads as marketing and buys credibility for nothing.
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required: [metric, what_happened]
+                    properties:
+                      metric: {type: string}
+                      what_happened: {type: string}
+                expansion_signal:
+                  description: A goal they have that this account is not yet covering, raised as their roadmap. Left empty rather than manufactured.
+                  type: string
+            drafts_staged:
+              description: What was put in front of a person for approval on this run — the review pack, the recap, the outreach. Nothing here has been sent.
+              type: array
+              items: {type: string}
+      escalations:
+        description: >-
+          Renewals inside the window that could not get an honest plan. REQUIRED AND
+          POSSIBLY EMPTY: "nothing needed escalating" is an answer, a missing key is not
+          having checked. This is the card's escalate_when, and it fires early enough that
+          somebody can still do something about it.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [account, renewal_date, reason, detail]
+          properties:
+            account: {type: string}
+            renewal_date: {type: string}
+            reason:
+              description: >-
+                no_measured_outcome — there is nothing measured to recap, so any recap would
+                be written rather than read. health_low_all_quarter — the window opened on an
+                account that has been unwell all quarter, which is a save motion and not a
+                renewal plan. other — anything else, said plainly in detail.
+              type: string
+              enum: [no_measured_outcome, health_low_all_quarter, other]
+            detail:
+              description: What is actually missing or wrong, in one or two sentences somebody can act on this week.
+              type: string
+            raised_to:
+              description: Who was told, if anyone has been yet.
+              type: string
+      coverage:
+        description: The window, accounted for. planned plus escalated is every renewal inside it.
+        type: object
+        additionalProperties: false
+        required: [in_window, planned, escalated]
+        properties:
+          in_window: {type: integer, minimum: 0}
+          planned: {type: integer, minimum: 0}
+          escalated: {type: integer, minimum: 0}
+
+instructions: |-
+  You are working the renewals for {{product}} — every one whose date falls inside
+  the window, starting long before anybody would call it renewal season.
+
+  A renewal defended in the last three weeks is a negotiation. One prepared all
+  year is a formality. So open the timeline early, and put a date and an owner on
+  every step; a plan with neither is a hope.
+
+  Their numbers, not our features. The recap says what changed on THIS account
+  since the last review, measured against the baseline that was agreed at
+  onboarding or at the last review, and read out of a system somebody could go and
+  check. "487 workflows ran" is activity. "Your close time went from eleven days to
+  four between March and August" is an outcome. If there is no agreed baseline,
+  installing one is the first milestone of the plan, not a number you infer.
+
+  Say what did not improve too. One acknowledged miss buys credibility for every
+  claimed win, and a recap where everything went up reads as marketing to the only
+  person whose opinion decides this.
+
+  Talk to whoever signs. The people who use it every day are not the people who
+  approve the invoice, and if the person who signs has not heard the value case all
+  year, they will form their view from somewhere else before you get there. Build
+  the review around what they care about — was this worth the money, and what
+  should it do next — and get it in front of them well ahead of the renewal date,
+  never inside it.
+
+  If the value is not there, do not dress it. A renewal with nothing measured to
+  recap, or one that opens on an account that has been unwell all quarter, goes in
+  escalations with what is missing and why — early enough that somebody can still
+  do something about it. A thinner recap on a weak account is the one artefact that
+  costs more than saying nothing.
+
+  Stage everything the customer would see with stage_draft: the review pack, the
+  value recap, the renewal outreach. Nothing goes out until a person decides.
+
+  Return the register as your structured output. Say in one line how many renewals
+  are in the window, how many have a plan and a recap, and which ones you escalated.
