@@ -47,7 +47,6 @@ type: analysis
 version: 1.0.0
 license: MIT
 handler: llm
-visibility: public
 
 maintained_by:
   name: freegtm
