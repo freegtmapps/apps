@@ -87,6 +87,20 @@ context:
     scope: workspace
     ask: "Who do you sell to? A sentence is enough to start."
     type: text
+  # Declared because composition requires it: the instructions substitute
+  # {{product}}, and a workspace value a placeholder names refuses composition
+  # when unset. Leaving it out made this manifest say the app needs one thing
+  # while the app needed two — the same gap Write outreach had, in the app I
+  # wrote after fixing it there.
+  #
+  # It is NOT in icp-gate.yaml's keys, and should not be. The gate is a product
+  # rule — you cannot score against an ICP you have not written down — and the
+  # product is a mechanical requirement of the prose. Folding one into the other
+  # would make the gate refuse for a reason it does not hold.
+  - key: product
+    scope: workspace
+    ask: "In one sentence, what do you sell?"
+    type: text
 
 emits:
   # Raised by the model when it reaches a decision.
