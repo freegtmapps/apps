@@ -66,7 +66,7 @@ may:
 # week should not need somebody to remember which apps care.
 #
 # `handoff.product` says this stage has nothing left outstanding. It is emitted
-# ONLY when every key below has an answer — see the instructions, where the
+# ONLY when every key it declares has an answer — see the instructions, where the
 # condition lives, because it is a fact about this run and not about the app.
 #
 # NOTE FOR WHOEVER WIRES THE ORCHESTRATOR: `product.lead` triggers on
@@ -137,8 +137,8 @@ instructions: |-
 
   This is a conversation, not a form. Ask about what they just said before moving
   on, and never ask for something they have already told you — one answer often
-  contains three. Two or three questions at a time, in their words, not the key
-  names above.
+  contains three. Two or three questions at a time, in their own words rather
+  than in the key names this app declares.
 
   Record each answer as you get it with set_context, one key at a time. Do not
   wait until the end: a conversation that is interrupted halfway should leave
@@ -152,7 +152,8 @@ instructions: |-
 
   When you have recorded anything at all, emit company.updated.
 
-  Emit handoff.product only when every key above has an answer — including the
-  ones a founder gave you in passing. It says this stage has nothing outstanding,
-  and a workspace with three unanswered questions is not that. If anything is
-  still missing, say which in one line and emit nothing else.
+  Emit handoff.product only when every key this app declares has an answer —
+  including the ones a founder gave you in passing. It says this stage has
+  nothing outstanding, and a workspace with three unanswered questions is not
+  that. If anything is still missing, say which in one line and emit nothing
+  else.
