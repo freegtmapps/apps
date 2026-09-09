@@ -259,6 +259,15 @@
       }
     },
     {
+      "name": "market-sizing",
+      "source": "./apps/market-sizing",
+      "description": "Bottom-up market size \u2014 TAM, SAM and SOM, with every assumption listed so you can argue with one.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "meeting-brief",
       "source": "./apps/meeting-brief",
       "description": "One page before the call \u2014 who is in the room, what they care about, what to ask.",
@@ -295,9 +304,36 @@
       }
     },
     {
+      "name": "pmf-check",
+      "source": "./apps/pmf-check",
+      "description": "Whether people actually come back \u2014 a product-market fit score from retention, not from testimonials.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
       "name": "positioning-and-messaging",
       "source": "./apps/positioning-and-messaging",
       "description": "Category, story, and the messaging hierarchy \\u2014 the source of truth other apps read.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "problem-validation",
+      "source": "./apps/problem-validation",
+      "description": "Does the problem exist outside your own calls? Forums, reviews and search, with quotes and volumes.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "product-analytics",
+      "source": "./apps/product-analytics",
+      "description": "What your product data says: activation, time to activate, and the features people actually use.",
       "version": "1.0.0",
       "author": {
         "name": "freegtm"
@@ -433,6 +469,15 @@
       "name": "website-visitor-radar",
       "source": "./apps/website-visitor-radar",
       "description": "Turn identified website activity into qualified follow-up.",
+      "version": "1.0.0",
+      "author": {
+        "name": "freegtm"
+      }
+    },
+    {
+      "name": "why-now",
+      "source": "./apps/why-now",
+      "description": "The shift that makes this the moment \u2014 named, dated, sourced \u2014 or an honest no.",
       "version": "1.0.0",
       "author": {
         "name": "freegtm"

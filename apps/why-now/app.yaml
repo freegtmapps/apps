@@ -1,0 +1,228 @@
+# The other half of the founder's story: not what we sell, but why the world is
+# ready for it this year and was not three years ago.
+#
+# ONE SKILL, AND IT IS SOMEBODY ELSE'S METHOD, NOT OURS. `recent-discourse-sweep`
+# is the only vendored skill that is actually about this work: fix a dated
+# window, list the venues before searching, date every item, and close with a
+# coverage report that distinguishes a quiet market from a broken query. That
+# last distinction is the whole app — an empty sweep read as "no why-now" is the
+# one wrong answer this app can give, and it is the mistake the skill's own body
+# names as the most expensive.
+#
+# WHAT WAS CONSIDERED AND LEFT OUT. `signal-timing` and `buying-signals-6` are
+# about a signal that fired at ONE ACCOUNT and when a rep should call them; this
+# app is about a shift in the world that has no account attached. Composing them
+# here would put reach-out cadence in the prompt of an app that reaches out to
+# nobody. `founder-post-triggers-24` is content. None of them are named, and no
+# entry may be invented: a `skills:` name with no file in the bundle is a load
+# error, not a cosmetic one.
+#
+# THE REFERENCE PAGES SHIP BESIDE THE BODY, AT ONE SHA. The sweep's body routes
+# to `references/query-plan.md` and `references/coverage-report.md`; a body
+# without them is a model told to open a page that is not there, which does not
+# refuse — it improvises, in the voice of the skill that existed to stop it. Both
+# pages and the body were taken as one artifact, at the sha the frontmatter
+# names (7723903), from the copy already shipping in `Research the account`.
+#
+# ITS OUTPUT TARGET IS PINNED BY A JOB CARD, not chosen here. TEAMS.md §3 has
+# product.timing-analyst produce `market.timing` and own it alone, so this
+# target and that agent's scope.context.writes are the two ends of one check
+# (E_WRITES_EXCEED_SCOPE). Changing this line without changing that card fails
+# the pairing at compose rather than at run.
+name: Why now
+description: "The shift that makes this the moment — named, dated, sourced — or an honest no."
+category: find-and-research
+type: research
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+# `watch-signals` was the other candidate and is wrong: that shelf is standing
+# watches that fire when something happens, and this is a document somebody
+# commissions once and re-reads when the story changes. It sits beside
+# `Competitor research` and `Size the market` because a founder browsing for
+# them is browsing for this.
+
+say:
+  - "why now?"
+  - "what changed that makes this the moment?"
+  - "is there a real why-now for this, or am I telling myself a story?"
+
+skills:
+  - recent-discourse-sweep
+
+# `web` is required rather than optional. A why-now built without reading
+# anything is the founder's conviction with citations invented around it, which
+# is the single artefact this app exists to refuse. With nothing to read it
+# should fail at bind, not run and sound confident.
+tools: [web]
+
+may:
+  - read
+
+# NO `emits:`, and the omission is deliberate. The tempting signal is "no
+# why-now found" — but that is not a non-event here: it is `verdict: none`
+# written into market.timing, where anything downstream can read it. A signal
+# beside it would be a second label for something already recorded, which is
+# the declaration the catalogue sweep says to delete rather than to permit.
+# And `may` has no `emit`, so an `emits:` list here would be a promise the
+# projection could not keep.
+
+context:
+  # Two workspace keys, both real domain.WorkspaceValues fields, both already
+  # asked by whoever got here first — that is the point of the shared scope.
+  # `industry` earns its place separately from `product`: regulation and
+  # procurement cycles move per industry, and a shift in the buyer's industry is
+  # a why-now even when nothing about the product changed.
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+  - key: industry
+    scope: workspace
+    ask: "What industry do you sell into?"
+    type: text
+
+  # App-scoped, and it has to be. The timing analyst reads
+  # `market.problem_statement` when the platform runs this app, but that is a
+  # dotted pipeline key with a different writer and it cannot appear here; a
+  # workspace key must name a real WorkspaceValues field, and problem_statement
+  # is not one. So the app asks for it and keeps its own copy rather than
+  # scanning for shifts around a problem it had to guess.
+  - key: problem_statement
+    scope: app
+    ask: "What problem do you solve, in the words a customer would use?"
+    type: text
+
+  # Decided against: a `window` key asking how far back to look. It reads like
+  # configuration and is really a method question the sweep already answers —
+  # the window belongs to the evidence, not to the workspace, and a founder
+  # asked for a number in months will give one that means nothing.
+
+output:
+  name: timing
+  target: market.timing
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [verdict, shifts, merely_interesting, sources, gaps]
+    properties:
+      verdict:
+        description: >-
+          The answer in one word, first, so nothing downstream has to read the prose to
+          find it. `none` is a finished job — a clear "no why-now" is what the job card
+          asks for when there is no shift.
+        enum: [why_now, weak, none]
+      summary:
+        description: The why-now in two sentences, in words the buyer would use about their own year.
+        type: string
+      shifts:
+        description: >-
+          Only shifts that create urgency FOR THE BUYER. Empty is a legitimate answer
+          and belongs beside verdict none or weak.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [shift, kind, urgency, window, evidence]
+          properties:
+            shift:
+              description: What changed, stated as a change — a before and an after, not a topic.
+              type: string
+            kind: {enum: [regulatory, technology, behaviour, economic, competitive]}
+            urgency:
+              description: Why a buyer must act on this in the next few quarters rather than eventually.
+              type: string
+            window:
+              type: object
+              additionalProperties: false
+              required: [opened, closes]
+              properties:
+                opened: {description: "When the shift became real, as a date or a quarter.", type: string}
+                closes:
+                  description: >-
+                    What ends the window and when — a compliance deadline, a deprecation
+                    date, the point the market prices it in. "Soft, no date" where nothing
+                    closes it: an invented deadline is worse than an open-ended one.
+                  type: string
+            evidence:
+              description: >-
+                At least one, and each carries its own date. A shift with no dated source
+                is something the model remembered, which is the failure mode this whole app
+                is built against.
+              type: array
+              minItems: 1
+              items:
+                type: object
+                additionalProperties: false
+                required: [source, date, shows]
+                properties:
+                  source: {description: "URL or the named publication.", type: string}
+                  date: {description: "The item's own date, not the date it was read.", type: string}
+                  shows: {description: "What this source establishes, in one line.", type: string}
+      merely_interesting:
+        description: >-
+          Shifts that were considered and rejected for not creating buyer urgency, each
+          with the reason. The rejection is the work — an app that only reports what it
+          kept cannot be checked for what it waved through.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [shift, why_not]
+          properties:
+            shift: {type: string}
+            why_not: {type: string}
+      sources:
+        description: Everything read across the run, so a reader can retrace it.
+        type: array
+        items: {type: string}
+      gaps:
+        description: >-
+          The coverage report in list form: venues that returned nothing, venues never
+          reached and why, and what the gap costs the verdict. Empty only when nothing
+          was missing.
+        type: array
+        items: {type: string}
+
+# NO {{placeholders}}, for the reason `Size the market` gives: a workspace value
+# named by a placeholder and left unset refuses composition, and every key this
+# app declares reaches the prompt through the Context section anyway.
+instructions: |-
+  You are answering one question for a founder: what changed in the world that
+  makes this the moment, and how would we know? Products succeed when something
+  moved — a rule, a price, a technology, a habit. Your job is to find the thing
+  that moved, or to say plainly that nothing did.
+
+  Sweep the way the skill above describes. Fix the window and name the venues
+  before you search: filings and regulator pages, the trade press, technical
+  forums, job postings, analyst notes, plain web search. Record each venue as
+  read-with-results, read-and-empty, or never-reached, and put the empty and
+  unreached ones in gaps. A quiet sweep is not a quiet market — treat any zero
+  as a broken query until a bare one-word search proves otherwise.
+
+  Every shift you keep has a source with a date on it. If you know a shift is
+  real but cannot cite it, it does not go in shifts; it goes in gaps with what
+  you were looking for. Dated evidence only.
+
+  Then sort. A shift creates urgency when it changes what the buyer must do this
+  year: a deadline they now have, a cost that just moved past the point where
+  doing nothing is expensive, a capability that only became affordable. Anything
+  else is merely interesting, however large — put it in merely_interesting with
+  one line on why the buyer can still wait. Being able to see what you rejected
+  is what makes the rest worth trusting.
+
+  Say what closes the window. If a compliance date, a deprecation or a funding
+  cycle closes it, name the date. If nothing does, say the window is soft rather
+  than manufacturing urgency you cannot support.
+
+  A why-now the buyer would not recognise is not a why-now. If the only thing
+  making this the moment is that the founder believes strongly, the verdict is
+  none and you say so in the summary — that is the answer the job asked for, not
+  a failure to find one. Return the structured object, and close with one line:
+  the verdict, the strongest shift if there is one, and what you could not reach.

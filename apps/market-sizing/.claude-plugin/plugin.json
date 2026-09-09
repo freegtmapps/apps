@@ -1,0 +1,8 @@
+{
+  "name": "market-sizing",
+  "description": "Bottom-up market size \u2014 TAM, SAM and SOM, with every assumption listed so you can argue with one.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

@@ -1,0 +1,201 @@
+# Does anybody come back? The measured answer, with the data behind it.
+#
+# THE JOB CARD THIS SERVES is `product.pmf-assessor` (docs/TEAMS.md §3), whose
+# whole point is that the number is not an opinion: "Retention curves over
+# testimonials. Say 'too early to tell' when it is." Everything below is that
+# sentence turned into a manifest — a score that may be null, a method that names
+# how it was arrived at, and a sources list that cannot be empty.
+#
+# THE CARD OWNS TWO KEYS AND THIS APP DECLARES ONE OUTPUT, on purpose.
+#
+# The card produces `company.traction` and `company.pmf_score`. An app declares
+# exactly one `output.target` — one validated object going to one place — so the
+# target here is `company.pmf_score`, the thing that has a schema worth
+# enforcing. TRACTION IS WRITTEN THROUGH THE PIPELINE CONTEXT TOOL BY THE AGENT,
+# free-form, mid-run, the way founder-intake's answers are: what counts as
+# traction is inbound one week and a renewal the next, and a schema pinning it
+# would be a destination that does not describe the work. Free-form writes are
+# bounded by the agent's `scope.context.writes` and are deliberately not
+# declarable here (contracts/app.schema.yaml, delta 1).
+#
+# `type: analysis` rather than `scoring`. Both force an `output` block, which is
+# the point — this is the last app that should be allowed to answer in prose.
+# `scoring` in this catalogue means ranking many records against a rubric
+# (`score-against-your-icp`, `score-and-route-leads`); this is one judgement
+# about one company, read off data somebody else recorded.
+#
+# NO `skills:`. I looked. The nearest vendored skill is `move-gtm-diagnostic`,
+# and it is a different job: a four-question MOVE audit of the whole go-to-market
+# that returns a prioritised fix list, with product-market fit appearing only as
+# one of three maturity stages to place a company in. Composing it here would
+# turn a retention measurement into a GTM audit and would contradict the card.
+# Nothing vendored covers retention curves or the Sean Ellis disappointment
+# survey. A skill named and not shipped fails the load, so the honest list is no
+# list.
+name: PMF check
+description: Whether people actually come back — a product-market fit score from retention, not from testimonials.
+category: find-and-research
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "do we have product-market fit?"
+  - "score our PMF"
+  - "how strong is our retention?"
+
+# ALL OPTIONAL, and that is the honest posture rather than a soft one.
+#
+# The best run reads product analytics directly; a real run often reads numbers a
+# founder pasted, because the workspace that has not connected anything still has
+# a spreadsheet. `product` is where usage and returning-use live, `crm` is where
+# renewals, expansions and referral sources live. Requiring either would refuse
+# to run for exactly the workspaces whose founder would have pasted the export by
+# hand — and this app degrades to "too early to tell", which is a true answer.
+requires:
+  optional:
+    tools: [product, crm, web]
+
+# `read` and nothing else.
+#
+# No `write_lead`: there is no lead in this run at all, it is about the
+# workspace's own company. No `emits` and no `emit`: the card's escalation —
+# "there are no returning users to measure" — is already the app's output, a null
+# score with method `insufficient_data`, and a signal beside it would be a second
+# label for the same fact. `stage` was considered and dropped for the same
+# reason: an unmeasurable company is a finding to write down, not a question to
+# put in somebody's approval queue.
+may:
+  - read
+
+# WORKSPACE SCOPE IS A CLOSED SET — company_name, crm, icp, industry, product,
+# regions, sender_name, sender_voice — so `product` is workspace and everything
+# else here is app-scoped. The pipeline keys this app reads (company.traction,
+# company.existing_customers, company.product_facts) are NOT declared here: they
+# are dotted, they live in a different table with a different writer, and they
+# reach the run through the agent rather than by being asked for.
+#
+# Both app keys are `sample` because the answer is data, not a sentence, and
+# because the right response to "I don't have that" is to say so and let the
+# method fall back rather than to invent a number.
+context:
+  - key: product
+    scope: workspace
+    ask: "In one sentence a customer would recognise, what do you sell?"
+    type: text
+  - key: usage_data
+    scope: app
+    ask: "Paste whatever you have on repeat use — cohort retention, monthly actives, logins per account. Rough is fine; say no if you have none."
+    type: sample
+  - key: survey_data
+    scope: app
+    ask: "Have you asked customers how disappointed they'd be if they could no longer use it? Paste the responses if so."
+    type: sample
+
+output:
+  name: pmf_score
+  target: company.pmf_score
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    # done_when, verbatim: "pmf_score has a number, a method and the data it came
+    # from". Those three are the required set. `gaps` is required too, because an
+    # empty gaps list is a claim ("nothing was missing") and its absence is not.
+    required: [score, method, sources, gaps]
+    properties:
+      score:
+        description: >-
+          0 to 1, the platform's one spelling of a proportion. Read it as the share of
+          users who would be very disappointed to lose the product — the Sean Ellis
+          benchmark of 40% is 0.4 here — or, where the method is retention or pull, the
+          equivalent strength on the same scale.
+
+          NULL IS A REAL ANSWER AND THE ONLY HONEST ONE when method is
+          insufficient_data. A number invented for a company with no returning users
+          cannot be told apart from a measured one by anything downstream, and every
+          plan the card mentions is sized by this figure.
+        type: [number, "null"]
+        minimum: 0
+        maximum: 1
+      method:
+        description: >-
+          How the number was arrived at. sean_ellis is the disappointment survey and
+          only counts with real responses behind it; retention is a cohort curve;
+          pull is inbound, referrals and unprompted returning use with no curve to
+          read; mixed is more than one agreeing. insufficient_data is the escalation
+          the card names, and it takes score null.
+        enum: [sean_ellis, retention, pull, mixed, insufficient_data]
+      sample_size:
+        description: >-
+          How many respondents or returning accounts the number rests on. 40% of five
+          people is not a measure, and a reader cannot tell that from the score alone.
+        type: integer
+        minimum: 0
+      sources:
+        description: >-
+          The data it came from, named specifically enough to be re-read — "OpenPanel
+          90-day cohort, Jan–Mar", not "product analytics". At least one INCLUDING when
+          the answer is insufficient_data: "we looked at these three places and none of
+          them had returning users" is the useful form of not knowing, and an empty list
+          cannot be told from not having run.
+        type: array
+        minItems: 1
+        items: {type: string}
+      evidence:
+        description: >-
+          The actual figures and quotes, not the summary of them. Month-3 retention
+          numbers, the count of accounts that came back unprompted, what a customer said
+          when asked what they would use instead.
+        type: array
+        items: {type: string}
+      pull_signals:
+        description: >-
+          Where demand arrived without being pushed — inbound, referrals, people
+          returning on their own. Named separately because it is the evidence a
+          pre-analytics company actually has.
+        type: array
+        items: {type: string}
+      gaps:
+        description: What could not be measured, and why. Empty only when nothing was missing.
+        type: array
+        items: {type: string}
+
+instructions: |-
+  Work out whether people actually come back, and be willing to say they don't.
+
+  Start with returning use. A cohort curve that flattens is the strongest thing
+  you can find; monthly actives against signups is next; logins per account is
+  weaker but real. If someone has run the disappointment survey — "how would you
+  feel if you could no longer use this?" — read the share who said very
+  disappointed and say how many people answered. Forty percent is the usual line,
+  and forty percent of five people is not a measurement.
+
+  Where there is no usage data at all, look for pull: inbound that nobody paid
+  for, referrals, customers coming back unprompted, people asking for the thing
+  before it was offered. Score off that, name the method as pull, and say plainly
+  that it is weaker evidence than a curve.
+
+  Testimonials are not evidence. Neither is enthusiasm in a sales call, a waitlist
+  nobody has converted, or a founder's own conviction. Those tell you people liked
+  the pitch; this app is about what happened afterwards.
+
+  When there are no returning users to measure, say so: method insufficient_data,
+  score null, and still list every place you looked. That is the escalation, and
+  it is worth more than a plausible number — everything downstream gets sized by
+  this figure, and an invented one is invisible once it is written down.
+
+  Write what you found about traction — the shape of the customer base, where
+  demand came from, what changed — into company.traction as you go, through the
+  pipeline context tool. That side of the job is free-form prose because the facts
+  arrive in whatever form the company has them. The score is different: return it
+  as your structured output, and put the number, the method and the data behind it
+  in the same object so nobody has to go looking for how it was reached.
+
+  Then say it in one line: the score, how you got it, and the one thing that would
+  make it more trustworthy.

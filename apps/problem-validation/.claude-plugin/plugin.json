@@ -1,0 +1,8 @@
+{
+  "name": "problem-validation",
+  "description": "Does the problem exist outside your own calls? Forums, reviews and search, with quotes and volumes.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

@@ -732,6 +732,34 @@
       }
     },
     {
+      "slug": "market-sizing",
+      "name": "Market sizing",
+      "description": "Bottom-up market size — TAM, SAM and SOM, with every assumption listed so you can argue with one.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "size our market",
+        "how big is this market?",
+        "build a TAM"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "web"
+        ]
+      },
+      "needs_answered": [
+        "company_name",
+        "icp",
+        "product"
+      ]
+    },
+    {
       "slug": "meeting-brief",
       "name": "Meeting brief",
       "description": "One page before the call — who is in the room, what they care about, what to ask.",
@@ -836,6 +864,31 @@
       }
     },
     {
+      "slug": "pmf-check",
+      "name": "PMF check",
+      "description": "Whether people actually come back — a product-market fit score from retention, not from testimonials.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "do we have product-market fit?",
+        "score our PMF",
+        "how strong is our retention?"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "optional": [
+          "product",
+          "crm",
+          "web"
+        ]
+      }
+    },
+    {
       "slug": "positioning-and-messaging",
       "name": "Positioning and messaging",
       "description": "Category, story, and the messaging hierarchy — the source of truth other apps read.",
@@ -854,6 +907,54 @@
       "maintained_by": {
         "name": "freegtm",
         "url": "https://github.com/freegtmapps"
+      }
+    },
+    {
+      "slug": "problem-validation",
+      "name": "Problem validation",
+      "description": "Does the problem exist outside your own calls? Forums, reviews and search, with quotes and volumes.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "validate the problem",
+        "is this problem real?",
+        "what do people say about this problem?"
+      ],
+      "skills": [
+        "recent-discourse-sweep"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "web"
+        ]
+      }
+    },
+    {
+      "slug": "product-analytics",
+      "name": "Product analytics",
+      "description": "What your product data says: activation, time to activate, and the features people actually use.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "how many users actually activate?",
+        "what features do people use?",
+        "read our product analytics"
+      ],
+      "skills": [],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "product"
+        ]
       }
     },
     {
@@ -1269,6 +1370,31 @@
       }
     },
     {
+      "slug": "why-now",
+      "name": "Why now",
+      "description": "The shift that makes this the moment — named, dated, sourced — or an honest no.",
+      "category": "find-and-research",
+      "version": "1.0.0",
+      "license": "MIT",
+      "say": [
+        "why now?",
+        "what changed that makes this the moment?",
+        "is there a real why-now for this, or am I telling myself a story?"
+      ],
+      "skills": [
+        "recent-discourse-sweep"
+      ],
+      "maintained_by": {
+        "name": "freegtm",
+        "url": "https://github.com/freegtmapps"
+      },
+      "requires": {
+        "tools": [
+          "web"
+        ]
+      }
+    },
+    {
       "slug": "win-loss-program",
       "name": "Win/loss program",
       "description": "Why you win and lose, from real interviews, turned into positioning and process fixes.",
@@ -1352,5 +1478,5 @@
       ]
     }
   ],
-  "count": 51
+  "count": 56
 }

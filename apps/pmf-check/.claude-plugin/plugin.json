@@ -1,0 +1,8 @@
+{
+  "name": "pmf-check",
+  "description": "Whether people actually come back \u2014 a product-market fit score from retention, not from testimonials.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}

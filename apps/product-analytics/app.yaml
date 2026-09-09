@@ -1,0 +1,220 @@
+# The product already recorded what people did. This app reads it back.
+#
+# IT SERVES ONE JOB CARD — `product.analytics-reader` (docs/TEAMS.md §3), whose
+# done_when is "activation and top-feature usage written with numbers and a date
+# range" and whose whole instruction block is "Numbers with dates. Never
+# interpret usage as intent." Everything below is downstream of those two lines,
+# and where the card and this manifest could have disagreed the card wins.
+#
+# NO `skills:` KEY, and the omission is deliberate rather than lazy. The twelve
+# vendored repos are GTM method — sequences, ICP matrices, call scorecards. Not
+# one of them is about reading activation out of a product analytics project,
+# and naming a skill that does not exist in the bundle is a load error, not a
+# cosmetic one. `resolve-the-jurisdiction` ships with no skills too. An app that
+# credits prose nobody wrote is worse than an app that credits nobody.
+#
+# WHY `type: analysis` AND NOT `research`. Nothing here is discovered out in the
+# world: the data is already this workspace's own, sitting in its own project,
+# and `research` would promise a search that never happens. `analysis` is the
+# honest label for counting and cohorting. It does NOT license interpretation —
+# the arithmetic is the analysis, and the moment the prose starts explaining WHY
+# a number is what it is, this app has stopped doing its job. Both research and
+# analysis force an `output:` block (schema delta 2), which is what we want
+# either way.
+name: Product analytics
+description: "What your product data says: activation, time to activate, and the features people actually use."
+category: find-and-research
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "how many users actually activate?"
+  - "what features do people use?"
+  - "read our product analytics"
+
+# THE CARD NAMES `[analytics, pipeline]` AND NEITHER IS SPELLABLE HERE.
+#
+# `analytics` is not in the capability vocabulary (web, crm, enrichment, github,
+# linkedin, email.read, email.send, calendar, product, website, slack) and a
+# manifest naming it fails to load. `product` is the nearest real capability and
+# it is the right one: it means a binding to the thing that records what users
+# do, which is exactly what OpenPanel is to the workspace that runs it. The card
+# says OpenPanel; this file cannot, because the rule is capabilities and never
+# brands — a manifest naming a vendor is an app that works for one stack.
+#
+# `pipeline` is not a capability at all. It is the shared context every app
+# reads and writes through the platform tools, granted by the agent's scope
+# rather than declared by a bundle, so there is nothing to list.
+#
+# A deployment that binds nothing to `product` cannot run this app, and it fails
+# at bind rather than running and inventing an activation rate. That is the
+# point of naming it.
+tools: [product]
+
+# `read` alone.
+#
+# NO `emit`: the card's `produces` is `{context: [company.product_facts]}` and
+# names no signal, so an `emits:` list here would declare kinds this app can
+# neither raise nor is asked to. The schema refuses that pairing anyway when
+# `may` lacks `emit`, and the 24-of-50 sweep in the contract is what that rule
+# was written from.
+#
+# NO `stage`: a contradiction between the data and what the founder said belongs
+# in the written facts where the Product Lead reconciles it, not in an approval
+# queue where it waits for somebody to click. The card is explicit that a claim
+# and a finding that disagree are surfaced, not averaged — surfaced means
+# written down.
+may:
+  - read
+
+# Three app-scoped keys, and every one of them is something the model gets wrong
+# by guessing. Nothing here is workspace-scoped: the workspace scope is a closed
+# set of eight real WorkspaceValues fields, and `activation_event` is not one of
+# them. An invented workspace key is asked for and then silently dropped after
+# somebody has answered it.
+context:
+  - key: analytics_project
+    scope: app
+    ask: "Which product analytics project should I read? Name it, or paste the project id."
+    type: text
+
+  # The one definition that cannot come out of the data. Events say what people
+  # did; only the team knows which of those means somebody got value. "Work it
+  # out" is a real answer — see the instructions, where the app is told to pick
+  # and then to say out loud that it picked.
+  - key: activation_event
+    scope: app
+    ask: "What counts as activation — the first thing a user does that means they got value? Say 'work it out' and I'll pick one and show you."
+    type: text
+
+  # Enum rather than free text because it becomes the date range on every number
+  # written, and "recently" is not a range. Ninety days is the ceiling on
+  # purpose: a longer window hides the change a weekly run exists to catch.
+  - key: reporting_window
+    scope: app
+    ask: "How far back should I look?"
+    type: enum
+    options: [last_7_days, last_30_days, last_90_days]
+
+# One validated object going to one place — the field the card says this job
+# owns, `company.product_facts`. A section (`company`) or a wildcard would be an
+# app claiming the section. This is a destination and not a permission: the
+# loader still checks it against product.analytics-reader's
+# scope.context.writes, and changing this line without changing that agent fails
+# the pairing at compose.
+output:
+  name: product_facts
+  target: company.product_facts
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [window, source, activation, top_features, contradictions, gaps]
+    properties:
+      window:
+        description: The date range every number below was measured over. Required first, because a count without one is a number somebody is still quoting in March.
+        type: object
+        additionalProperties: false
+        required: [start, end]
+        properties:
+          start: {type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"}
+          end: {type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"}
+      source:
+        description: The project the numbers were read from, so a reader can run the same query.
+        type: string
+      activation:
+        description: >-
+          What activation was taken to mean and how many people reached it.
+          Empty object is not permitted; where there is nothing to measure the
+          counts are zero and the reason is in gaps.
+        type: object
+        additionalProperties: false
+        required: [definition, definition_source, users_eligible, users_activated]
+        properties:
+          definition:
+            description: The event treated as activation, named as it appears in the data.
+            type: string
+          definition_source:
+            description: Whether the team said so or this app chose it. A definition the app picked is a finding to check, not a fact.
+            enum: [declared, chosen_by_app]
+          users_eligible: {type: integer, minimum: 0}
+          users_activated: {type: integer, minimum: 0}
+          median_days_to_activate:
+            description: Median days from first seen to the activation event. Absent when too few users activated to have a median.
+            type: number
+      top_features:
+        description: >-
+          Most-used features in the window, most used first. MAY BE EMPTY, and
+          that is why there is no minItems — a project with no events in the
+          window is a real finding, and requiring a row here would turn it into a
+          refused Final instead of a stated gap.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [name, users, events]
+          properties:
+            name:
+              description: The feature or event name as the product records it, not a friendlier rewrite.
+              type: string
+            users: {type: integer, minimum: 0}
+            events: {type: integer, minimum: 0}
+      contradictions:
+        description: >-
+          Where the data disagrees with what the founder told us. Both sides,
+          never a verdict — the Product Lead reconciles, this app reports.
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [claim, measurement]
+          properties:
+            claim:
+              description: What was said, as close to their words as you have them.
+              type: string
+            measurement:
+              description: What the data shows instead, with its number and dates.
+              type: string
+      gaps:
+        description: What could not be measured and why. Empty only when nothing was missing.
+        type: array
+        items: {type: string}
+
+instructions: |-
+  You are reading this workspace's own product analytics and writing down what it
+  says, so that nobody downstream has to guess how the product is actually used.
+
+  Numbers with dates, every time. Each figure carries the window it came from —
+  "412 of 1,180 signups activated between 1 and 31 August" — because a count with
+  no range attached gets quoted for a year.
+
+  Activation is whatever the team said it is. If they said "work it out", pick the
+  earliest event that plausibly means somebody got value, put that event in the
+  output as the definition, and mark it as your choice rather than theirs. Then
+  say which one you picked in your closing line, so they can correct you once
+  instead of quietly disagreeing forever.
+
+  Report use, never intent. Somebody who opened a feature nine times is somebody
+  who opened it nine times. They are not "highly engaged" and not "struggling with
+  onboarding" — write the count and stop. The people reading this are entitled to
+  draw their own conclusion, and they cannot if you have already drawn one for
+  them.
+
+  Where the numbers disagree with what the founder said, write both: their claim,
+  the measurement that contradicts it, and the dates behind it. Do not average
+  them and do not decide who is right. That reconciliation is somebody else's job
+  and they need to see both halves to do it.
+
+  If the project has no identified users, or no events in the window, that is the
+  answer. Say so, leave the feature list empty, put zero where you counted zero,
+  and name the reason in gaps. An invented activation rate is worse than a missing
+  one, because nothing downstream can tell it apart from a measured one.
+
+  Return the facts as your structured output, and close with one line: what you
+  measured, over what dates, and anything you could not reach.

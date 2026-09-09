@@ -1,0 +1,251 @@
+# A number somebody can argue with, which is the only kind worth having.
+#
+# The job card this serves is `product.market-sizer` (docs/TEAMS.md §3): "A market
+# size that comes from an analyst report is a slide. One that comes from counting
+# the buyers and what they pay today is a plan." So the ORDER is the design —
+# bottom-up first, top-down second and only as a check. An app that read the
+# top-down figure first would anchor on it and spend the rest of the run
+# reverse-engineering a count that agrees.
+#
+# ITS OUTPUT TARGET IS PINNED BY THE CARD, not chosen here. product.market-sizer
+# `owns: [market.market_size]` and `produces: {context: [market.market_size]}`, so
+# this target and that agent's scope.context.writes are two ends of one check
+# (E_WRITES_EXCEED_SCOPE). Changing this line without changing the agent fails at
+# compose rather than at run.
+#
+# WHY THERE IS NO `skills:` — this is a judgement, and it was close.
+#
+# Four vendored skills sit in this area and none of them is this job:
+#   - build-and-fill-a-tam routes to references/tam-model.md and
+#     references/worked-tam.md. Neither page is vendored beside the body. A model
+#     told to open a page that is not there improvises in the voice of the skill
+#     that was supposed to stop it (see the contract's own note on route
+#     defects), and its second half is a CRM coverage and record-creation
+#     programme this app does not do.
+#   - market-finder routes to three reference pages that are likewise not
+#     vendored, and it enumerates businesses by metro. Territory work, not sizing.
+#   - tam-from-verified-data is Lusha, by name, and says "Requires a Lusha
+#     connection". Capabilities, never brands.
+#   - tam-builder is self-contained and the body is good — but its deliverable is
+#     an enumerated company list with retrieved provenance on every field,
+#     deduplicated on root domain. This app has `web` and no enrichment; it
+#     cannot retrieve that universe, and naming a method the app structurally
+#     cannot follow is the same defect as an `emits` list with no `emit`.
+# So: no skills, and the method lives in the instructions where it can be honest
+# about the tools this app actually holds.
+name: Market sizing
+description: Bottom-up market size — TAM, SAM and SOM, with every assumption listed so you can argue with one.
+category: find-and-research
+
+# `analysis`, not `research`, and both would demand an `output` block so nothing
+# turns on it but the word on the timeline. The competitor researcher is
+# `research_deep` and reads pages; this one is `reasoning_heavy` and does
+# arithmetic on things the workspace already said. The Lead routes it on
+# `research.requested` — that is the Lead's dispatch, not a claim about the kind
+# of work.
+type: analysis
+version: 1.0.0
+license: MIT
+handler: llm
+visibility: public
+
+maintained_by:
+  name: freegtm
+  url: https://github.com/freegtmapps
+
+say:
+  - "size our market"
+  - "how big is this market?"
+  - "build a TAM"
+
+# `web` and nothing else, matching the card's tools.
+#
+# NO `enrichment`, deliberately, and it is the difference between this app and a
+# list build: the bottom-up count here is arithmetic over a stated buyer
+# definition — how many of them there are, what each pays — not a retrieved
+# universe of company rows. Declaring enrichment would invite the model to start
+# pulling accounts, spend the budget on a list nobody asked for, and present
+# whatever the provider capped at as the size of the market.
+tools: [web]
+
+# Read only.
+#
+# NO `emits`: everything this app has to say lands in market.market_size, and a
+# second announcement of the same fact is a label, not an event. NO `stage`
+# either — when the ICP is too vague to count buyers the card escalates that to
+# the Lead, and this app's answer is to say so in `gaps` and size nothing rather
+# than to stage a question and stall.
+may:
+  - read
+
+context:
+  # Two workspace keys, and neither is asked anywhere else today: `Founder intake`
+  # declares company_name, product and industry, and stops there. Both are real
+  # domain.WorkspaceValues fields — the workspace scope is a closed set.
+  #
+  # The pipeline inputs the card names — market.problem_statement, icp.hypothesis,
+  # market.alternatives — are NOT here on purpose. Those are dotted pipeline keys
+  # written by the interviewing agent and read through the pipeline tool; a
+  # `context:` key is setup config with a different writer and no dots allowed.
+  - key: icp
+    scope: workspace
+    ask: "Who is the ideal customer, in enough detail that I could count them? Industry, size, country, and anything that rules a company out."
+    type: text
+  - key: regions
+    scope: workspace
+    ask: "Which countries or regions are you actually selling into?"
+    type: list
+
+  # Two app-scoped keys: the numbers that turn a count into money and a TAM into a
+  # SOM. Neither is a fact about the workspace that another app should inherit —
+  # they are this app's inputs, which is why they are app-scoped rather than
+  # invented as workspace fields that nothing can store.
+  - key: annual_contract_value
+    scope: app
+    ask: "What does one customer pay you in a year? A real number from closed deals if you have one — say so if it's a guess, or 'unknown' and I'll size in accounts only."
+    type: text
+  - key: reach_capacity
+    scope: app
+    ask: "In the next twelve months, how many new customers could you realistically win with the people and budget you have?"
+    type: text
+
+output:
+  name: market_size
+  target: market.market_size
+  strict: true
+  schema:
+    type: object
+    additionalProperties: false
+    required: [bottom_up, tam, sam, som, assumptions, gaps]
+    properties:
+      currency:
+        description: ISO code for every revenue figure below. Absent only when the sizing is in accounts alone.
+        type: string
+      bottom_up:
+        description: The count that came first. Everything else is checked against this, not the other way round.
+        type: object
+        additionalProperties: false
+        required: [buyer_definition, account_count, method]
+        properties:
+          buyer_definition:
+            description: The rule that decides whether a company is in or out. Specific enough that two people counting would agree.
+            type: string
+          account_count: {type: number}
+          method:
+            description: The arithmetic, step by step, in the order it was done. A reader should be able to redo it.
+            type: string
+          sources:
+            description: What each input number came from. A count with no sources was remembered, not built.
+            type: array
+            items: {type: string}
+      top_down:
+        # Present only when a published figure was actually found. The card asks
+        # for a cross-check "against ANY top-down figure" — inventing one to have
+        # something to reconcile against is worse than saying none exists.
+        description: A published market figure, if one exists, and why it differs from the count.
+        type: object
+        additionalProperties: false
+        required: [figure, source, gap_explained]
+        properties:
+          figure: {type: string}
+          source: {type: string}
+          gap_explained:
+            description: What the two are counting differently. Never split the difference — an average of two incompatible populations is a third wrong number.
+            type: string
+      tam:
+        type: object
+        additionalProperties: false
+        required: [accounts, basis]
+        properties:
+          accounts: {type: number}
+          revenue: {type: number}
+          basis:
+            description: What is being counted and how the figure was reached.
+            type: string
+      sam:
+        type: object
+        additionalProperties: false
+        required: [accounts, basis]
+        properties:
+          accounts: {type: number}
+          revenue: {type: number}
+          basis: {type: string}
+          filters:
+            description: What was cut from TAM to get here — region, segment, channel — one line each.
+            type: array
+            items: {type: string}
+      som:
+        type: object
+        additionalProperties: false
+        required: [accounts, basis, path_12_months]
+        properties:
+          accounts: {type: number}
+          revenue: {type: number}
+          basis: {type: string}
+          path_12_months:
+            description: How this gets reached in the next twelve months — the channel, the rate, the people. The card's done_when is exactly this, and a SOM without it is a wish.
+            type: string
+            minLength: 1
+      assumptions:
+        description: Every number that was chosen rather than found. At least one — a market size with no assumptions is a slide.
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [assumption, value, source, if_wrong]
+          properties:
+            assumption: {type: string}
+            value: {type: string}
+            source:
+              description: >-
+                Where it came from — a closed deal, a published figure, or a
+                guess said plainly to be a guess.
+              type: string
+            if_wrong:
+              description: What moves if a reader disagrees with this one. This is what makes the list arguable rather than decorative.
+              type: string
+      gaps:
+        description: What could not be counted and why. Where the ICP was too vague to count buyers, that goes here and the numbers stay small.
+        type: array
+        items: {type: string}
+
+instructions: |-
+  You are putting a number on the market for {{company_name}}, who sell
+  {{product}} to {{icp}}.
+
+  Count first. Start from the buyer definition and write it down before you count
+  anything: industry, size, geography, and what rules a company out. Then work out
+  how many of those there are and what each one pays in a year, using the annual
+  contract value this workspace gave you. If that was a guess, carry it as a
+  guess — do not launder it into a fact by putting it in a formula.
+
+  Show the arithmetic. Every number in the output should be reachable from the
+  ones above it by a step a reader can redo. Where you used a public figure to get
+  a count, say which page it came from.
+
+  Only then look for a top-down figure. If somebody has published a number for
+  this market, compare it to yours and explain the gap: what are they counting
+  that you are not, or the other way round. Never average the two. If no credible
+  published figure exists, say so and leave top_down out — a reconciliation
+  against a number you made up is worse than no reconciliation.
+
+  TAM is everyone who could buy. SAM is who you could sell to given where you
+  actually sell — the regions this workspace named — and how you sell. SOM is what
+  you can win in twelve months, and it is not a percentage of SAM. Build it from
+  the capacity they told you about: how many customers they can actually win, at
+  what rate, through which channel. Then write that as the path. A SOM with no
+  path is the one thing this app must not return.
+
+  Prefer a smaller number with a clear path to a larger one without.
+
+  List every assumption you made with its value, where it came from, and what
+  changes if it is wrong. Somebody should be able to disagree with exactly one
+  line and see what it moves.
+
+  If the ICP is too vague to count buyers — "mid-market companies" is not
+  countable — do not pick a plausible definition and count that. Say what you
+  would need in gaps, size the part you can, and keep the numbers small.
+
+  Return the sizing as your structured output. Say in one line what the SOM is and
+  what would have to be true for it to hold.

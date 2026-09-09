@@ -1,0 +1,8 @@
+{
+  "name": "product-analytics",
+  "description": "What your product data says: activation, time to activate, and the features people actually use.",
+  "version": "1.0.0",
+  "author": {
+    "name": "freegtm"
+  }
+}
