@@ -40,6 +40,31 @@ rules: [icp-evidence.yaml]
 # domain.App, so a strict manifest decode refuses the whole file. Steps 9 and 15
 # are recorded unmet rather than approximated.
 
+# `requires.optional.tools` IS TYPED HERE, AND THAT IS NOT THE CONTRADICTION IT
+# LOOKS LIKE. Two readers have now concluded that this file types a field the
+# codebase says is derived, so the distinction is written down rather than left
+# to whoever reads `bundle.go` next.
+#
+# They are two different fields that happen to sit one nesting level apart:
+#
+#   requires.tools           DERIVED, and a manifest literally cannot say it —
+#                            `Tools []string \`yaml:"-"\`` (domain/bundle.go).
+#                            `WithDerivedRequires` mirrors it from top-level
+#                            `tools:`. Hand entry plus a load-time check is two
+#                            sources that agree until somebody edits one.
+#
+#   requires.optional.tools  HAND-WRITTEN BY DESIGN — `yaml:"tools,omitempty"`
+#                            on `OptionalRequires`, with the reason in the
+#                            struct: it says what the app degrades gracefully
+#                            without, "which is a judgement the maintainer makes
+#                            rather than a fact about the file". Nothing can
+#                            derive a judgement.
+#
+# So there is nothing to pick. What made it read as a contradiction is that
+# `tools:` appears under `requires:` on the page, and the eye supplies the
+# shorter path. This app declares only the optional one: it uses a CRM when a
+# workspace has one — `best_customers` says infer_from: [crm] — and works by
+# hand when it does not.
 requires:
   optional:
     tools: [crm]
@@ -84,7 +109,24 @@ scripts:
       - name: input
         type: path
         description: the deal export to analyse
-    needs: [crm]
+    # `needs: [crm]` WAS HERE AND IS DELIBERATELY GONE.
+    #
+    # It declared a capability the script does not use. `analyze.py` imports
+    # `sys, csv, json, argparse, io, re` and `datetime` and nothing else — no
+    # http client, no socket, no environment read, no credential of any kind. It
+    # takes a path or stdin and does arithmetic on it. Verified by reading the
+    # file, not inferred from the description.
+    #
+    # The CRM is how a PERSON produces the export. It is not something the script
+    # reaches, and the difference is not pedantic: `needs` gates the step against
+    # `set_reach`, so a workspace that has declined CRM had this step suppressed
+    # — even though pasting an export would have worked perfectly. A declared
+    # need the code does not have costs exactly the users who have the data in a
+    # spreadsheet instead of a system.
+    #
+    # Same shape as declaring an `emits` an app has no `emit` permission to
+    # raise: a manifest asserting a capability the code behind it does not have.
+    # There it silently never fires; here it silently never runs.
     # NO FALLBACK, AND THE ABSENCE IS THE POINT. The script exists because this
     # is the arithmetic a model must not improvise; prose telling one to do it
     # by hand would be the exact failure the file prevents. With no fallback the
@@ -98,6 +140,30 @@ emits:
 
 context:
   # Workspace-scoped: every later app reads these, so nobody is asked twice.
+  #
+  # `company_name` IS FIRST BECAUSE IT WAS MISSING, and the app dead-ended on it.
+  #
+  # The instructions open with {{company_name}}. That is NOT an undeclared
+  # placeholder — it is one of the eight built-in workspace values
+  # (company_name, crm, icp, industry, product, regions, sender_name,
+  # sender_voice), it is a real field on `domain.WorkspaceValues`, and
+  # `UnknownPlaceholders` returns empty for this prose. It can never render
+  # literally.
+  #
+  # What it did instead was refuse. Substitution is strict, so an unset built-in
+  # stops composition with "Define your ICP needs this workspace to describe
+  # itself before its prompt can be built: your company is not set." Loud rather
+  # than silent, which is the better failure — but this app asked for four other
+  # workspace values and not this one, so a first run dead-ended and pointed at
+  # `set_workspace_profile`, somewhere else, before the app could say anything.
+  #
+  # For the app whose entire thesis is "nobody is asked twice", that made this
+  # the one value nobody was asked ONCE. Declaring it here means the app fills
+  # its own prerequisite in the conversation it already has open.
+  - key: company_name
+    scope: workspace
+    ask: "What's your company called?"
+    type: text
   - key: product
     scope: workspace
     ask: "In one sentence, what do you sell?"
